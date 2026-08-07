@@ -1,0 +1,11 @@
+flowchart TD
+    subgraph Pre-Training Phase
+        A[User Input] --> B[Pre-Train EDA Dataset Validation]
+    end
+    subgraph Training Phase
+        B --> C[YOLO Training]
+    end
+    subgraph Post-Training Phase
+        C --> D[Post-Train LLM Diagnostics OpenCode]
+        D --> E[MD/DOCX Reports]
+    end
