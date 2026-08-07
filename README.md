@@ -17,6 +17,12 @@ Our primary research vectors include:
 
 ---
 
+## ⚖️ IEEE Expert Panel Review (2026)
+
+All papers in this repository have been subjected to a rigorous peer review by an IEEE expert panel to assess their scientific contribution, novelty, and integrity. The final verdicts, including detection of AI-generated content and detailed improvement notes, can be found in the [IEEE_REVIEW_VERDICT.md](./IEEE_REVIEW_VERDICT.md) document.
+
+---
+
 ## 📚 Publications Directory
 
 We categorize our papers into two main branches: **Research & Development (R&D)** for experimental frontier technologies, and **Standard Papers** for MLOps engineering and architecture.
@@ -63,6 +69,10 @@ If you utilize our architectural patterns or reference these papers in your own 
 These papers document an ecosystem that operates under a **Dual Licensing Model** (PolyForm Noncommercial / AGPLv3). 
 - For academic and open-source research, the concepts and code are free to use.
 - For commercial applications, please consult the `COMMERCIAL.md` file in our core repositories and contact the author for revenue-share/licensing agreements.
+
+## 🔄 Changelog
+
+- **v1.0.1 (2026-08-07)**: Added official IEEE expert panel review verdicts for all papers.
 
 ---
 *Developed with ❤️ in Badajoz, Extremadura, Spain.*
