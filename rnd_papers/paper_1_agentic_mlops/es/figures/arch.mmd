@@ -1,0 +1,7 @@
+graph LR
+    User([User]) --> LLM[LLM Agent]
+    LLM --> MCP[MCP Server]
+    MCP --> FastAPI[FastAPI Gateway]
+    FastAPI --> Celery[Celery Broker]
+    Celery --> Invoker[Invoker Daemon]
+    Invoker --> Executor[Ephemeral Executor Container]
