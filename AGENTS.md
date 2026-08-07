@@ -43,3 +43,11 @@ To prevent the papers from sounding robotic or being flagged by AI detectors, al
 4. **Data-Driven, Not Adjective-Driven**: Do not use flowery adjectives ("impressive speedup", "highly efficient"). Instead, use raw facts and numbers ("reduced latency by 43%", "dropped memory usage from 28GB to 16GB").
 5. **Real-World Imperfections**: Embrace real-world engineering constraints and mention actual pain points faced during the development at eCaptureDtech (e.g., "OOM errors crashing the daemon"). This adds human authenticity.
 
+## Scientific Excellence & Acceptance Criteria (Strict Rule)
+To ensure acceptance in top-tier conferences (IEEE, NeurIPS, CVPR), every paper MUST incorporate the following elements:
+1. **High-Quality Visuals**: Do not use raw screenshots. Charts must be generated using Python (matplotlib/seaborn) and exported as vector graphics (`.pdf` or `.eps`). Tables MUST use the `booktabs` package in LaTeX for a clean, professional look.
+2. **Typographical Polish**: The LaTeX document must use `microtype` for perfect spacing and `cleveref` for automated cross-referencing.
+3. **Ablation Studies**: Every paper must include an empirical "Ablation Study" section to mathematically/experimentally prove what happens when key architectural components (e.g., memory limits, EDA gatekeepers) are removed or disabled.
+4. **Narrative Arc (Strawman Technique)**: Papers must follow a logical arc: introduce the critical industry bottleneck as the "villain", explain why current State-of-the-Art methods fall short, and present the NeuralForgeAI component as the elegant, definitive solution.
+5. **Reproducibility Guarantee**: The "Data & Code Availability" section must provide explicit commands (e.g., `docker-compose up -d`) and YAML configuration snippets allowing any researcher globally to perfectly reproduce the stated experiments.
+
