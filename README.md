@@ -1,16 +1,68 @@
-# NeuralForgeAI Scientific Papers
+# 🔬 NeuralForgeAI - Scientific Research & Publications
 
-This repository contains the drafts and literary research for 5 scientific paper proposals based on the architecture and innovations of the **train_service2 (NeuralForgeAI)** ecosystem.
+Welcome to the official research and academic repository for the **NeuralForgeAI (train_service2)** ecosystem. 
 
-## Paper Directory
+This repository serves as the central hub for our scientific publications, technical whitepapers, and state-of-the-art architectural research in the field of Distributed Machine Learning, Agentic MLOps, and Computer Vision orchestration.
 
-### 🔬 Research and Development (R&D) Papers
-*Experimental research, cutting-edge technology, and knowledge frontier.*
-1. [Agentic MLOps](./rnd_papers/paper_1_agentic_mlops/en/DRAFT.md): Autonomous Agent Orchestration and MCP.
-2. [Automated XAI](./rnd_papers/paper_3_automated_xai/en/DRAFT.md): Automated explainability with EDA and post-training LLMs.
+## 📖 About Our Research
+
+The NeuralForgeAI ecosystem resolves critical industry bottlenecks in distributed Deep Learning—such as hardware monopolization, memory leaks in GPU clusters, and manual diagnostic inefficiencies. Our research focuses on taking these applied engineering solutions and formalizing them into high-impact academic papers for the broader AI community (e.g., IEEE, ACM, NeurIPS, CVPR).
+
+Our primary research vectors include:
+1. **Agentic MLOps**: Integrating Large Language Models (LLMs) and Model Context Protocol (MCP) to autonomously orchestrate computer vision clusters.
+2. **Hardware Isolation**: Decentralizing compute using the Invoker-Executor pattern with ephemeral Docker containers to prevent catastrophic cluster failures.
+3. **Automated Explainability (XAI)**: Merging Exploratory Data Analysis (EDA) with local generative models to provide human-readable post-training diagnostics.
+4. **Decoupled Hyperparameter Optimization**: Scaling Genetic Algorithms and Optuna TPESamplers across distributed nodes.
+5. **Data-Centric AI (Shift-Left)**: Proving that early-stage network dataset validation saves thousands of GPU compute hours.
+
+---
+
+## 📚 Publications Directory
+
+We categorize our papers into two main branches: **Research & Development (R&D)** for experimental frontier technologies, and **Standard Papers** for MLOps engineering and architecture.
+
+### 🚀 Research and Development (R&D) Papers
+*Experimental research, generative AI integration, and the AgentOps frontier.*
+
+| Paper ID | Title | Research Focus | Links |
+|:---:|:---|:---|:---|
+| **1** | **Agentic MLOps: LLM-Driven Autonomous Orchestration** | Proposes using LLMs equipped with MCP to autonomously manage, validate, and launch massive YOLO training sessions. | [EN](./rnd_papers/paper_1_agentic_mlops/en/DRAFT.md) - [ES](./rnd_papers/paper_1_agentic_mlops/es/DRAFT.md) |
+| **3** | **Automated XAI Pipelines in Computer Vision** | Introduces an "Onion-Layer" pipeline where statistical EDA and local LLMs (OpenCode) auto-generate post-training diagnostics. | [EN](./rnd_papers/paper_3_automated_xai/en/DRAFT.md) - [ES](./rnd_papers/paper_3_automated_xai/es/DRAFT.md) |
 
 ### ⚙️ Standard Papers (MLOps Engineering and Architecture)
-*Applied solutions, system architecture, and industrial optimization.*
-3. [Invoker-Executor Pattern](./normal_papers/paper_2_invoker_executor/en/DRAFT.md): Hardware Isolation in Distributed Systems.
-4. [Evolutionary HPO](./normal_papers/paper_4_evolutionary_hpo/en/DRAFT.md): Decoupled Genetic Optimization with Optuna.
-5. [Shift-Left Data](./normal_papers/paper_5_shift_left_data/en/DRAFT.md): Dynamic validation and data quality (Data-centric AI).
+*Systems architecture, High-Performance Computing (HPC), and industrial applied solutions.*
+
+| Paper ID | Title | Research Focus | Links |
+|:---:|:---|:---|:---|
+| **2** | **The Invoker-Executor Pattern** | Mitigates memory leaks and hardware degradation in GPU clusters using Celery daemons and isolated ephemeral containers. | [EN](./normal_papers/paper_2_invoker_executor/en/DRAFT.md) - [ES](./normal_papers/paper_2_invoker_executor/es/DRAFT.md) |
+| **4** | **Decoupled Evolutionary Hyperparameter Search** | Details a distributed Genetic Algorithm approach (Optuna) over Celery that prevents edge-to-core bottlenecks. | [EN](./normal_papers/paper_4_evolutionary_hpo/en/DRAFT.md) - [ES](./normal_papers/paper_4_evolutionary_hpo/es/DRAFT.md) |
+| **5** | **Shift-Left Data Gatekeeping** | Validates the economic and operational impact of remote static validation on network-mounted datasets (CIFS/Samba). | [EN](./normal_papers/paper_5_shift_left_data/en/DRAFT.md) - [ES](./normal_papers/paper_5_shift_left_data/es/DRAFT.md) |
+
+---
+
+## 📜 Repository Rules & Standards
+
+To maintain camera-ready quality for all our publications, this repository enforces strict authorship protocols via our `AGENTS.md` system:
+
+1. **Camera-Ready Structure**: Every paper must strictly adhere to a 13-section IEEE-style format, including Abstract, Related Work, Methodology, Broader Impact, and Data Availability statements.
+2. **Dual-Language Sync**: Papers must exist simultaneously in English (`en/`) and Spanish (`es/`). Synchronization between the two is mandatory.
+3. **Format Triangulation**: Inside every language folder, the paper must be maintained identically across three formats: `Markdown (.md)` for quick reading, `LaTeX (.tex)` for academic submission, and compiled `.pdf`.
+4. **Git Identity**: All commits must trace back to the primary author identity: **William Steve Rodriguez Villamizar (wisrovi rodriguez)**.
+
+---
+
+## 🤝 Citation & Licensing
+
+### Citation
+If you utilize our architectural patterns or reference these papers in your own work, please cite the primary author:
+> **William Steve Rodriguez Villamizar (wisrovi rodriguez)**, *AI Leader & Solutions Architect at eCaptureDtech*.
+
+*A formal `CITATION.cff` is available at the root of the ecosystem.*
+
+### License
+These papers document an ecosystem that operates under a **Dual Licensing Model** (PolyForm Noncommercial / AGPLv3). 
+- For academic and open-source research, the concepts and code are free to use.
+- For commercial applications, please consult the `COMMERCIAL.md` file in our core repositories and contact the author for revenue-share/licensing agreements.
+
+---
+*Developed with ❤️ in Badajoz, Extremadura, Spain.*
