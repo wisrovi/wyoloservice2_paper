@@ -26,17 +26,17 @@ We categorize our papers into two main branches: **Research & Development (R&D)*
 
 | Paper ID | Title | Research Focus | Links |
 |:---:|:---|:---|:---|
-| **1** | **Agentic MLOps: LLM-Driven Autonomous Orchestration** | Proposes using LLMs equipped with MCP to autonomously manage, validate, and launch massive YOLO training sessions. | [EN](./rnd_papers/paper_1_agentic_mlops/en/DRAFT.md) - [ES](./rnd_papers/paper_1_agentic_mlops/es/DRAFT.md) |
-| **3** | **Automated XAI Pipelines in Computer Vision** | Introduces an "Onion-Layer" pipeline where statistical EDA and local LLMs (OpenCode) auto-generate post-training diagnostics. | [EN](./rnd_papers/paper_3_automated_xai/en/DRAFT.md) - [ES](./rnd_papers/paper_3_automated_xai/es/DRAFT.md) |
+| **1** | **Agentic MLOps: LLM-Driven Autonomous Orchestration** | Proposes using LLMs equipped with MCP to autonomously manage, validate, and launch massive YOLO training sessions. | [EN](./rnd_papers/paper_1_agentic_mlops/en/main.md) - [ES](./rnd_papers/paper_1_agentic_mlops/es/main.md) |
+| **3** | **Automated XAI Pipelines in Computer Vision** | Introduces an "Onion-Layer" pipeline where statistical EDA and local LLMs (OpenCode) auto-generate post-training diagnostics. | [EN](./rnd_papers/paper_3_automated_xai/en/main.md) - [ES](./rnd_papers/paper_3_automated_xai/es/main.md) |
 
 ### ⚙️ Standard Papers (MLOps Engineering and Architecture)
 *Systems architecture, High-Performance Computing (HPC), and industrial applied solutions.*
 
 | Paper ID | Title | Research Focus | Links |
 |:---:|:---|:---|:---|
-| **2** | **The Invoker-Executor Pattern** | Mitigates memory leaks and hardware degradation in GPU clusters using Celery daemons and isolated ephemeral containers. | [EN](./normal_papers/paper_2_invoker_executor/en/DRAFT.md) - [ES](./normal_papers/paper_2_invoker_executor/es/DRAFT.md) |
-| **4** | **Decoupled Evolutionary Hyperparameter Search** | Details a distributed Genetic Algorithm approach (Optuna) over Celery that prevents edge-to-core bottlenecks. | [EN](./normal_papers/paper_4_evolutionary_hpo/en/DRAFT.md) - [ES](./normal_papers/paper_4_evolutionary_hpo/es/DRAFT.md) |
-| **5** | **Shift-Left Data Gatekeeping** | Validates the economic and operational impact of remote static validation on network-mounted datasets (CIFS/Samba). | [EN](./normal_papers/paper_5_shift_left_data/en/DRAFT.md) - [ES](./normal_papers/paper_5_shift_left_data/es/DRAFT.md) |
+| **2** | **The Invoker-Executor Pattern** | Mitigates memory leaks and hardware degradation in GPU clusters using Celery daemons and isolated ephemeral containers. | [EN](./normal_papers/paper_2_invoker_executor/en/main.md) - [ES](./normal_papers/paper_2_invoker_executor/es/main.md) |
+| **4** | **Decoupled Evolutionary Hyperparameter Search** | Details a distributed Genetic Algorithm approach (Optuna) over Celery that prevents edge-to-core bottlenecks. | [EN](./normal_papers/paper_4_evolutionary_hpo/en/main.md) - [ES](./normal_papers/paper_4_evolutionary_hpo/es/main.md) |
+| **5** | **Shift-Left Data Gatekeeping** | Validates the economic and operational impact of remote static validation on network-mounted datasets (CIFS/Samba). | [EN](./normal_papers/paper_5_shift_left_data/en/main.md) - [ES](./normal_papers/paper_5_shift_left_data/es/main.md) |
 
 ---
 
