@@ -52,7 +52,7 @@ When the Invoker receives a task, it dynamically spins up an ephemeral \texttt{w
 
 \begin{figure}[htbp]
 \centering
-% MERMAID_DIAGRAM_PLACEHOLDER: Flowchart showing wyoloservice2_invoker receiving a task and spawning wyoloservice2_worker with limits (mem_limit, nano_cpus, shm_size). The subagent MUST design this diagram using subgraphs to ensure it is visually balanced and square-like, fitting perfectly within a SINGLE column.
+\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/diagram1.pdf}
 \end{figure}
 
 \section{Experimental Setup \& Implementation Details}
@@ -92,7 +92,7 @@ Container Kills & 0 & 18 \\ \bottomrule
 
 \begin{figure}[htbp]
 \centering
-% MERMAID_DIAGRAM_PLACEHOLDER: A bar chart comparing the "Host OOM Crashes" (18 vs 0) and "Manual Reboots" (18 vs 0) between the Legacy Daemon and the Invoker-Executor pattern. The subagent MUST explicitly generate clearly labeled axes (e.g., X-Axis: "Architecture", Y-Axis: "Number of Incidents"). Use a grid or balanced layout.
+\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/diagram2.pdf}
 \end{figure}
 
 \section{Data \& Code Availability Statement}
