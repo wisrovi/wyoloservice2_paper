@@ -1,13 +1,13 @@
-# Categoría: Papers Normales (Ingeniería MLOps y Arquitectura)
+# Category: Standard Papers (MLOps Engineering and Architecture)
 
-Esta carpeta está destinada a albergar todos aquellos papers científicos que se centran en la **Arquitectura de Sistemas, Ingeniería de Software, High-Performance Computing (HPC) y Soluciones Aplicadas para MLOps**. 
+This folder is designed to host all scientific papers that focus on **Systems Architecture, Software Engineering, High-Performance Computing (HPC), and Applied Solutions for MLOps**.
 
-Los artículos ubicados aquí resuelven problemas clásicos pero complejos de la industria, como la gestión de recursos físicos (GPUs, Memoria), orquestación de sistemas distribuidos, validación estandarizada de datos masivos y optimización de hiperparámetros mediante métodos clásicos o bioinspirados (sin depender intrínsecamente de inteligencia artificial generativa o agentes LLM para su funcionamiento).
+The articles located here solve classic yet complex industry problems, such as the management of physical resources (GPUs, Memory), orchestration of distributed systems, standardized validation of massive datasets, and hyperparameter optimization using classical or bio-inspired methods (without intrinsically relying on generative artificial intelligence or LLM agents for their operation).
 
-## Papers Asociados
+## Associated Papers
 
-| ID | Título / Tema Principal | Enfoque | Borrador |
+| ID | Title / Main Topic | Focus | Draft |
 |:---|:---|:---|:---|
-| **2** | **Invoker-Executor Pattern** | Aislamiento de hardware en clústeres GPU mediante Celery y contenedores efímeros (mitigación de memory leaks). | [DRAFT.md](./paper_2_invoker_executor/DRAFT.md) |
-| **4** | **Evolutionary HPO** | Búsqueda evolutiva de hiperparámetros (Genetic Algorithms / Optuna) de forma distribuida y desacoplada. | [DRAFT.md](./paper_4_evolutionary_hpo/DRAFT.md) |
-| **5** | **Shift-Left Data Gatekeeping** | Data-centric AI y estrategias de validación dinámica de datasets montados en red (CIFS/Samba) previas al entrenamiento. | [DRAFT.md](./paper_5_shift_left_data/DRAFT.md) |
+| **2** | **Invoker-Executor Pattern** | Hardware isolation in GPU clusters using Celery and ephemeral containers (memory leak mitigation). | [DRAFT.md](./paper_2_invoker_executor/en/DRAFT.md) |
+| **4** | **Evolutionary HPO** | Evolutionary hyperparameter search (Genetic Algorithms / Optuna) in a distributed and decoupled manner. | [DRAFT.md](./paper_4_evolutionary_hpo/en/DRAFT.md) |
+| **5** | **Shift-Left Data Gatekeeping** | Data-centric AI and dynamic validation strategies for network-mounted datasets (CIFS/Samba) prior to training. | [DRAFT.md](./paper_5_shift_left_data/en/DRAFT.md) |
