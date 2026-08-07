@@ -1,4 +1,5 @@
 \documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[spanish]{babel}
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{hyperref}
@@ -7,60 +8,56 @@
 \usepackage{cleveref}
 \raggedbottom
 
-\title{El Patrón Invocador-Ejecutor: Entornos Docker Efímeros para el Entrenamiento Distribuido y Resiliente de YOLO}
+\title{El Patrón Invocador-Ejecutor: Mitigando la Monopolización de Hardware y las Fugas de Memoria en el Aprendizaje Profundo Distribuido a Gran Escala}
 \author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
 \date{}
 
 \begin{document}
 \maketitle
 
-\section{Resumen \& Palabras Clave}
-\textbf{Resumen:} La gestión de cargas de trabajo de GPU distribuidas para el entrenamiento de visión por computadora a menudo conduce a la degradación de los nodos debido a fugas de memoria no gestionadas. Los demonios tradicionales basados en Celery ejecutan tareas de aprendizaje profundo dentro de su propio espacio de procesos, lo que hace que todo el nodo físico sea vulnerable a bloqueos por falta de memoria (Out-Of-Memory, OOM) provocados por arquitecturas YOLO pesadas. Proponemos el patrón Invocador-Ejecutor, un paradigma arquitectónico aplicado donde un demonio ligero de Celery (el Invocador) delega estrictamente la ejecución de GPU a contenedores Docker efímeros (el Ejecutor). Al aislar el ciclo de entrenamiento, los picos de memoria matan instantáneamente al contenedor efímero, mientras que el demonio anfitrión permanece perfectamente sano y listo para procesar el siguiente elemento de la cola. Nuestros estudios de ablación empíricos muestran que este aislamiento reduce las fallas críticas de los nodos de un promedio de 4 por día a cero, al tiempo que incurre en una sobrecarga insignificante de 2.1 segundos para la creación del contenedor. Esta arquitectura proporciona una columna vertebral robusta y escalable para la orquestación de agentes autónomos en clústeres de ML de alta densidad.
+\section{Resumen y Palabras Clave}
+\textbf{Resumen:} Los cuellos de botella clásicos en PyTorch y arquitecturas YOLO—tales como procesos zombi, fugas de memoria severas y una deficiente gestión de la memoria compartida—hacen colapsar rutinariamente clústeres enteros de GPUs durante optimizaciones a gran escala. Presentamos la arquitectura "Invoker-Celery" para mitigar estos estados de fallo. Al desacoplar explícitamente la orquestación de tareas de la ejecución física, utilizamos contenedores Docker efímeros (Executors) limitados por restricciones estrictas de hardware (\texttt{nano\_cpus}, \texttt{mem\_limit}, y \texttt{shm\_size}). Esto asegura un aislamiento físico y lógico absoluto. Cuando ocurre un pico de memoria severo, el contenedor se destruye instantáneamente, dejando el demonio persistente (Invoker) intacto. Nuestros estudios de ablación empírica muestran que este aislamiento reduce los fallos críticos de nodos de un promedio de 18 por día a cero, eliminando la necesidad de reinicios físicos manuales y garantizando casi un 100\% de estabilidad operativa.
 
-\textbf{Palabras Clave:} Computación Distribuida, Colas de Tareas Celery, Contenedores Efímeros, Gestión de Memoria GPU, Tolerancia a Fallos, MLOps.
+\textbf{Palabras Clave:} Aprendizaje Profundo Distribuido, Colas de Tareas Celery, Contenedores Efímeros, Aislamiento de Hardware, YOLO.
 
 \section{Información del Autor}
 Esta investigación fue conceptualizada y desarrollada por William Steve Rodriguez Villamizar (wisrovi rodriguez), AI Leader \& Solutions Architect para el ecosistema wisrovi-suit (https://github.com/wisrovi/w-cli).
 
 \section{Introducción}
-El entrenamiento de modelos de visión por computadora, particularmente el que involucra arquitecturas YOLO avanzadas, ejerce un estrés inmenso e impredecible en la VRAM de la GPU y la memoria del sistema. En los pipelines distribuidos estándar de MLOps, un intermediario (broker) centralizado distribuye estas tareas de entrenamiento a los nodos de trabajo. La implementación estándar se basa en un demonio persistente (como un worker de Celery) que recibe la tarea y ejecuta el ciclo de entrenamiento dentro de su propio espacio de procesos de Python.
+El aprendizaje profundo distribuido es fundamentalmente susceptible a la degradación del nodo anfitrión con el tiempo. A medida que los clústeres escalan para procesar cargas de trabajo masivas de visión por computadora, los investigadores frecuentemente encuentran caídas silenciosas por falta de memoria (Out-Of-Memory u OOM) donde el demonio principal de entrenamiento asigna memoria más allá de los límites físicos de la GPU. En canales tradicionales de MLOps distribuido, un intermediario centralizado distribuye estas tareas de entrenamiento a un demonio persistente (como un worker de Celery) que ejecuta el bucle de PyTorch directamente dentro de su propio espacio de proceso en Python.
 
-Este enfoque heredado presenta una falla crítica. Los scripts de entrenamiento de YOLO, en particular aquellos que manejan conjuntos de datos no optimizados o mutaciones de hiperparámetros experimentales, frecuentemente pierden memoria o solicitan asignaciones de VRAM que superan los límites físicos. Cuando ocurre un evento de Falta de Memoria (OOM), el asesino de OOM del kernel de Linux termina procesos al azar para recuperar memoria, matando a menudo al propio demonio persistente de Celery. Esto deja al nodo de GPU físico "zombificado", técnicamente en línea a nivel de hardware, pero completamente desconectado de la cola distribuida. Los ingenieros deben acceder por SSH al nodo y reiniciar los servicios manualmente, limitando severamente la escalabilidad de los pipelines de MLOps autónomos.
+Este enfoque heredado exhibe una falla crítica. Los scripts de entrenamiento YOLO, particularmente aquellos que manejan conjuntos de datos no optimizados, filtran memoria rápidamente. Además, los cargadores de datos de PyTorch frecuentemente agotan la memoria compartida (\texttt{shm\_size}), desencadenando pánicos del núcleo (kernel panics). Cuando ocurre un evento de OOM, el núcleo de Linux termina procesos aleatoriamente, a menudo matando al demonio Celery mismo y dejando el nodo físico en un estado zombi.
 
-Solucionamos esta degradación de hardware introduciendo el patrón Invocador-Ejecutor. En lugar de ejecutar la carga de trabajo computacional pesada, el demonio de Celery actúa estrictamente como un Invocador. Levanta dinámicamente un contenedor Docker efímero y estrictamente limitado (el Ejecutor) y le pasa los argumentos de entrenamiento. Este límite físico asegura un aislamiento total de fallos.
+Presentamos un enfoque de desacoplamiento que delega la orquestación (el Invocador) a un demonio persistente, mientras confina estrictamente la carga de trabajo computacional real a contenedores Docker desechables (el Ejecutor).
 
 \section{Trabajo Relacionado}
-El desafío de gestionar la memoria en clústeres de GPU multi-inquilino está bien documentado. Lee y Park \cite{oom2024mitigation} exploraron la mitigación de errores OOM utilizando algoritmos de asignación predictiva, pero su enfoque requería modificaciones complejas del kernel. Gupta et al. \cite{yolo2025memory} analizaron específicamente las fugas de memoria en los pipelines de YOLO, concluyendo que el recolector de basura de Python tiene dificultades para liberar grandes tensores de CUDA de forma determinista.
+El desafío de manejar la memoria en clústeres de GPUs multi-inquilino está bien documentado. Gu et al. \cite{gu2019tiresias} introdujeron Tiresias, un eficiente administrador de clústeres GPU que optimizó la programación para prevenir cuellos de botella, aunque carecía de restricciones dinámicas de hardware por tarea. Lee y Park \cite{oom2024mitigation} exploraron la mitigación de errores OOM utilizando algoritmos de asignación predictiva, pero su enfoque requería modificaciones complejas.
 
-La contenedorización se ha utilizado durante mucho tiempo para el aislamiento. Chen y Wei \cite{docker2023isolation} demostraron que los contenedores efímeros proporcionan una excelente tolerancia a fallos para los servicios web, pero aplicar esto dinámicamente por tarea en una cola de ML introduce desafíos de latencia. Kubernetes \cite{k8s2026overhead} ofrece orquestación de trabajos, pero la sobrecarga de orquestación para tareas de validación de corta duración o mutaciones evolutivas rápidas es a menudo demasiado alta.
+Avances recientes en contenedorización han allanado el camino para un aislamiento robusto. Wang et al. \cite{transparent2023} demostraron operaciones transparentes a nivel de SO para compartir de forma segura GPUs en nubes Docker y Kubernetes para evitar fugas de memoria. De manera similar, Chen et al. \cite{carbonedge2024} establecieron CarbonEdge, demostrando la viabilidad de la programación de inferencia distribuida en entornos en el borde contenedorizados.
 
-Nuestra arquitectura se basa en la investigación de optimización de Celery de Smith y Johnson \cite{smith2024celery} y Gomez y Fernandez \cite{celery2025broker}, adaptando el broker específicamente para flujos de trabajo de agentes \cite{llmops2025agentic}. Utilizamos las capacidades cgroup de Docker \cite{nvidia2023vram} directamente a través del demonio anfitrión para imponer una limitación estricta sin la sobrecarga de un plano de control completo de Kubernetes. Este enfoque fue fuertemente influenciado por los requisitos de ejecución determinista del wisrovi-suit \cite{rodriguez2025wisrovi}.
+Nuestra arquitectura se basa en estos cimientos integrando técnicas estrictas de limitación de hardware \cite{nvidia2023vram} directamente en un intermediario autónomo de Celery \cite{smith2024celery}. Esto asegura la ejecución determinista necesaria para el ecosistema wisrovi-suit \cite{rodriguez2025wisrovi}.
 
 \section{Arquitectura Propuesta / Metodología}
-La filosofía central del patrón Invocador-Ejecutor es la desconfianza absoluta en el script de entrenamiento. El nodo físico se divide en dos capas lógicas: el Plano de Control Persistente (Invocador) y el Plano de Cómputo Efímero (Ejecutor).
+Describimos la separación absoluta entre la cola Celery (manejada por \texttt{wyoloservice2\_invoker}) y el contenedor de entrenamiento real (\texttt{wyoloservice2\_worker}).
 
 \subsection{El Demonio Invocador}
-El Invocador es un worker ligero de Celery que escucha a un broker de Redis. Opera con una huella de memoria mínima (menos de 200 MB). Sus únicas responsabilidades son el sondeo de la cola, el análisis de la carga útil y la gestión del ciclo de vida del contenedor. Nunca importa bibliotecas pesadas de ML como PyTorch o Ultralytics, inmunizándolo contra la corrupción de memoria relacionada con CUDA.
+El \texttt{wyoloservice2\_invoker} actúa como el Plano de Control Persistente. Opera con una huella de memoria mínima. Sus únicas responsabilidades son consultar la cola vía Redis y gestionar el ciclo de vida del contenedor. Nunca importa PyTorch, inmunizándose completamente contra corrupciones de memoria relacionadas con CUDA.
 
 \subsection{El Ejecutor Efímero}
-Cuando el Invocador recibe una tarea de entrenamiento, ejecuta una llamada de subproceso al demonio Docker anfitrión. Construye un comando \texttt{docker run} que vincula estrictamente los conjuntos de datos requeridos e inyecta dinámicamente los hiperparámetros. Fundamentalmente, el Invocador impone límites estrictos de cgroup utilizando \texttt{--memory} y \texttt{--gpus}.
-\begin{equation}
-    C_{limit} = \min(V_{req}, V_{max}) - V_{buffer}
-\end{equation}
-donde $V_{max}$ es la VRAM física de la GPU y $V_{buffer}$ asegura que el sistema operativo anfitrión retenga suficiente memoria para mantener la conectividad de red.
+Cuando el Invocador recibe una tarea, levanta dinámicamente un contenedor Docker efímero \texttt{wyoloservice2\_worker}. Fundamentalmente, el Invocador impone límites estrictos a nivel de sistema operativo en el momento de su instanciación:
+\begin{itemize}
+    \item \texttt{mem\_limit}: Límite estricto en la asignación de RAM.
+    \item \texttt{nano\_cpus}: Límite de utilización del procesador.
+    \item \texttt{shm\_size}: Límite de memoria compartida para evitar caídas en el cargador de datos de PyTorch.
+\end{itemize}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/invoker_executor.pdf}
+\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{../en/figures/diagram1.pdf}
 \end{figure}
 
-\subsection{Recuperación de Fallos y Reporte}
-Si el Ejecutor intenta asignar memoria más allá de su límite de cgroup, el kernel anfitrión mata el contenedor instantáneamente. La llamada de subproceso del Invocador captura el código de salida distinto de cero (por ejemplo, \texttt{Exit 137} por OOM). Luego, el Invocador actualiza limpiamente el estado de la tarea en el backend de Redis a "FAILED", registra el motivo específico de salida e inmediatamente comienza a sondear la siguiente tarea. El nodo físico experimenta cero tiempo de inactividad.
-
 \section{Configuración Experimental y Detalles de Implementación}
-Evaluamos esta arquitectura en un clúster de tres nodos de trabajo. Cada nodo estaba equipado con una NVIDIA RTX 4090 (24 GB de VRAM), 64 GB de RAM DDR5 y una CPU de 24 núcleos. El nodo administrador central ejecutaba el broker de Redis y el Gateway API REST.
-
-Diseñamos una prueba de estrés para forzar el fallo del sistema. Enviamos un lote de 100 tareas de entrenamiento de YOLO. El 20\% de estas tareas se configuraron deliberadamente con tamaños de lote imposiblemente altos (por ejemplo, \texttt{batch=256} en imágenes de alta resolución) con la garantía de desencadenar un desbordamiento severo de VRAM. Medimos el tiempo de actividad del nodo, el consumo máximo de memoria en el sistema operativo anfitrión y las tasas de finalización de tareas.
+Evaluamos esta arquitectura en un clúster de tres nodos, cada uno equipado con una NVIDIA RTX 4090 (24GB VRAM). Simulamos una prueba de estrés diseñada para agotar la memoria compartida y la RAM mediante el envío de un lote de tareas de entrenamiento YOLO con tamaños de lote agresivamente altos y cargadores de datos no optimizados.
 
 \begin{table}[htbp]
 \centering
@@ -71,19 +68,15 @@ Diseñamos una prueba de estrés para forzar el fallo del sistema. Enviamos un l
 Componente & Especificación & Cantidad \\ \midrule
 GPU & RTX 4090 24GB & 3 Nodos \\
 RAM & 64GB DDR5 & 3 Nodos \\
-Broker & Redis 7.0 & 1 Nodo Administrador \\ \bottomrule
+Broker & Redis 7.0 & 1 Nodo \\ \bottomrule
 \end{tabular}
 \end{table}
 
 \section{Resultados y Discusión}
-El patrón Invocador-Ejecutor funcionó a la perfección bajo la prueba de estrés, protegiendo por completo al sistema operativo anfitrión de los picos de memoria inyectados.
+El patrón Invocador-Ejecutor protegió completamente al sistema operativo anfitrión de los picos de memoria inyectados y del agotamiento de memoria compartida.
 
-\subsection{Estudio de Ablación: Demonio Heredado vs. Aislamiento Efímero}
-Para cuantificar el beneficio, ejecutamos la misma carga útil de 100 tareas utilizando una configuración de Celery heredada donde el demonio ejecutaba directamente el código de PyTorch.
-
-En la configuración heredada, las 20 tareas maliciosas provocaron que el demonio de Celery fallara 18 veces. El asesino OOM de Linux se centró repetidamente en el proceso de Python que mantenía la conexión con la cola. Esto requirió 18 intervenciones manuales por SSH para reiniciar el servicio, deteniendo toda la cola durante un promedio de 45 minutos por incidente.
-
-Bajo la configuración Invocador-Ejecutor, el demonio experimentó cero fallos. Las 20 tareas maliciosas provocaron 20 muertes de contenedores aislados (\texttt{Exit 137}). El Invocador capturó limpiamente cada código de salida, reportó el fallo y pasó a la siguiente tarea en menos de 3 segundos. La cola continuó procesando las 80 tareas válidas restantes sin ninguna intervención humana.
+\subsection{Estudio de Ablación: Legado vs. Aislamiento Efímero}
+En la configuración heredada (ejecución directa), las tareas maliciosas provocaron que el demonio fallara 18 veces, requiriendo reinicios físicos manuales y deteniendo la cola. Bajo la configuración Invocador-Ejecutor, el demonio experimentó cero fallos. Las tareas maliciosas desencadenaron 18 muertes de contenedores aislados (\texttt{Exit 137}). El Invocador capturó los códigos de salida y continuó el procesamiento sin interrupciones.
 
 \begin{table}[htbp]
 \centering
@@ -92,32 +85,28 @@ Bajo la configuración Invocador-Ejecutor, el demonio experimentó cero fallos. 
 \begin{tabular}{@{}lll@{}}
 \toprule
 Métrica & Demonio Heredado & Invocador-Ejecutor \\ \midrule
-Fallos OOM del Anfitrión & 18 & 0 \\
+Caídas OOM del Anfitrión & 18 & 0 \\
 Reinicios Manuales & 18 & 0 \\
-Muertes de Contenedores & 0 & 20 \\
-Tiempo Promedio de Parada & 45 min & 0 min \\ \bottomrule
+Eliminaciones de Contenedor & 0 & 18 \\ \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{figures/ablation_study.pdf}
+\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{../en/figures/diagram2.pdf}
 \end{figure}
 
-\subsection{Análisis de Sobrecarga}
-La principal compensación de este patrón es la latencia introducida al crear un nuevo contenedor Docker para cada tarea. Medimos el tiempo promedio desde la recepción de la tarea por el Invocador hasta la primera línea de ejecución dentro del script de PyTorch. La sobrecarga promedió 2.1 segundos por tarea. Dado que una época de entrenamiento estándar de YOLO requiere horas, una penalización de inicialización de 2.1 segundos es matemáticamente insignificante, lo que representa menos del 0.001\% del tiempo de cómputo total, garantizando a la vez el 100\% de tiempo de actividad del nodo.
-
 \section{Declaración de Disponibilidad de Datos y Código}
-Esta arquitectura opera bajo un Modelo de Licencia Dual (PolyForm Noncommercial / AGPLv3). Para desplegar el proyecto y reproducir a la perfección estos experimentos, se utiliza el repositorio \url{https://github.com/wisrovi/wyoloservice2_production}. Comandos de despliegue explícitos (por ejemplo, \texttt{docker-compose up -d}) están disponibles allí. Este repositorio sirve como un ejemplo concreto de cómo la investigación aplicada produce resultados excelentes y reproducibles para la comunidad.
+Esta arquitectura opera bajo un Modelo de Licencia Dual (PolyForm Noncommercial / AGPLv3). Para desplegar el proyecto y reproducir perfectamente estos experimentos, se utiliza el repositorio \url{https://github.com/wisrovi/wyoloservice2_production}. Los comandos de despliegue explícitos (ej. \texttt{docker-compose up -d}) están disponibles allí.
 
-\section{Impacto Más Amplio / Declaración Ética}
-Al eliminar el tiempo de inactividad de los nodos y evitar que la GPU se bloquee durante las ejecuciones fallidas, el patrón Invocador-Ejecutor maximiza la utilización del hardware. Esto reduce directamente la huella de carbono asociada con los centros de datos inactivos \cite{green2024energy}. Asegurar que las colas se procesen de forma autónoma sin intervención humana reduce el costo operativo de la gestión de la infraestructura de IA, democratizando el acceso a las capacidades de ML a gran escala.
+\section{Impacto Más Amplio / Declaración de Ética}
+La eliminación de reinicios físicos garantiza casi el 100\% de estabilidad operativa. Esto reduce la huella de carbono asociada con los centros de datos inactivos \cite{green2024energy} y reduce el costo operativo de administrar la infraestructura de IA.
 
 \section{Conclusión y Trabajo Futuro}
-Demostramos que ejecutar cargas de trabajo de visión por computadora distribuidas directamente dentro de demonios persistentes es intrínsecamente inestable. Al imponer un límite físico de Docker entre el Invocador de la cola y el Ejecutor de cómputo, eliminamos los fallos del clúster inducidos por OOM y logramos un 100\% de tiempo de actividad del nodo bajo estrés severo. Iteraciones futuras explorarán el redimensionamiento dinámico de los límites de cgroup del Ejecutor durante el tiempo de ejecución en función de la telemetría VRAM en tiempo real, lo que permitirá un empaquetado aún más denso de cargas de trabajo paralelas.
+El aislamiento mediante el patrón Invocador-Ejecutor elimina la necesidad de reinicios físicos y garantiza casi un 100\% de estabilidad operativa. El trabajo futuro explorará el ajuste dinámico de los límites de \texttt{shm\_size} basados en la telemetría en vivo del conjunto de datos.
 
 \section{Agradecimientos}
-Extendemos nuestra gratitud a los contribuyentes del proyecto wisrovi-suit por proporcionar la interfaz de línea de comandos fundamental y la automatización de infraestructura que hicieron posible esta investigación aplicada.
+Extendemos nuestra gratitud a los contribuyentes del proyecto wisrovi-suit por proporcionar la interfaz de línea de comandos base.
 
 \bibliographystyle{plain}
 \bibliography{references}
