@@ -1,0 +1,16 @@
+flowchart TD
+    subgraph Control_Plane ["Persistent Control Plane (Invoker)"]
+        direction TB
+        A[Celery Worker] --> B(Receive Task)
+        B --> C{Spawn Container}
+        G(Report Result) --> A
+    end
+
+    subgraph Compute_Plane ["Ephemeral Compute Plane (Executor)"]
+        direction TB
+        C --"docker run"--> D[Docker Container]
+        D --> E[PyTorch/YOLO]
+        E --"OOM / Exit 137"--> F(Container Dies)
+    end
+    
+    F --> G
