@@ -1,0 +1,13 @@
+graph TD
+    subgraph Client [Client Side]
+        A[User] --> B[LLM Agent]
+        B --> C[MCP Server]
+    end
+    subgraph Gateway [Gateway \& Broker]
+        C --> D[FastAPI Gateway]
+        D --> E[Celery Broker]
+    end
+    subgraph Worker [GPU Node]
+        E --> F[Invoker Daemon]
+        F --> G[Ephemeral Executor Container]
+    end
