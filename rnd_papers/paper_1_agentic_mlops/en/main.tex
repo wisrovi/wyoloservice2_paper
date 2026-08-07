@@ -2,14 +2,14 @@
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{hyperref}
-\usepackage{cleveref}
-\usepackage{graphicx}
 \usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{cleveref}
 
 \title{Agentic MLOps: LLM-Driven Autonomous Orchestration of Distributed Vision Training Clusters using Model Context Protocol (MCP)}
 \author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
 \date{}
-
+\raggedbottom
 \begin{document}
 \maketitle
 
@@ -51,7 +51,8 @@ Once validated, the MCP server queues the task via the API into a distributed Ce
 
 \begin{figure}[htbp]
 \centering
-% MERMAID_DIAGRAM_PLACEHOLDER: Flowchart showing User -> LLM Agent -> MCP Server -> FastAPI Gateway -> Celery Broker -> Invoker Daemon -> Ephemeral Executor Container. The subagent MUST generate this using subgraphs or grid structures so it is visually balanced (squarish) rather than one long horizontal or vertical line, perfectly fitting within a SINGLE LaTeX column.
+\includegraphics[width=\columnwidth]{figures/fig1.pdf}
+\caption{Invoker-Executor Architecture.}
 \end{figure}
 
 \section{Experimental Setup \& Implementation Details}
@@ -94,7 +95,8 @@ Lost Compute Time & 18 hours & 0 hours \\ \bottomrule
 
 \begin{figure}[htbp]
 \centering
-% MERMAID_DIAGRAM_PLACEHOLDER: A bar chart comparing OOM crashes and Peak Memory Usage between the Legacy Daemon Setup and the Invoker-Executor Pattern. The subagent MUST explicitly generate clearly labeled axes (e.g., X-Axis: "Architecture Setup", Y-Axis: "Number of Crashes / Memory in GB") and legends.
+\includegraphics[width=\columnwidth]{figures/fig2.pdf}
+\caption{Comparison of crashes and memory usage.}
 \end{figure}
 
 \subsection{Ablation Study: Shift-Left Validation}

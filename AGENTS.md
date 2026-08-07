@@ -31,9 +31,9 @@ All papers must adhere to a 3 to 6 page limit (double-column IEEE format preferr
 
 ## Advanced Formatting & Academic Standards
 - **Bibliography**: Hardcoded references in the `.tex` files are strictly forbidden. A `references.bib` (BibTeX) file MUST be used to manage all citations automatically.
-- **Assets & Figures**: Every paper language folder must contain a `figures/` directory to store images, rendered Mermaid diagrams, and plots. The main agent MUST delegate the creation of Mermaid diagrams and their conversion to images to specialized subagents. Do not clutter the root folder of the paper.
+- **Assets & Figures**: Every paper language folder must contain a `figures/` directory to store images, rendered Mermaid diagrams, and plots. The main agent MUST delegate the creation of Mermaid diagrams to specialized subagents. Subagents MUST use `\begin{figure}[htbp]` to anchor images precisely in the text (single column), and NEVER use `\begin{figure*}` which pushes graphics to the end of the file. To fit within a single column, Mermaid diagrams must be visually balanced internally (e.g., using subgraphs or grid-like layouts) rather than sprawling in one direction. Do not clutter the root folder of the paper.
 - **Academic Tone**: The writing must maintain a formal, objective, third-person or first-person plural ("We propose", "We evaluate") academic voice. Do not use colloquialisms, English contractions, or unnecessary conversational filler (e.g., do not randomly thank the open-source community for tools like Docker or Celery; only acknowledge direct contributors or funding).
-- **Standardized Naming**: The primary LaTeX file must always be named `main.tex` and its compiled output `main.pdf`.
+- **Standardized Naming & Compilation**: The primary LaTeX file must always be named `main.tex`. Subagents MUST compile it using the strict 4-step sequence (`pdflatex`, `bibtex`, `pdflatex`, `pdflatex`) to ensure all references are correctly linked and visible in `main.pdf`.
 
 ## Anti-AI Detection / Natural Academic Voice (Strict Rule)
 To prevent the papers from sounding robotic or being flagged by AI detectors, all text generation MUST adhere to the following stylistic guidelines:
@@ -45,8 +45,8 @@ To prevent the papers from sounding robotic or being flagged by AI detectors, al
 
 ## Scientific Excellence & Acceptance Criteria (Strict Rule)
 To ensure acceptance in top-tier conferences (IEEE, NeurIPS, CVPR), every paper MUST incorporate the following elements:
-1. **High-Quality Visuals**: Do not use raw screenshots. Charts must be generated using Python (matplotlib/seaborn) and exported as vector graphics (`.pdf` or `.eps`). Tables MUST use the `booktabs` package in LaTeX for a clean, professional look.
-2. **Typographical Polish**: The LaTeX document must use `microtype` for perfect spacing and `cleveref` for automated cross-referencing.
+1. **High-Quality Visuals**: Do not use raw screenshots. Charts must be generated using Python (matplotlib/seaborn) and exported as vector graphics (`.pdf` or `.eps`). All charts/graphs MUST have explicitly and clearly labeled axes (X and Y), legends, and units. Tables MUST use the `booktabs` package in LaTeX for a clean, professional look.
+2. **Typographical Polish**: The LaTeX document must use `microtype` for perfect spacing, `cleveref` for automated cross-referencing, and `\raggedbottom` in the preamble to prevent ugly vertical whitespace stretching between paragraphs in two-column format.
 3. **Ablation Studies**: Every paper must include an empirical "Ablation Study" section to mathematically/experimentally prove what happens when key architectural components (e.g., memory limits, EDA gatekeepers) are removed or disabled.
 4. **Narrative Arc (Applied Research Focus)**: Papers must follow a logical arc: introduce the critical industry bottleneck, explain why current methods fall short, and present the applied architecture. The tone must NOT be sales-pitchy ("selling" the project); it must objectively demonstrate to the community how this applied research yielded excellent, reproducible results.
 5. **Reproducibility Guarantee**: The "Data & Code Availability" section MUST explicitly state that in order to deploy the project, the `wyoloservice2_production` repository is used. It must provide explicit commands (e.g., `docker-compose up -d`) allowing any researcher globally to perfectly reproduce the stated experiments.
