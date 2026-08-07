@@ -1,0 +1,6 @@
+flowchart LR
+    A[User] --> B[LLM]
+    B --> C[MCP Server]
+    C --> D[Celery Broker]
+    D --> E[Invoker Daemon]
+    E --> F[Ephemeral Docker Container]
