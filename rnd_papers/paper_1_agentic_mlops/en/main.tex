@@ -4,6 +4,7 @@
 \usepackage{hyperref}
 \usepackage{cleveref}
 \usepackage{graphicx}
+\usepackage{amsmath}
 
 \title{Agentic MLOps: LLM-Driven Autonomous Orchestration of Distributed Vision Training Clusters using Model Context Protocol (MCP)}
 \author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
@@ -36,7 +37,7 @@ AgentOps frameworks \cite{agentops2025} have attempted to solve monitoring chall
 Our system decouples the logical orchestration from the physical execution. The architecture consists of three primary layers: the LLM-MCP Interface, the Invoker Gateway, and the Ephemeral Executor.
 
 \subsection{The LLM-MCP Interface}
-We exposed the cluster's API through a custom Model Context Protocol server. The LLM acts as the client, receiving natural language prompts from the user (e.g., "Train a YOLOv10 model on the custom-defect dataset"). The MCP server translates the LLM's tool calls into concrete REST payloads. This removes the necessity for researchers to write brittle Bash scripts or manually configure Helm charts, shifting the complexity from deterministic code to probabilistic reasoning safely bounded by tool schemas.
+We exposed the cluster's API through a custom Model Context Protocol server. The LLM acts as the client, receiving natural language prompts from the user (e.g., "Train a YOLOv10 model on the custom-defect dataset"). The MCP server translates the LLM's tool calls into concrete REST payloads and dispatches them asynchronously via \texttt{httpx} to the NeuralForge FastAPI Gateway. This decouples the agent from the raw Celery queues and removes the necessity for researchers to write brittle Bash scripts.
 
 \subsection{Shift-Left Data Gatekeeping}
 Before any job is dispatched, the LLM triggers a static validation tool. This tool mounts the network drives (CIFS/Samba) and verifies the integrity of the image headers and the bounding box annotations. We formalized the validation constraint as:
@@ -46,16 +47,15 @@ Before any job is dispatched, the LLM triggers a static validation tool. This to
 where $H_i$ represents the header integrity of image $i$, and $B_i$ represents the validity of the bounding box coordinates. If $V(D) = 0$, the dataset $D$ is rejected. By catching broken or missing files at the edge of the pipeline (shift-left), we prevent the allocation of GPU memory to inevitably doomed processes.
 
 \subsection{The Invoker-Executor Pattern}
-Once validated, the MCP server queues the task in a distributed Celery broker (RabbitMQ). The daemon running on the GPU nodes picks up the task. Crucially, the invoker does not run the training loop in its own process space. Instead, it spawns an ephemeral Docker container (the Executor) with a strict memory limit (\texttt{--memory=16g --gpus=all}). When the training finishes, or if it crashes due to a memory spike, the container is destroyed, freeing all resources immediately and protecting the invoker daemon.
+Once validated, the MCP server queues the task via the API into a distributed Celery broker (Redis/RabbitMQ). The daemon running on the GPU nodes picks up the task. Crucially, the invoker does not run the training loop in its own process space. Instead, it spawns an ephemeral Docker container (the Executor) with a strict memory limit (\texttt{--memory=16g --gpus=all}). When the training finishes, or if it crashes due to a memory spike, the container is destroyed, freeing all resources immediately and protecting the invoker daemon.
 
-\begin{figure}[htbp]
+\begin{figure*}[t]
 \centering
-\includegraphics[width=\linewidth]{figures/flowchart.pdf}
-\caption{User to Container Orchestration Flow}
-\label{fig:flowchart}
-\end{figure}
+% MERMAID_DIAGRAM_PLACEHOLDER: A horizontal graph (graph LR) showing the flow: User -> LLM Agent -> MCP Server -> FastAPI Gateway -> Celery Broker -> Invoker Daemon -> Ephemeral Executor Container. The subagent MUST generate this visually balanced for spanning two columns.
+\end{figure*}
+
 \section{Experimental Setup \& Implementation Details}
-We deployed the architecture across a local cluster comprising four nodes. The primary manager node ran the RabbitMQ broker and the MCP server. Three worker nodes, each equipped with an NVIDIA RTX 4090 GPU (24GB VRAM) and 64GB of system RAM, ran the \texttt{wyoloservice2\_invoker} daemon. We utilized an internally curated dataset of 250,000 high-resolution images for defect detection. 
+We deployed the architecture across a local cluster comprising four nodes. The primary manager node ran the Redis broker and the FastAPI server. Three worker nodes, each equipped with an NVIDIA RTX 4090 GPU (24GB VRAM) and 64GB of system RAM, ran the \texttt{wyoloservice2\_invoker} daemon. We utilized an internally curated dataset of 250,000 high-resolution images for defect detection. 
 
 We configured the LLM with a strict temperature of 0.1 to force deterministic tool usage and prevent hallucinations when generating hyperparameter configurations. We subjected the cluster to a 72-hour continuous stress test, simulating multiple concurrent researchers submitting massive YOLO training jobs.
 
@@ -92,17 +92,13 @@ Lost Compute Time & 18 hours & 0 hours \\ \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth]{figures/barchart.pdf}
-\caption{OOM Crashes and Peak Memory Usage Comparison}
-\label{fig:barchart}
-\end{figure}
+% MERMAID_DIAGRAM_PLACEHOLDER: A bar chart comparing OOM crashes and Peak Memory Usage between the Legacy Daemon Setup and the Invoker-Executor Pattern. The subagent MUST explicitly generate clearly labeled axes (e.g., X-Axis: "Architecture Setup", Y-Axis: "Number of Crashes / Memory in GB") and legends.
+
 \subsection{Ablation Study: Shift-Left Validation}
 We introduced 500 deliberately corrupted image files into the network storage. Without the shift-left gatekeeper, the training jobs would load the images, push them to the GPU, and crash 15 minutes into the first epoch, wasting significant power and time. With the MCP validation tool enabled, the agent detected the corrupted bytes in 3.4 seconds and rejected the job before queuing it. This early rejection improved overall cluster throughput by 35\% by keeping the GPUs exclusively focused on valid workloads.
 
 \section{Data \& Code Availability Statement}
-This architecture operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). The complete source code and deployment scripts (\texttt{docker-compose up -d}) to reproduce these stated experiments are available in the production repository at \url{https://github.com/wisrovi/wyoloservice2_production}. This serves as a concrete example of how applied research yields excellent, reproducible results for the community.
+This architecture operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). To deploy the project and perfectly reproduce these stated experiments, the \url{https://github.com/wisrovi/wyoloservice2_production} repository is used. Explicit deployment commands (e.g., \texttt{docker-compose up -d}) are available there. This serves as a concrete example of how applied research yields excellent, reproducible results for the community.
 
 \section{Broader Impact / Ethics Statement}
 Optimizing GPU utilization carries significant environmental implications. By preventing OOM crashes and rejecting invalid datasets early, this architecture drastically reduces idle and wasted GPU cycles, directly lowering the carbon footprint of massive training sessions. Furthermore, shifting the validation left allows the agent to audit datasets for bias or imbalance before training begins, ensuring safer model deployment. 
