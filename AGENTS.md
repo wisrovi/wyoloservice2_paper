@@ -28,3 +28,9 @@ All papers must adhere to a 4 to 8 page limit (double-column IEEE format preferr
 - **Multi-Language Papers**: Each paper MUST exist in both Spanish and English versions.
 - **Folder Structure**: Inside each paper's directory, there MUST be specific subfolders for each language (e.g., `es/` for Spanish and `en/` for English). The Dual Format Requirement (Markdown + LaTeX + PDF) applies within each language folder.
 - **Mandatory Synchronization**: It is strictly mandatory that if a paper is updated in one language, its exact translation/counterpart in the other language must be synchronized simultaneously. They cannot fall out of sync.
+
+## Advanced Formatting & Academic Standards
+- **Bibliography**: Hardcoded references in the `.tex` files are strictly forbidden. A `references.bib` (BibTeX) file MUST be used to manage all citations automatically.
+- **Assets & Figures**: Every paper language folder must contain a `figures/` directory to store images, rendered Mermaid diagrams, and plots. Do not clutter the root folder of the paper.
+- **Academic Tone**: The writing must maintain a formal, objective, third-person or first-person plural ("We propose", "We evaluate") academic voice. Do not use colloquialisms or English contractions (e.g., use "do not" instead of "don't").
+- **Standardized Naming**: The primary LaTeX file must always be named `main.tex` and its compiled output `main.pdf`.
