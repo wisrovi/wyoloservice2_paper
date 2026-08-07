@@ -1,12 +1,12 @@
-# Categoría: Investigación y Desarrollo (I+D) / R&D Papers
+# Category: Research and Development (R&D) Papers
 
-Esta carpeta está destinada a los papers de **investigación experimental y vanguardia técnica**, específicamente aquellos que cruzan la barrera entre la orquestación MLOps tradicional y la **Inteligencia Artificial Generativa y de Agentes (Agentic AI)**.
+This folder is intended for papers focused on **experimental research and technical vanguard**, specifically those that bridge the gap between traditional MLOps orchestration and **Generative and Agentic Artificial Intelligence (Agentic AI)**.
 
-Los artículos ubicados aquí exploran el uso de Grandes Modelos de Lenguaje (LLMs) no como un producto final, sino como el motor inteligente para gobernar, orquestar, auditar o explicar clústeres complejos de entrenamiento de visión por computador (como YOLO). Es la frontera del conocimiento en *AgentOps* y *Explainable AI (XAI)*.
+The articles located here explore the use of Large Language Models (LLMs) not as an end product, but as the intelligent engine to govern, orchestrate, audit, or explain complex computer vision training clusters (like YOLO). This is the frontier of knowledge in *AgentOps* and *Explainable AI (XAI)*.
 
-## Papers Asociados
+## Associated Papers
 
-| ID | Título / Tema Principal | Enfoque | Borrador |
+| ID | Title / Main Topic | Focus | Draft |
 |:---|:---|:---|:---|
-| **1** | **Agentic MLOps** | Orquestación autónoma de clústeres distribuidos mediante Agentes LLM usando el *Model Context Protocol (MCP)*. | [DRAFT.md](./paper_1_agentic_mlops/DRAFT.md) |
-| **3** | **Automated XAI** | Generación de informes explicativos post-entrenamiento automatizados utilizando EDA y modelos LLM locales (OpenCode). | [DRAFT.md](./paper_3_automated_xai/DRAFT.md) |
+| **1** | **Agentic MLOps** | Autonomous orchestration of distributed clusters via LLM Agents using the *Model Context Protocol (MCP)*. | [DRAFT.md](./paper_1_agentic_mlops/en/DRAFT.md) |
+| **3** | **Automated XAI** | Automated generation of post-training explanatory reports using EDA and local LLM models (OpenCode). | [DRAFT.md](./paper_3_automated_xai/en/DRAFT.md) |
