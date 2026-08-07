@@ -6,7 +6,9 @@ set -u  # Falla si se usa una variable sin definir
 #   AGENT_CLI=freebuff (por defecto): lanza Freebuff automáticamente en una sesión
 #     tmux (inyecta el prompt y espera al agente). Sin tmux, o con FREEBUFF_MANUAL=1,
 #     cae al modo interactivo manual (imprime/copia el prompt y abre la TUI).
-#   AGENT_CLI=agy        : ejecución automática no interactiva (agy run --instructions).
+#   AGENT_CLI=opencode  : no-interactivo (opencode run "<prompt>"). Necesita auth de opencode.
+#     OPENCODE_AUTO=0 desactiva el auto-aprobado de permisos (por defecto 1).
+#   AGENT_CLI=agy        : ejecución con agy run --instructions (requiere cuota activa y TTY).
 AGENT_CLI="${AGENT_CLI:-freebuff}"
 
 # Resuelve el directorio donde vive este script y trabaja desde ahí,
@@ -41,7 +43,7 @@ copy_to_clipboard() {
 check_agent_exit() {
   local role="$1"
   local rc="$2"
-  if [ "$AGENT_CLI" = "agy" ] && [ "$rc" -ne 0 ]; then
+  if { [ "$AGENT_CLI" = "agy" ] || [ "$AGENT_CLI" = "opencode" ]; } && [ "$rc" -ne 0 ]; then
     echo "❌ El $role ($AGENT_CLI) falló en la ronda $ROUND. Revisa el error y reintenta." >&2
     exit 1
   fi
@@ -68,6 +70,15 @@ run_agent() {
   case "$AGENT_CLI" in
     agy)
       agy run --instructions "$prompt_file"
+      ;;
+
+    opencode)
+      # opencode run es no-interactivo: ejecuta el prompt y termina solo
+      if [ "${OPENCODE_AUTO:-1}" = "1" ]; then
+        opencode run --auto "$(cat "$prompt_file")"
+      else
+        opencode run "$(cat "$prompt_file")"
+      fi
       ;;
 
     freebuff)
@@ -121,6 +132,13 @@ case "$AGENT_CLI" in
       exit 1
     fi
     ;;
+  opencode)
+    if ! command -v opencode >/dev/null 2>&1; then
+      echo "❌ No se encontró el comando 'opencode' (AGENT_CLI=$AGENT_CLI)." >&2
+      echo "   Instálalo o cambia AGENT_CLI=freebuff." >&2
+      exit 1
+    fi
+    ;;
   freebuff)
     if ! command -v freebuff >/dev/null 2>&1; then
       echo "❌ No se encontró el comando 'freebuff' (AGENT_CLI=$AGENT_CLI)." >&2
@@ -131,11 +149,10 @@ case "$AGENT_CLI" in
       echo "❌ No se encontró el helper ejecutable: $SCRIPT_DIR/run_freebuff_agent.sh" >&2
       exit 1
     fi
-    ;;
-  *)
-    echo "❌ AGENT_CLI inválido: '$AGENT_CLI' (usa 'agy' o 'freebuff')." >&2
-    exit 1
-    ;;
+    ;;    *)
+      echo "❌ AGENT_CLI inválido: '$AGENT_CLI' (usa 'freebuff', 'opencode' o 'agy')." >&2
+      exit 1
+      ;;
 esac
 
 for f in "$WORKFLOW_STATE" "$REVISOR_PROMPT" "$EDITOR_PROMPT"; do
