@@ -72,6 +72,7 @@ These papers document an ecosystem that operates under a **Dual Licensing Model*
 
 ## 🔄 Changelog
 
+- **v1.0.2 (2026-08-07)**: Added new timestamped IEEE expert panel review verdicts for all 5 papers.
 - **v1.0.1 (2026-08-07)**: Added official IEEE expert panel review verdicts for all papers.
 
 ---
