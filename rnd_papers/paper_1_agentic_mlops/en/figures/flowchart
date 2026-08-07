@@ -1,0 +1,13 @@
+digraph {
+	A [label=User]
+	B [label=LLM]
+	C [label="MCP Server"]
+	D [label="Celery Broker"]
+	E [label="Invoker Daemon"]
+	F [label="Ephemeral Docker Container"]
+	A -> B
+	B -> C
+	C -> D
+	D -> E
+	E -> F
+}
