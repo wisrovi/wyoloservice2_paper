@@ -56,3 +56,6 @@ Después de emitir el veredicto, actualiza el archivo `WORKFLOW_STATE.md` (raíz
 - Si el dictamen final es **ACEPTADO** (o equivalente: listo para publicación): escribe exactamente `STATUS: APPROVED`.
 - En cualquier otro caso (cambios menores, revisión mayor, rechazado): escribe exactamente `STATUS: IN_REVIEW`.
 - **Mantén ambas líneas del archivo**: solo debes cambiar el valor de la línea `STATUS:`. La línea `ROUND:` debe permanecer exactamente con su valor actual; la gestiona automáticamente el script `run_workflow.sh`.
+
+# MARCADOR DE FINALIZACIÓN (OBLIGATORIO)
+Cuando hayas completado el análisis, actualizado `WORKFLOW_STATE.md` y escrito el veredicto en `IEEE_REVIEW_VERDICT.md`, crea el archivo `.freebuff_done` en la raíz del proyecto con el contenido `DONE`. El script `run_workflow.sh` espera ese archivo para saber que terminaste.

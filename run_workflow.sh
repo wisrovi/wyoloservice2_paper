@@ -3,8 +3,9 @@
 set -u  # Falla si se usa una variable sin definir
 
 # CLI del agente que ejecuta las instrucciones (revisor/editor).
-#   AGENT_CLI=freebuff (por defecto): abre la TUI interactiva de Freebuff; el
-#     prompt se imprime en consola y se copia al portapapeles para pegarlo.
+#   AGENT_CLI=freebuff (por defecto): lanza Freebuff automáticamente en una sesión
+#     tmux (inyecta el prompt y espera al agente). Sin tmux, o con FREEBUFF_MANUAL=1,
+#     cae al modo interactivo manual (imprime/copia el prompt y abre la TUI).
 #   AGENT_CLI=agy        : ejecución automática no interactiva (agy run --instructions).
 AGENT_CLI="${AGENT_CLI:-freebuff}"
 
@@ -13,7 +14,7 @@ AGENT_CLI="${AGENT_CLI:-freebuff}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
-MAX_ROUNDS=3
+MAX_ROUNDS=10
 ROUND=1
 
 WORKFLOW_STATE="$SCRIPT_DIR/WORKFLOW_STATE.md"
@@ -44,8 +45,19 @@ check_agent_exit() {
     echo "❌ El $role ($AGENT_CLI) falló en la ronda $ROUND. Revisa el error y reintenta." >&2
     exit 1
   fi
-  if [ "$AGENT_CLI" = "freebuff" ] && [ "$rc" -ne 0 ]; then
-    echo "⚠️  La sesión de Freebuff ($role) terminó con código $rc; se comprobará el estado."
+  if [ "$AGENT_CLI" = "freebuff" ]; then
+    if [ "$rc" -eq 1 ]; then
+      echo "❌ Freebuff ($role) terminó con error en la ronda $ROUND (timeout o fallo de la TUI)." >&2
+      echo "   Revisa e reintenta, o usa FREEBUFF_MANUAL=1 para el modo interactivo." >&2
+      exit 1
+    fi
+    if [ "$rc" -eq 2 ]; then
+      echo "❌ No se pudo ejecutar Freebuff ($role): hay otra instancia activa. Ciérrala y reintenta." >&2
+      exit 1
+    fi
+    if [ "$rc" -ne 0 ]; then
+      echo "⚠️  La sesión de Freebuff ($role) terminó con código $rc; se comprobará el estado."
+    fi
   fi
 }
 
@@ -59,14 +71,21 @@ run_agent() {
       ;;
 
     freebuff)
-      # Modo interactivo: Freebuff (v0.0.142) no acepta prompts por CLI,
-      # así que mostramos/copiamos las instrucciones y abrimos la TUI.
-      # Si una versión futura soporta 'run --instructions', actívalo con FREEBUFF_RUN=1
+      # Si una versión futura de Freebuff soporta 'run --instructions', actívalo con FREEBUFF_RUN=1
       if [ "${FREEBUFF_RUN:-0}" = "1" ]; then
         freebuff run --instructions "$prompt_file"
         return
       fi
 
+      # Modo automático: Freebuff en una sesión tmux (inyecta el prompt y espera al agente)
+      if command -v tmux >/dev/null 2>&1 && [ "${FREEBUFF_MANUAL:-0}" != "1" ]; then
+        "$SCRIPT_DIR/run_freebuff_agent.sh" "$prompt_file" "$SCRIPT_DIR"
+        return
+      fi
+
+      # Modo interactivo manual (sin tmux o FREEBUFF_MANUAL=1):
+      # Freebuff (v0.0.142) no acepta prompts por CLI, así que mostramos/copiamos
+      # las instrucciones y abrimos la TUI para pegarlas a mano.
       echo ""
       echo "══════════════════════════════════════════════════════════"
       echo "📋 INSTRUCCIONES PARA FREEBUFF — pega este prompt en la sesión"
@@ -106,6 +125,10 @@ case "$AGENT_CLI" in
     if ! command -v freebuff >/dev/null 2>&1; then
       echo "❌ No se encontró el comando 'freebuff' (AGENT_CLI=$AGENT_CLI)." >&2
       echo "   Instálalo o cambia AGENT_CLI=agy." >&2
+      exit 1
+    fi
+    if command -v tmux >/dev/null 2>&1 && [ "${FREEBUFF_MANUAL:-0}" != "1" ] && [ ! -x "$SCRIPT_DIR/run_freebuff_agent.sh" ]; then
+      echo "❌ No se encontró el helper ejecutable: $SCRIPT_DIR/run_freebuff_agent.sh" >&2
       exit 1
     fi
     ;;

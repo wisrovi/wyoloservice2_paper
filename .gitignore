@@ -230,3 +230,6 @@ __marimo__/
 
 
 IEEE_REVIEW_VERDICT.md
+
+# Marcador de finalización del agente (run_workflow.sh)
+.freebuff_done

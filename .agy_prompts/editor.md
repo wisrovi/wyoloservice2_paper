@@ -40,3 +40,6 @@ Al finalizar la edición de los archivos del paper, presenta en consola un resum
 - Archivos actualizados en la raíz del proyecto.
 - El documento está preparado para re-evaluación con alta probabilidad de **Aceptación Definitiva**.
 ---
+
+# MARCADOR DE FINALIZACIÓN (OBLIGATORIO)
+Cuando hayas completado todas las correcciones y presentado el resumen en consola, crea el archivo `.freebuff_done` en la raíz del proyecto con el contenido `DONE`. El script `run_workflow.sh` espera ese archivo para saber que terminaste.
