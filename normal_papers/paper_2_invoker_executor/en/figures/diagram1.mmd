@@ -1,16 +1,11 @@
 flowchart TD
-    subgraph Control_Plane ["Persistent Control Plane (Invoker)"]
-        direction TB
-        A[Celery Worker] --> B(Receive Task)
-        B --> C{Spawn Container}
-        G(Report Result) --> A
+    subgraph Control Plane
+        Q[(Redis Queue)] -->|Task| I[wyoloservice2_invoker]
     end
 
-    subgraph Compute_Plane ["Ephemeral Compute Plane (Executor)"]
-        direction TB
-        C --"docker run"--> D[Docker Container]
-        D --> E[PyTorch/YOLO]
-        E --"OOM / Exit 137"--> F(Container Dies)
+    subgraph Compute Node
+        I -->|Spawns| W[wyoloservice2_worker]
+        L1[mem_limit] -.-> W
+        L2[nano_cpus] -.-> W
+        L3[shm_size] -.-> W
     end
-    
-    F --> G

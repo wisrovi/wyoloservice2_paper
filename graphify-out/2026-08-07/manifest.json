@@ -1,0 +1,247 @@
+{
+  "rnd_papers/paper_1_agentic_mlops/generate_figures.py": {
+    "mtime": 1786089935.8913937,
+    "ast_hash": "63160c8d99721820fd6a3dab6255ab90",
+    "semantic_hash": ""
+  },
+  "AGENTS.md": {
+    "mtime": 1786092399.7873268,
+    "ast_hash": "e54b4778b5033af3dff0cc0a2f3037d4",
+    "semantic_hash": ""
+  },
+  "README.md": {
+    "mtime": 1786090850.426904,
+    "ast_hash": "82a7595265ad3fbacaee06e06554df0c",
+    "semantic_hash": ""
+  },
+  "normal_papers/README.md": {
+    "mtime": 1786088038.4452906,
+    "ast_hash": "5946aab905bfec15b82b49d3d87dac81",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/en/DRAFT.md": {
+    "mtime": 1786088052.4833157,
+    "ast_hash": "bc670eb31611f975845f0eb6307777f4",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/es/DRAFT.md": {
+    "mtime": 1786087136.0716279,
+    "ast_hash": "eb7b3c93ce1bdb26b744d5f406326988",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_4_evolutionary_hpo/en/DRAFT.md": {
+    "mtime": 1786088054.6813195,
+    "ast_hash": "69de4ee1ed09912d35f4e9dec38d1092",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_4_evolutionary_hpo/es/DRAFT.md": {
+    "mtime": 1786087138.863636,
+    "ast_hash": "227cb49ef22588b4aa30325e3b5a3fea",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_5_shift_left_data/en/DRAFT.md": {
+    "mtime": 1786088054.7083197,
+    "ast_hash": "67aa1292994defcfa00e4d44fd252d69",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_5_shift_left_data/es/DRAFT.md": {
+    "mtime": 1786087138.8846362,
+    "ast_hash": "ccc5003b6482229218939451d5e91ec2",
+    "semantic_hash": ""
+  },
+  "rnd_papers/README.md": {
+    "mtime": 1786088038.4612906,
+    "ast_hash": "52421e3bd8b26d3d7c8b950f905ea996",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/main.md": {
+    "mtime": 1786091894.2378426,
+    "ast_hash": "86928c7bd73cd72eea9f044c2ae685c7",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/main.md": {
+    "mtime": 1786091894.383843,
+    "ast_hash": "f500bb747a31bd7b31054d3159627dab",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_3_automated_xai/en/DRAFT.md": {
+    "mtime": 1786088054.6513195,
+    "ast_hash": "d72561a1af48399b472da75c584f0b0a",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_3_automated_xai/es/DRAFT.md": {
+    "mtime": 1786087138.847636,
+    "ast_hash": "6255e559594dc43734e3dd46bee08bec",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/figures/architecture.pdf": {
+    "mtime": 1786090570.3730059,
+    "ast_hash": "4e163a69e0f5b4a9ba00e90e8309fe46",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/figures/barchart.pdf": {
+    "mtime": 1786090703.7666533,
+    "ast_hash": "c043939e8e219c6c3b068d950ae36452",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/figures/flowchart.pdf": {
+    "mtime": 1786090702.011648,
+    "ast_hash": "c9039d876a866b0661d8f98f7f356aed",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/figures/results.pdf": {
+    "mtime": 1786090572.6632667,
+    "ast_hash": "7a440a69cd63eb8e6dc897416b9786e5",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/main.pdf": {
+    "mtime": 1786092438.8164449,
+    "ast_hash": "b280efb8c09ffd2625f4795032dc1b5c",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/figures/architecture.pdf": {
+    "mtime": 1786091900.8305035,
+    "ast_hash": "4e163a69e0f5b4a9ba00e90e8309fe46",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/figures/barchart.pdf": {
+    "mtime": 1786091900.8303328,
+    "ast_hash": "c043939e8e219c6c3b068d950ae36452",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/figures/flowchart.pdf": {
+    "mtime": 1786091900.8302884,
+    "ast_hash": "c9039d876a866b0661d8f98f7f356aed",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/figures/results.pdf": {
+    "mtime": 1786091900.8305428,
+    "ast_hash": "7a440a69cd63eb8e6dc897416b9786e5",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/main.pdf": {
+    "mtime": 1786092440.9484515,
+    "ast_hash": "f2f98f98c8938ed47c8597e89bdf257a",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/figures/arch.pdf": {
+    "mtime": 1786091427.244658,
+    "ast_hash": "5e80734136cee335d7e68d3e95d9c8bb",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/figures/chart.pdf": {
+    "mtime": 1786091430.362666,
+    "ast_hash": "894ad9393d043c7f83f61351532e3c5a",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/figures/arch.pdf": {
+    "mtime": 1786091900.8306773,
+    "ast_hash": "5e80734136cee335d7e68d3e95d9c8bb",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/figures/chart.pdf": {
+    "mtime": 1786091900.8307238,
+    "ast_hash": "894ad9393d043c7f83f61351532e3c5a",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/figures/fig1.pdf": {
+    "mtime": 1786091814.44264,
+    "ast_hash": "f5f13469c6e27da52f183d86880a05ab",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/en/figures/fig2.pdf": {
+    "mtime": 1786091817.6506484,
+    "ast_hash": "682729ab5b5e92cdf1d610a6b30132d2",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/figures/fig1.pdf": {
+    "mtime": 1786091900.8308146,
+    "ast_hash": "f5f13469c6e27da52f183d86880a05ab",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_1_agentic_mlops/es/figures/fig2.pdf": {
+    "mtime": 1786091900.8308485,
+    "ast_hash": "682729ab5b5e92cdf1d610a6b30132d2",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_invoker_executor/en/main.md": {
+    "mtime": 1786092767.455698,
+    "ast_hash": "f65244cf8fb72f2b61276501af6a40ac",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_invoker_executor/es/main.md": {
+    "mtime": 1786092767.4560208,
+    "ast_hash": "4477568939f09d889ec0ef1505fe2f80",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_invoker_executor/en/figures/ablation_study.pdf": {
+    "mtime": 1786092698.984233,
+    "ast_hash": "897a3c9a7771a29669ee577b19b38e73",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_invoker_executor/en/figures/invoker_executor.pdf": {
+    "mtime": 1786092698.022309,
+    "ast_hash": "ec2c95ec85f6024aa6f685680b568b38",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_invoker_executor/en/main.pdf": {
+    "mtime": 1786092773.97546,
+    "ast_hash": "6e45c4f5e404a6a3d4b426ef3aaf7538",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_invoker_executor/es/figures/ablation_study.pdf": {
+    "mtime": 1786092713.3867235,
+    "ast_hash": "897a3c9a7771a29669ee577b19b38e73",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_invoker_executor/es/figures/invoker_executor.pdf": {
+    "mtime": 1786092713.386836,
+    "ast_hash": "ec2c95ec85f6024aa6f685680b568b38",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_invoker_executor/es/main.pdf": {
+    "mtime": 1786092776.294467,
+    "ast_hash": "e2a4d204b0ee490966235d76ed8224bd",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/en/main.md": {
+    "mtime": 1786092767.455698,
+    "ast_hash": "f65244cf8fb72f2b61276501af6a40ac",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/es/main.md": {
+    "mtime": 1786092767.4560208,
+    "ast_hash": "4477568939f09d889ec0ef1505fe2f80",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/en/figures/ablation_study.pdf": {
+    "mtime": 1786092698.984233,
+    "ast_hash": "897a3c9a7771a29669ee577b19b38e73",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/en/figures/invoker_executor.pdf": {
+    "mtime": 1786092698.022309,
+    "ast_hash": "ec2c95ec85f6024aa6f685680b568b38",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/en/main.pdf": {
+    "mtime": 1786092773.97546,
+    "ast_hash": "6e45c4f5e404a6a3d4b426ef3aaf7538",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/es/figures/ablation_study.pdf": {
+    "mtime": 1786092713.3867235,
+    "ast_hash": "897a3c9a7771a29669ee577b19b38e73",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/es/figures/invoker_executor.pdf": {
+    "mtime": 1786092713.386836,
+    "ast_hash": "ec2c95ec85f6024aa6f685680b568b38",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_2_invoker_executor/es/main.pdf": {
+    "mtime": 1786092776.294467,
+    "ast_hash": "e2a4d204b0ee490966235d76ed8224bd",
+    "semantic_hash": ""
+  }
+}

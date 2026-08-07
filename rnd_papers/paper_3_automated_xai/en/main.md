@@ -38,7 +38,17 @@ Assuming the EDA gatekeeper approves the dataset, the worker executes the standa
 ### Phase 3: Post-Train LLM Diagnostics
 Once training concludes, the worker unloads the PyTorch tensors from the GPU and loads a quantized instance of a local LLM. A Python script reads the `results.csv` and formats the final epoch metrics (mAP50, mAP50-95, precision, recall) into a strict prompt schema. The LLM generates a diagnostic narrative, explaining whether the model overfit, underfit, or achieved optimal convergence. The system outputs this narrative as final Markdown (`.md`) and DOCX files.
 
-![Pipeline Overview](figures/pipeline.pdf)
+
+```mermaid
+graph TD
+    A[User Input] --> B(Pre-Train EDA Dataset Validation)
+    B --> C{Dataset Health ID > 0.5?}
+    C -- Yes --> D[YOLO Training]
+    C -- No --> E[Abort Training]
+    D --> F[Post-Train LLM Diagnostics Local]
+    F --> G[MD/DOCX Narrative Reports]
+```
+
 
 ## Experimental Setup & Implementation Details
 We deployed this architecture on a local node equipped with a single NVIDIA RTX 4090 (24GB VRAM). The worker sequentially loaded the YOLOv8n model for the training phase, followed by a 4-bit quantized version of the LLaMA-2-7B model for the diagnostic phase. 
@@ -73,7 +83,18 @@ The measured hallucination rate was 1.2% (only minor numerical rounding errors).
 | Hallucination Rate | 0% | 1.2% |
 | Data Privacy Risk | Low | Zero (On-Device) |
 
-![Ablation Chart](figures/chart.pdf)
+
+```mermaid
+gantt
+    title Time per Report Comparison
+    dateFormat  s
+    axisFormat  %M
+    section Human
+    Human Baseline 42 Min :a1, 0, 2520s
+    section LLM
+    Automated LLM 45 Sec :a2, 0, 45s
+```
+
 
 ## Data & Code Availability Statement
 This architecture operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). To deploy the project and perfectly reproduce these stated experiments, the `https://github.com/wisrovi/wyoloservice2_production` repository is used. Explicit deployment commands (e.g., `docker-compose up -d`) are available there. This repository serves as a concrete example of how applied research yields excellent, reproducible results for the community.

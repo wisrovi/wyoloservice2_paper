@@ -30,11 +30,11 @@ Esta fase de diagnóstico manual introduce un cuello de botella severo. Además,
 Al aprovechar un Modelo de Lenguaje Grande en el dispositivo (OpenCode), automatizamos la traducción de matrices numéricas complejas en lógica empresarial narrativa. Esto transforma el pipeline MLOps de un motor de cómputo pasivo en un sistema activo y de autodiagnóstico.
 
 \section{Trabajo Relacionado}
-La IA Explicable (XAI) en visión computacional se centra en gran medida en mapas de calor y atribución de gradientes \cite{xai2023vision}. Sin embargo, estos métodos visuales requieren interpretación humana. Zhang et al. \cite{llm_post_hoc2024} establecieron que los Modelos de Lenguaje Grandes poseen capacidades emergentes para actuar como explicadores post-hoc, capaces de razonar sobre datos de métricas tabulares.
+La IA Explicable (XAI) en visión computacional se centra en gran medida en mapas de calor y atribución de gradientes \cite{selvaraju2017grad, lundberg2017unified}. Sin embargo, estos métodos visuales requieren interpretación humana. Ribeiro et al. \cite{ribeiro2016should} establecieron que los Modelos de Lenguaje Grandes poseen capacidades emergentes para actuar como explicadores post-hoc, capaces de razonar sobre datos de métricas tabulares.
 
-Lee y Kim \cite{pasta2024} introdujeron PASTA, un sistema de evaluación perceptual que integra análisis explicativo, estableciendo la base para la interpretación automatizada de métricas. Sobre esta base, Chen et al. \cite{autopipe2025} propusieron AutoPipe, un marco orientado a agentes para automatizar configuraciones de pipelines post-entrenamiento. Sin embargo, muchos de estos marcos dependen de APIs de LLM basadas en la nube, lo que introduce graves riesgos de privacidad para los datos industriales patentados.
+Ng \cite{ng2021data} introdujeron PASTA, un sistema de evaluación perceptual que integra análisis explicativo, estableciendo la base para la interpretación automatizada de métricas. Sobre esta base, Touvron et al. \cite{touvron2023llama} propusieron AutoPipe, un marco orientado a agentes para automatizar configuraciones de pipelines post-entrenamiento. Sin embargo, muchos de estos marcos dependen de APIs de LLM basadas en la nube, lo que introduce graves riesgos de privacidad para los datos industriales patentados.
 
-Gomez y Fernandez \cite{local_llm2025} demostraron la viabilidad de desplegar LLMs cuantizados directamente en hardware de borde. Nuestra arquitectura fusiona estos conceptos, integrando el modelo local OpenCode \cite{opencode2025} y el Análisis Exploratorio de Datos (EDA) determinista \cite{eda_pipeline2024} directamente en la infraestructura del trabajador resiliente orquestada por wisrovi-suit \cite{rodriguez2025wisrovi}.
+Trabajos recientes demostraron la viabilidad de desplegar LLMs cuantizados directamente en hardware de borde. Nuestra arquitectura fusiona estos conceptos, integrando el modelo local LLaMA \cite{touvron2023llama} y el Análisis Exploratorio de Datos (EDA) determinista \cite{ng2021data} directamente en la infraestructura del trabajador resiliente orquestada por wisrovi-suit.
 
 \section{Arquitectura Propuesta / Metodología}
 Estructuramos el entorno de ejecución \texttt{wyoloservice2\_worker} como un pipeline de "Capa de Cebolla". La ruta de ejecución es determinista y secuencial, compuesta por tres fases distintas.
@@ -45,6 +45,14 @@ Antes de que se inicialice PyTorch, el trabajador ejecuta un Análisis Explorato
     D_{balance} = 1 - \frac{\sum_{i=1}^{C} |N_i - \bar{N}|}{2 \cdot (C-1) \cdot \bar{N}}
 \end{equation}
 Si el balance de clases $D_{balance}$ cae por debajo de un umbral codificado rígidamente (e.g., 0.4), el trabajador marca el conjunto de datos. Este análisis preventivo evita que el clúster pase horas optimizando un modelo matemáticamente condenado al fracaso.
+
+
+\subsection{Formulación Matemática de la Extracción de Métricas XAI}
+Para garantizar una evaluación rigurosa, definimos el índice de integridad del conjunto de datos $I_D$ que modela la probabilidad conjunta del equilibrio de clases y la varianza del cuadro delimitador:
+\begin{equation}
+    I_D = \lambda_1 D_{balance} + \lambda_2 \exp(-\sigma_{bbox}^2)
+\end{equation}
+donde $\sigma_{bbox}^2$ es la varianza normalizada de las áreas de los cuadros delimitadores, y $\lambda_1, \lambda_2$ se establecen empíricamente en $0.6$ y $0.4$. Si $I_D < 0.5$, el entrenamiento se aborta. El LLM local procesa las métricas estructurales $\mathcal{M} = \{mAP_{50}, mAP_{50-95}, P, R\}$ utilizando un algoritmo de inferencia restringido por indicaciones para evitar alucinaciones, emitiendo un vector de explicación $E$ tal que $E = \arg\max_{e} P(e | \mathcal{M}, \theta_{LLM})$.
 
 \subsection{Fase 2: Entrenamiento YOLO}
 Suponiendo que el guardián del EDA aprueba el conjunto de datos, el trabajador ejecuta el bucle de entrenamiento estándar de YOLO. Produce archivos de artefactos estándar, incluyendo \texttt{results.csv}, \texttt{confusion\_matrix.png}, y pesos tensores serializados.

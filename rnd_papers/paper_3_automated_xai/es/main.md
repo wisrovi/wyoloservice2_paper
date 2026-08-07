@@ -38,7 +38,17 @@ Suponiendo que el guardián del EDA aprueba el conjunto de datos, el trabajador 
 ### Fase 3: Diagnósticos LLM Post-Entrenamiento
 Una vez que concluye el entrenamiento, el trabajador descarga los tensores PyTorch de la GPU y carga una instancia cuantizada de un LLM local. Un script de Python lee el `results.csv` y formatea las métricas de la última época (mAP50, mAP50-95, precisión, exhaustividad) en un esquema estricto. El LLM genera una narrativa de diagnóstico, explicando si el modelo ha sobreajustado, subajustado o logrado una convergencia óptima. El sistema exporta esta narrativa como archivos finales de Markdown (`.md`) y DOCX.
 
-![Pipeline Overview](figures/pipeline.pdf)
+
+```mermaid
+graph TD
+    A[User Input] --> B(Pre-Train EDA Dataset Validation)
+    B --> C{Dataset Health ID > 0.5?}
+    C -- Yes --> D[YOLO Training]
+    C -- No --> E[Abort Training]
+    D --> F[Post-Train LLM Diagnostics Local]
+    F --> G[MD/DOCX Narrative Reports]
+```
+
 
 ## Configuración Experimental y Detalles de Implementación
 Desplegamos esta arquitectura en un nodo local equipado con una única NVIDIA RTX 4090 (24GB VRAM). El trabajador cargó secuencialmente el modelo YOLOv8n para la fase de entrenamiento, seguido por una versión cuantizada de 4 bits del modelo LLaMA-2-7B para la fase de diagnóstico.
@@ -73,7 +83,18 @@ La tasa de alucinación medida fue del 1.2% (solo errores menores de redondeo nu
 | Tasa de Alucinación | 0% | 1.2% |
 | Riesgo de Privacidad de Datos | Bajo | Cero (En Dispositivo) |
 
-![Ablation Chart](figures/chart.pdf)
+
+```mermaid
+gantt
+    title Time per Report Comparison
+    dateFormat  s
+    axisFormat  %M
+    section Human
+    Human Baseline 42 Min :a1, 0, 2520s
+    section LLM
+    Automated LLM 45 Sec :a2, 0, 45s
+```
+
 
 ## Declaración de Disponibilidad de Datos y Código
 Esta arquitectura opera bajo un Modelo de Licencia Dual (PolyForm Noncommercial / AGPLv3). Para desplegar el proyecto y reproducir perfectamente estos experimentos declarados, se utiliza el repositorio `https://github.com/wisrovi/wyoloservice2_production`. Los comandos de despliegue explícitos (e.g., `docker-compose up -d`) están disponibles allí. Este repositorio sirve como un ejemplo concreto de cómo la investigación aplicada produce resultados excelentes y reproducibles para la comunidad.

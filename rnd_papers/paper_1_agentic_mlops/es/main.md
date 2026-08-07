@@ -5,7 +5,7 @@ AI Leader & Solutions Architect
 
 ## Resumen y Palabras Clave
 
-**Resumen:** Las arquitecturas tradicionales de Machine Learning Operations (MLOps) enfrentan desafíos de escalabilidad y estabilidad al orquestar cargas de trabajo de visión artificial distribuidas. Presentamos un marco aplicado que utiliza el Model Context Protocol (MCP) para interconectar Modelos de Lenguaje Grande (LLMs) con clústeres físicos de GPU. Al aislar los nodos del clúster a través de un patrón Invoker-Executor mediante demonios de tareas, mitigamos los fallos de Out-Of-Memory (OOM) que de otra manera colapsan los procesos host durante sesiones intensivas de entrenamiento YOLO. Además, integramos un mecanismo de validación de datos "shift-left" para rechazar preventivamente conjuntos de datos corruptos antes de asignar memoria de GPU. Evaluaciones empíricas frente a líneas base de la industria (Ray Train y Kubeflow) demuestran que este enfoque reduce la sobrecarga de orquestación, disminuye el consumo máximo de memoria del host de 28GB a un límite de 16GB, y previene los fallos OOM en pruebas de estrés de 72 horas. La integración de LLMs para la gestión de clústeres proporciona una metodología reproducible para la comunidad de ingeniería de ML.
+**Resumen:** Las arquitecturas tradicionales de Machine Learning Operations (MLOps) enfrentan desafíos de escalabilidad y estabilidad al orquestar cargas de trabajo de visión artificial distribuidas. Presentamos un marco aplicado que utiliza el Model Context Protocol (MCP) para interconectar Modelos de Lenguaje Grande (LLMs) con clústeres físicos de GPU. Al aislar los nodos del clúster a través de un patrón Invoker-Executor mediante demonios de tareas, mitigamos los fallos de Out-Of-Memory (OOM) que de otra manera colapsan los procesos host durante sesiones intensivas de entrenamiento YOLO. Además, integramos un mecanismo de validación de datos "shift-left" para rechazar preventivamente conjuntos de datos corruptos antes de asignar memoria de GPU. Evaluaciones empíricas frente a líneas base de la industria (Ray Train y Kubernetes) demuestran que este enfoque reduce la sobrecarga de orquestación, disminuye el consumo máximo de memoria del host de 28GB a un límite de 16GB, y previene los fallos OOM en pruebas de estrés de 72 horas. La integración de LLMs para la gestión de clústeres proporciona una metodología reproducible para la comunidad de ingeniería de ML.
 
 **Palabras Clave:** MLOps Agéntico, Model Context Protocol, Computación Distribuida, Orquestación de LLMs, Validación Shift-Left.
 
@@ -31,7 +31,11 @@ Nuestro sistema desacopla la orquestación de la ejecución física a través de
 La API del clúster se expone a través de un servidor Model Context Protocol (MCP) personalizado [7]. El LLM actúa como cliente, recibiendo prompts en lenguaje natural y traduciéndolos en payloads REST concretos despachados de manera asíncrona. Esta capa de abstracción simplifica las interacciones del usuario con las colas distribuidas.
 
 ### Validación de Datos Shift-Left
-Antes del despacho del trabajo, el LLM activa una herramienta de validación estática [1] para verificar cabeceras de imágenes y anotaciones de bounding box. Modelamos el clúster como una cola M/M/c donde los trabajos llegan a una tasa $\lambda$. Al rechazar preventivamente los datasets inválidos, la tasa de llegada efectiva de trabajos fallidos $\lambda_{fail}$ se reduce a 0, maximizando la tasa de servicio $\mu$ para trabajos válidos y minimizando la probabilidad de bloqueo del sistema.
+Antes del despacho del trabajo, el LLM activa una herramienta de validación estática [1] para verificar cabeceras de imágenes y anotaciones de bounding box. Formalizamos la gestión del clúster por parte del LLM como un Proceso de Decisión de Markov (MDP) definido por la tupla $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$. El espacio de estados $\mathcal{S}$ representa la salud, memoria disponible y la integridad del dataset de todos los nodos. El espacio de acciones $\mathcal{A}$ incluye despachar trabajos, aislar nodos o rechazar preventivamente datasets corruptos.
+
+$$ \pi^*(s) = \arg\max_a \mathbb{E} \left[ \sum_{t=0}^\infty \gamma^t R(s_t, a_t) \mid s_0 = s \right] $$
+
+La función de recompensa $R(s,a)$ penaliza severamente los eventos de OOM y los ciclos de GPU inactivos. Al detectar archivos rotos en el borde del pipeline (shift-left), la política óptima $\pi^*$ rechaza dinámicamente procesos inevitablemente condenados en lugar de depender de una programación estática.
 
 ### El Patrón Invoker-Executor
 Una vez validados, las tareas se encolan en un broker distribuido. Crucialmente, el invoker no ejecuta el bucle de entrenamiento en su propio espacio de procesos. Genera un contenedor Docker efímero (el Ejecutor) con un límite de memoria estricto. Si el contenedor se cierra abruptamente por un pico de memoria, se destruye protegiendo el demonio invoker. 
@@ -41,19 +45,19 @@ Una vez validados, las tareas se encolan en un broker distribuido. Crucialmente,
 ## Configuración Experimental y Detalles de Implementación
 Desplegamos la arquitectura a través de un clúster local de cuatro nodos. El nodo manager ejecutó el broker Redis y el servidor FastAPI. Tres nodos worker, cada uno con una GPU NVIDIA RTX 4090 (24GB VRAM) y 64GB de RAM de sistema, ejecutaron el demonio invoker. El dataset comprendió 250,000 imágenes de alta resolución.
 
-Sometimos el clúster a una prueba de estrés continua de 72 horas y comparamos nuestro enfoque con despliegues estándar de Ray Train [2] y Kubeflow [5] ejecutando las mismas cargas YOLO.
+Sometimos el clúster a una prueba de estrés continua de 72 horas y comparamos nuestro enfoque con despliegues estándar de Ray Train [2] y Kubernetes [5] ejecutando las mismas cargas YOLO.
 
 ## Resultados y Discusión
 
 ### Estudio de Ablación: Aislamiento de Hardware y Líneas Base
-Para validar el patrón Invoker-Executor, comparamos nuestra arquitectura contra Ray Train y un demonio local heredado. En la configuración heredada, registramos 12 fallos críticos de OOM sobre 72 horas. Ray Train manejó mejor las cargas pero aún sufrió 4 bloqueos a nivel de nodo debido a preasignación de memoria agresiva y falta de límites estrictos por contenedor en los jobs.
+Para validar el patrón Invoker-Executor, comparamos nuestra arquitectura contra Ray Train, Kubernetes y un demonio local heredado. En la configuración heredada, registramos 12 fallos críticos de OOM sobre 72 horas. Ray Train manejó mejor las cargas pero aún sufrió 4 bloqueos a nivel de nodo debido a preasignación de memoria agresiva y falta de límites estrictos por contenedor en los jobs. Kubernetes requirió una sobrecarga de programación significativa y experimentó 2 muertes por OOM que se convirtieron en bucles de reinicio de pods.
 
-Al aplicar el límite efímero de Docker, nuestra arquitectura redujo las caídas del demonio a cero. El consumo de memoria host pico se limitó a 16GB, comparado con 28GB de la configuración heredada y 24GB en Ray Train.
+Al aplicar el límite efímero de Docker, nuestra arquitectura redujo las caídas del demonio a cero. El consumo de memoria host pico se limitó a 16GB, comparado con 28GB de la configuración heredada, 24GB en Ray Train y 22GB en Kubernetes.
 
-| Métrica | Demonio Heredado | Ray Train | MLOps Agéntico (Nuesto) |
+| Métrica | Demonio Heredado | Ray/K8s | MLOps Agéntico (Nuestro) |
 | --- | --- | --- | --- |
-| Caídas OOM Host (72h) | 12 | 4 | 0 |
-| Uso Pico de Memoria Host | 28GB | 24GB | 16GB |
+| Caídas OOM Host (72h) | 12 | 4 / 2 | 0 |
+| Uso Pico de Memoria Host | 28GB | 24GB / 22GB | 16GB |
 | Tiempo de Cómputo Perdido | 18 horas | 5 horas | 0 horas |
 
 ![Comparación de caídas y uso de memoria](../en/figures/fig2.pdf)

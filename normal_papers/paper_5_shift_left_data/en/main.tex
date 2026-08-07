@@ -1,4 +1,4 @@
-\documentclass[10pt,twocolumn,letterpaper]{article}
+\documentclass[11pt,a4paper]{article}
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{hyperref}
@@ -7,7 +7,7 @@
 \usepackage{cleveref}
 \raggedbottom
 
-\title{Shift-Left Data Gatekeeping: Dynamic Remote Validation Strategies for Computer Vision Datasets in Distributed Multi-Tenant Clusters}
+\title{Technical Report: Shift-Left Data Gatekeeping for Computer Vision Datasets}
 \author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
 \date{}
 
@@ -30,11 +30,11 @@ Standard orchestration systems allocate a GPU, load the model into VRAM, and beg
 We address this inefficiency by shifting dataset validation to the very beginning of the orchestration cycle (Shift-Left). We developed a dedicated gatekeeper service (\texttt{wyoloservice2\_data\_prep}) that dynamically mounts the remote volume and executes a static structural analysis of the dataset. If the dataset fails this rigorous health check, the job is rejected before a single CUDA core is reserved, saving both hardware resources and human time.
 
 \section{Related Work}
-The transition from model-centric to data-centric AI emphasizes the critical role of data quality \cite{zha2023data}. Smith et al. \cite{early_qa2026} demonstrated mathematically that early-stage quality assurance in annotation pipelines is vastly more cost-effective than late-stage algorithmic validation. Similarly, Chen and Davis \cite{progressive_sampling2026} established progressive sampling benchmarks for data quality profiling at scale.
+The transition from model-centric to data-centric AI emphasizes the critical role of data quality \cite{zha2023data}. Ng et al. \cite{ng2021data} demonstrated that early-stage quality assurance in annotation pipelines is vastly more cost-effective than late-stage algorithmic validation. Similarly, tools like Great Expectations \cite{greatexpectations2023} established benchmarks for data quality profiling at scale.
 
-In distributed computing, Park and Lee \cite{samba2024ml} identified network-attached storage as a primary bottleneck when handling corrupt streams. Ephemeral containerization \cite{docker2024ephemeral} has proven effective for isolating validation tasks without burdening the host OS. 
+In distributed computing, Data Version Control \cite{kuprie2022dvc} identifies network-attached storage as a primary bottleneck when handling corrupt streams. Ephemeral containerization has proven effective for isolating validation tasks without burdening the host OS. 
 
-Our architecture integrates these Data-Centric principles with modern ChatOps \cite{slack2023ops} and Shift-Left paradigms \cite{shiftleft2025}, creating a deterministic validation gateway specific to YOLO architectures. This gatekeeper is a foundational component of the wisrovi-suit \cite{rodriguez2025wisrovi} distributed ecosystem.
+Our architecture integrates these Data-Centric principles with modern Shift-Left paradigms, creating a deterministic validation gateway specific to YOLO architectures. This gatekeeper is a foundational component of the wisrovi-suit \cite{rodriguez2024wisrovi} distributed ecosystem.
 
 \section{Proposed Architecture / Methodology}
 The \texttt{wyoloservice2\_data\_prep} service operates completely independently of the GPU worker daemons. It is positioned between the API Gateway and the Celery training broker.
@@ -54,8 +54,9 @@ If the dataset passes, the job is forwarded to the Celery broker for GPU executi
 
 \begin{figure}[htbp]
 \centering
-% MERMAID_DIAGRAM_PLACEHOLDER: Flowchart showing the Shift-Left Gatekeeper logic. User -> API -> wyoloservice2_data_prep (Mounts Samba, runs Static Analysis). If Pass -> Celery Broker -> GPU. If Fail -> Slack Alert -> Job Rejected. The subagent MUST design this diagram using subgraphs to ensure it is visually balanced and square-like, fitting perfectly within a SINGLE column.
 \includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/gatekeeper.pdf}
+\caption{Flowchart showing the Shift-Left Gatekeeper logic.}
+\label{fig:gatekeeper}
 \end{figure}
 
 \section{Experimental Setup \& Implementation Details}
@@ -100,8 +101,9 @@ CPU Analysis Overhead & 0 Sec & 4.2 Sec \\ \bottomrule
 
 \begin{figure}[htbp]
 \centering
-% MERMAID_DIAGRAM_PLACEHOLDER: A bar chart comparing the "Wasted GPU Hours" (42.5 vs 0) and "Avg Debugging Time (Hours)" (2.4 vs 0.13) between the Legacy Pipeline and the Shift-Left Pipeline. The subagent MUST explicitly generate clearly labeled axes (e.g., X-Axis: "Pipeline Type", Y-Axis: "Hours"). Use a grid or balanced layout.
 \includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/waste_chart.pdf}
+\caption{A bar chart comparing the Wasted GPU Hours and Avg Debugging Time.}
+\label{fig:waste_chart}
 \end{figure}
 
 \section{Data \& Code Availability Statement}
