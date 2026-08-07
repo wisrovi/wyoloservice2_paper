@@ -34,3 +34,12 @@ All papers must adhere to a 4 to 8 page limit (double-column IEEE format preferr
 - **Assets & Figures**: Every paper language folder must contain a `figures/` directory to store images, rendered Mermaid diagrams, and plots. Do not clutter the root folder of the paper.
 - **Academic Tone**: The writing must maintain a formal, objective, third-person or first-person plural ("We propose", "We evaluate") academic voice. Do not use colloquialisms or English contractions (e.g., use "do not" instead of "don't").
 - **Standardized Naming**: The primary LaTeX file must always be named `main.tex` and its compiled output `main.pdf`.
+
+## Anti-AI Detection / Natural Academic Voice (Strict Rule)
+To prevent the papers from sounding robotic or being flagged by AI detectors, all text generation MUST adhere to the following stylistic guidelines:
+1. **Zero AI Buzzwords**: NEVER use cliché AI terms such as: "delve into", "tapestry", "realm", "navigate the complexities", "paramount", "transformative", or excessive use of "furthermore/moreover/additionally".
+2. **High Burstiness (Perplexity)**: Sentence lengths must vary significantly. Mix very short, punchy statements with longer, technical explanations. Avoid uniform sentence structures.
+3. **Active Voice & Pragmatism**: Be direct. Use active voice ("We isolated the cluster" instead of "The cluster was isolated"). Avoid philosophical introductions; get straight to the technical problem and solution.
+4. **Data-Driven, Not Adjective-Driven**: Do not use flowery adjectives ("impressive speedup", "highly efficient"). Instead, use raw facts and numbers ("reduced latency by 43%", "dropped memory usage from 28GB to 16GB").
+5. **Real-World Imperfections**: Embrace real-world engineering constraints and mention actual pain points faced during the development at eCaptureDtech (e.g., "OOM errors crashing the daemon"). This adds human authenticity.
+
