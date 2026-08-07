@@ -49,17 +49,17 @@ where $H_i$ represents the header integrity of image $i$, and $B_i$ represents t
 \subsection{The Invoker-Executor Pattern}
 Once validated, the MCP server queues the task via the API into a distributed Celery broker (Redis/RabbitMQ). The daemon running on the GPU nodes picks up the task. Crucially, the invoker does not run the training loop in its own process space. Instead, it spawns an ephemeral Docker container (the Executor) with a strict memory limit (\texttt{--memory=16g --gpus=all}). When the training finishes, or if it crashes due to a memory spike, the container is destroyed, freeing all resources immediately and protecting the invoker daemon.
 
-\begin{figure*}[t]
+\begin{figure}[htbp]
 \centering
-% MERMAID_DIAGRAM_PLACEHOLDER: A horizontal graph (graph LR) showing the flow: User -> LLM Agent -> MCP Server -> FastAPI Gateway -> Celery Broker -> Invoker Daemon -> Ephemeral Executor Container. The subagent MUST generate this visually balanced for spanning two columns.
-\end{figure*}
+% MERMAID_DIAGRAM_PLACEHOLDER: Flowchart showing User -> LLM Agent -> MCP Server -> FastAPI Gateway -> Celery Broker -> Invoker Daemon -> Ephemeral Executor Container. The subagent MUST generate this using subgraphs or grid structures so it is visually balanced (squarish) rather than one long horizontal or vertical line, perfectly fitting within a SINGLE LaTeX column.
+\end{figure}
 
 \section{Experimental Setup \& Implementation Details}
 We deployed the architecture across a local cluster comprising four nodes. The primary manager node ran the Redis broker and the FastAPI server. Three worker nodes, each equipped with an NVIDIA RTX 4090 GPU (24GB VRAM) and 64GB of system RAM, ran the \texttt{wyoloservice2\_invoker} daemon. We utilized an internally curated dataset of 250,000 high-resolution images for defect detection. 
 
 We configured the LLM with a strict temperature of 0.1 to force deterministic tool usage and prevent hallucinations when generating hyperparameter configurations. We subjected the cluster to a 72-hour continuous stress test, simulating multiple concurrent researchers submitting massive YOLO training jobs.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Cluster Hardware Specifications}
 \label{tab:hardware}
@@ -79,7 +79,7 @@ To mathematically validate the Invoker-Executor pattern, we ran a control experi
 
 By enforcing the ephemeral Docker boundary, the number of daemon crashes dropped to exactly zero. When a job attempted to allocate 28GB of memory (exceeding the 24GB VRAM limit), the OS kernel gracefully killed the ephemeral container. The Celery invoker caught the exit code, reported the failure to the LLM, and immediately accepted the next job. Peak memory consumption on the host OS dropped from an unstable 28GB (spilling into swap space) to a hard-capped 16GB.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Impact of the Invoker-Executor Pattern}
 \label{tab:ablation_isolation}
@@ -92,7 +92,10 @@ Lost Compute Time & 18 hours & 0 hours \\ \bottomrule
 \end{tabular}
 \end{table}
 
+\begin{figure}[htbp]
+\centering
 % MERMAID_DIAGRAM_PLACEHOLDER: A bar chart comparing OOM crashes and Peak Memory Usage between the Legacy Daemon Setup and the Invoker-Executor Pattern. The subagent MUST explicitly generate clearly labeled axes (e.g., X-Axis: "Architecture Setup", Y-Axis: "Number of Crashes / Memory in GB") and legends.
+\end{figure}
 
 \subsection{Ablation Study: Shift-Left Validation}
 We introduced 500 deliberately corrupted image files into the network storage. Without the shift-left gatekeeper, the training jobs would load the images, push them to the GPU, and crash 15 minutes into the first epoch, wasting significant power and time. With the MCP validation tool enabled, the agent detected the corrupted bytes in 3.4 seconds and rejected the job before queuing it. This early rejection improved overall cluster throughput by 35\% by keeping the GPUs exclusively focused on valid workloads.
