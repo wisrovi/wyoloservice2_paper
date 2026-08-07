@@ -2,8 +2,14 @@
 
 set -u  # Falla si se usa una variable sin definir
 
+# CLI del agente que ejecuta las instrucciones (revisor/editor).
+#   AGENT_CLI=freebuff (por defecto): abre la TUI interactiva de Freebuff; el
+#     prompt se imprime en consola y se copia al portapapeles para pegarlo.
+#   AGENT_CLI=agy        : ejecución automática no interactiva (agy run --instructions).
+AGENT_CLI="${AGENT_CLI:-freebuff}"
+
 # Resuelve el directorio donde vive este script y trabaja desde ahí,
-# para que el flujo (y el agente agy) sea independiente del CWD del usuario
+# para que el flujo (y el agente) sea independiente del CWD del usuario
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
@@ -15,12 +21,99 @@ IEEE_VERDICT="$SCRIPT_DIR/IEEE_REVIEW_VERDICT.md"
 REVISOR_PROMPT="$SCRIPT_DIR/.agy_prompts/revisor.md"
 EDITOR_PROMPT="$SCRIPT_DIR/.agy_prompts/editor.md"
 
+# --- Utilidades --------------------------------------------------------------
+
+# Copia stdin al portapapeles si hay una herramienta disponible
+copy_to_clipboard() {
+  if command -v xclip >/dev/null 2>&1; then
+    xclip -selection clipboard
+  elif command -v wl-copy >/dev/null 2>&1; then
+    wl-copy
+  elif command -v pbcopy >/dev/null 2>&1; then
+    pbcopy
+  else
+    return 1
+  fi
+}
+
+# Comprueba el código de salida del agente tras una etapa
+check_agent_exit() {
+  local role="$1"
+  local rc="$2"
+  if [ "$AGENT_CLI" = "agy" ] && [ "$rc" -ne 0 ]; then
+    echo "❌ El $role ($AGENT_CLI) falló en la ronda $ROUND. Revisa el error y reintenta." >&2
+    exit 1
+  fi
+  if [ "$AGENT_CLI" = "freebuff" ] && [ "$rc" -ne 0 ]; then
+    echo "⚠️  La sesión de Freebuff ($role) terminó con código $rc; se comprobará el estado."
+  fi
+}
+
+# Ejecuta el agente con las instrucciones del prompt indicado
+run_agent() {
+  local prompt_file="${1:?uso: run_agent <prompt_file>}"
+
+  case "$AGENT_CLI" in
+    agy)
+      agy run --instructions "$prompt_file"
+      ;;
+
+    freebuff)
+      # Modo interactivo: Freebuff (v0.0.142) no acepta prompts por CLI,
+      # así que mostramos/copiamos las instrucciones y abrimos la TUI.
+      # Si una versión futura soporta 'run --instructions', actívalo con FREEBUFF_RUN=1
+      if [ "${FREEBUFF_RUN:-0}" = "1" ]; then
+        freebuff run --instructions "$prompt_file"
+        return
+      fi
+
+      echo ""
+      echo "══════════════════════════════════════════════════════════"
+      echo "📋 INSTRUCCIONES PARA FREEBUFF — pega este prompt en la sesión"
+      echo "══════════════════════════════════════════════════════════"
+      cat "$prompt_file"
+      echo "══════════════════════════════════════════════════════════"
+      echo ""
+      if copy_to_clipboard < "$prompt_file" 2>/dev/null; then
+        echo "✅ Prompt copiado al portapapeles (pega con Ctrl+V en Freebuff)."
+      else
+        echo "⚠️  No se pudo copiar al portapapeles; cópialo manualmente."
+      fi
+      echo ""
+      echo "Abriendo Freebuff en $SCRIPT_DIR ..."
+      echo "Cuando el agente termine, cierra la sesión para continuar el bucle."
+      echo "(Si Freebuff ya está abierto, elige 'Take over' para usar esa sesión.)"
+      freebuff --cwd "$SCRIPT_DIR"
+      ;;
+
+    *)
+      echo "❌ AGENT_CLI desconocido: '$AGENT_CLI' (usa 'agy' o 'freebuff')." >&2
+      return 1
+      ;;
+  esac
+}
+
 # --- Comprobaciones previas --------------------------------------------------
-if ! command -v agy >/dev/null 2>&1; then
-  echo "❌ No se encontró el comando 'agy' (Antigravity CLI)." >&2
-  echo "   Instálalo o añádelo al PATH antes de ejecutar el workflow." >&2
-  exit 1
-fi
+case "$AGENT_CLI" in
+  agy)
+    if ! command -v agy >/dev/null 2>&1; then
+      echo "❌ No se encontró el comando 'agy' (AGENT_CLI=$AGENT_CLI)." >&2
+      echo "   Instálalo o cambia AGENT_CLI=freebuff." >&2
+      exit 1
+    fi
+    ;;
+  freebuff)
+    if ! command -v freebuff >/dev/null 2>&1; then
+      echo "❌ No se encontró el comando 'freebuff' (AGENT_CLI=$AGENT_CLI)." >&2
+      echo "   Instálalo o cambia AGENT_CLI=agy." >&2
+      exit 1
+    fi
+    ;;
+  *)
+    echo "❌ AGENT_CLI inválido: '$AGENT_CLI' (usa 'agy' o 'freebuff')." >&2
+    exit 1
+    ;;
+esac
 
 for f in "$WORKFLOW_STATE" "$REVISOR_PROMPT" "$EDITOR_PROMPT"; do
   if [ ! -f "$f" ]; then
@@ -34,7 +127,7 @@ if [ ! -w "$WORKFLOW_STATE" ]; then
   exit 1
 fi
 
-echo "🚀 Iniciando bucle de publicación IEEE con Antigravity CLI (agy)"
+echo "🚀 Iniciando bucle de publicación IEEE con $AGENT_CLI"
 
 while [ "$ROUND" -le "$MAX_ROUNDS" ]; do
   echo ""
@@ -45,12 +138,9 @@ while [ "$ROUND" -le "$MAX_ROUNDS" ]; do
   # Reinicia el estado de la ronda para evitar un "APPROVED" obsoleto de una ejecución anterior
   printf "STATUS: IN_REVIEW\nROUND: %s\n" "$ROUND" > "$WORKFLOW_STATE"
 
-  # Ejecutar agy con las instrucciones del Revisor (el revisor escribe STATUS: APPROVED si acepta)
-  agy run --instructions "$REVISOR_PROMPT"
-  if [ $? -ne 0 ]; then
-    echo "❌ El Revisor (agy) falló en la ronda $ROUND. Revisa el error y reintenta." >&2
-    exit 1
-  fi
+  # Ejecutar el Revisor (escribe STATUS: APPROVED si acepta)
+  run_agent "$REVISOR_PROMPT"
+  check_agent_exit "Revisor" $?
 
   # Verificar si el Revisor aprobó el trabajo
   if grep -q "STATUS: APPROVED" "$WORKFLOW_STATE"; then
@@ -65,12 +155,9 @@ while [ "$ROUND" -le "$MAX_ROUNDS" ]; do
   echo "  RONDA $ROUND / $MAX_ROUNDS: Correcciones del Editor"
   echo "=================================================="
 
-  # Ejecutar agy con las instrucciones del Autor/Editor
-  agy run --instructions "$EDITOR_PROMPT"
-  if [ $? -ne 0 ]; then
-    echo "❌ El Editor (agy) falló en la ronda $ROUND. Revisa el error y reintenta." >&2
-    exit 1
-  fi
+  # Ejecutar el Editor
+  run_agent "$EDITOR_PROMPT"
+  check_agent_exit "Editor" $?
 
   # Incrementar contador de rondas
   ROUND=$((ROUND + 1))
