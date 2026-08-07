@@ -48,8 +48,12 @@ where $H_i$ represents the header integrity of image $i$, and $B_i$ represents t
 \subsection{The Invoker-Executor Pattern}
 Once validated, the MCP server queues the task in a distributed Celery broker (RabbitMQ). The daemon running on the GPU nodes picks up the task. Crucially, the invoker does not run the training loop in its own process space. Instead, it spawns an ephemeral Docker container (the Executor) with a strict memory limit (\texttt{--memory=16g --gpus=all}). When the training finishes, or if it crashes due to a memory spike, the container is destroyed, freeing all resources immediately and protecting the invoker daemon.
 
-% MERMAID_DIAGRAM_PLACEHOLDER: A flowchart showing User -> LLM -> MCP Server -> Celery Broker -> Invoker Daemon -> Ephemeral Docker Container
-
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/flowchart.pdf}
+\caption{User to Container Orchestration Flow}
+\label{fig:flowchart}
+\end{figure}
 \section{Experimental Setup \& Implementation Details}
 We deployed the architecture across a local cluster comprising four nodes. The primary manager node ran the RabbitMQ broker and the MCP server. Three worker nodes, each equipped with an NVIDIA RTX 4090 GPU (24GB VRAM) and 64GB of system RAM, ran the \texttt{wyoloservice2\_invoker} daemon. We utilized an internally curated dataset of 250,000 high-resolution images for defect detection. 
 
@@ -88,8 +92,12 @@ Lost Compute Time & 18 hours & 0 hours \\ \bottomrule
 \end{tabular}
 \end{table}
 
-% MERMAID_DIAGRAM_PLACEHOLDER: A bar chart comparing OOM crashes and Peak Memory Usage between the Legacy Daemon Setup and the Invoker-Executor Pattern
-
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{figures/barchart.pdf}
+\caption{OOM Crashes and Peak Memory Usage Comparison}
+\label{fig:barchart}
+\end{figure}
 \subsection{Ablation Study: Shift-Left Validation}
 We introduced 500 deliberately corrupted image files into the network storage. Without the shift-left gatekeeper, the training jobs would load the images, push them to the GPU, and crash 15 minutes into the first epoch, wasting significant power and time. With the MCP validation tool enabled, the agent detected the corrupted bytes in 3.4 seconds and rejected the job before queuing it. This early rejection improved overall cluster throughput by 35\% by keeping the GPUs exclusively focused on valid workloads.
 
