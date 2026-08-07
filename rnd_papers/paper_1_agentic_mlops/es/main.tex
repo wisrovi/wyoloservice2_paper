@@ -2,86 +2,85 @@
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{hyperref}
-\usepackage{cleveref}
+\usepackage{amsmath}
 \usepackage{graphicx}
-\usepackage[spanish]{babel}
+\usepackage{cleveref}
 
-\title{MLOps Agéntico: Orquestación Autónoma de Clusters Distribuidos para Entrenamiento en Visión Computacional Mediante LLMs y el Protocolo de Contexto de Modelos (MCP)}
-\author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\Líder en IA y Arquitecto de Soluciones\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
+\title{MLOps Agéntico: Orquestación Autónoma de Clústeres de Entrenamiento de Visión Distribuida Impulsada por LLM usando Model Context Protocol (MCP)}
+\author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
 \date{}
-
+\raggedbottom
 \begin{document}
 \maketitle
 
-\section{Resumen y Palabras Clave}
-\textbf{Resumen:} Las arquitecturas tradicionales de Operaciones de Machine Learning (MLOps) sufren cuellos de botella operativos severos al escalar cargas de trabajo distribuidas en visión computacional. Presentamos un marco de investigación aplicada que utiliza el Protocolo de Contexto de Modelos (MCP) para conectar Grandes Modelos de Lenguaje (LLMs) con clústeres físicos de GPUs. Al aislar los nodos del clúster mediante un patrón Invocador-Ejecutor con demonios Celery, mitigamos de manera efectiva las fallas catastróficas por falta de memoria (Out-Of-Memory, OOM) que frecuentemente bloquean los procesos anfitriones durante sesiones intensivas de entrenamiento de YOLO. Además, integramos un mecanismo de validación de datos "shift-left" (hacia la izquierda) para rechazar proactivamente datasets corruptos montados en red antes de asignar memoria en la GPU. Nuestras evaluaciones empíricas demuestran que este enfoque redujo la latencia de orquestación en un 43\%, disminuyó el consumo pico de memoria de unos inestables 28GB a un límite estricto de 16GB, y previno por completo las caídas por OOM durante una prueba de estrés de 72 horas. La integración de LLMs como administradores autónomos de clústeres demuestra un ejemplo concreto de cómo la investigación aplicada produce resultados robustos y reproducibles para la comunidad de ingeniería en ML.
+\section{Resumen \& Palabras Clave}
+\textbf{Resumen:} Las arquitecturas tradicionales de Operaciones de Machine Learning (MLOps) sufren de cuellos de botella operativos severos al escalar cargas de trabajo de visión por computadora distribuidas. Presentamos un marco de investigación aplicada utilizando el Protocolo de Contexto de Modelo (MCP) para conectar Grandes Modelos de Lenguaje (LLMs) y clústeres físicos de GPU. Al aislar los nodos del clúster mediante un patrón Invocador-Ejecutor a través de demonios Celery, mitigamos efectivamente los fallos catastróficos de Fuera de Memoria (OOM) que frecuentemente bloquean los procesos host durante sesiones intensas de entrenamiento YOLO. Además, integramos un mecanismo de validación de datos "shift-left" para rechazar preventivamente conjuntos de datos corruptos montados en red antes de asignar memoria de la GPU. Nuestras evaluaciones empíricas demuestran que este enfoque redujo la latencia de orquestación en un 43\%, disminuyó el consumo pico de memoria de un inestable 28GB a un límite estricto de 16GB, y previno por completo las caídas por OOM durante una prueba de estrés de 72 horas. La integración de LLMs como gestores autónomos del clúster demuestra un ejemplo concreto de investigación aplicada que produce resultados robustos y reproducibles para la comunidad de ingeniería de ML.
 
-\textbf{Palabras Clave:} MLOps Agéntico, Protocolo de Contexto de Modelos, Computación Distribuida, Orquestación con LLMs, Validación Shift-Left.
+\textbf{Palabras Clave:} MLOps Agéntico, Model Context Protocol, Computación Distribuida, Orquestación LLM, Validación Shift-Left.
 
 \section{Información del Autor}
-Esta investigación fue conceptualizada y desarrollada por William Steve Rodriguez Villamizar (wisrovi rodriguez), Líder en IA y Arquitecto de Soluciones para el ecosistema wisrovi-suit (https://github.com/wisrovi/w-cli).
+Esta investigación fue conceptualizada y desarrollada por William Steve Rodriguez Villamizar (wisrovi rodriguez), AI Leader \& Solutions Architect para el ecosistema wisrovi-suit (https://github.com/wisrovi/w-cli).
 
 \section{Introducción}
-Escalar clústeres de entrenamiento distribuidos para modelos de visión computacional de alta resolución presenta desafíos de ingeniería severos. Las fugas latentes de memoria y los frágiles scripts de programación degradan habitualmente el rendimiento del clúster. Los investigadores se topan con frecuencia con fallas silenciosas de falta de memoria (OOM), donde el demonio de entrenamiento principal asigna más memoria que los límites físicos de la GPU, bloqueando todo el nodo y obligando a un reinicio manual completo. Este acaparamiento de hardware limita directamente la escalabilidad de las tuberías automatizadas de Deep Learning.
+Escalar clústeres de entrenamiento distribuido para modelos de visión por computadora de alta resolución presenta desafíos de ingeniería severos. Las fugas de memoria latentes y los scripts de programación frágiles degradan rutinariamente el rendimiento del clúster. Los investigadores encuentran frecuentemente caídas silenciosas por Fuera de Memoria (OOM) donde el demonio de entrenamiento principal asigna memoria más allá de los límites físicos de la GPU, bloqueando todo el nodo y requiriendo reinicios forzados manuales. Esta monopolización del hardware limita directamente la escalabilidad de los pipelines de Deep Learning automatizados.
 
-Abordamos estos problemas específicos descentralizando la arquitectura de cómputo e introduciendo un paradigma de MLOps Agéntico. Equipamos a un Gran Modelo de Lenguaje (LLM) con herramientas especializadas del Protocolo de Contexto de Modelos (MCP), otorgándole la capacidad de monitorizar dinámicamente la salud del nodo, validar datasets y despachar trabajos de entrenamiento aislados. A diferencia de la orquestación estática convencional basada en YAML, este enfoque permite que el agente razone sobre el estado actual del clúster y enrute de manera adaptativa las cargas de trabajo a nodos saludables.
+Abordamos estos puntos de dolor específicos descentralizando la arquitectura de cómputo e introduciendo un paradigma de MLOps Agéntico. Equipamos un Gran Modelo de Lenguaje (LLM) con herramientas especializadas del Protocolo de Contexto de Modelo (MCP), otorgándole la capacidad de monitorear dinámicamente la salud del nodo, validar conjuntos de datos y despachar trabajos de entrenamiento aislados. A diferencia de la orquestación YAML estática convencional, este enfoque permite que el agente razone sobre el estado actual del clúster y enrute adaptativamente las cargas de trabajo hacia nodos saludables.
 
-Aislamos la ejecución real del entrenamiento dentro de contenedores efímeros de Docker administrados por una cola de tareas Celery, introduciendo el patrón Invocador-Ejecutor. Este límite físico garantiza que, si un script de entrenamiento de YOLO fuga memoria, solo muere el contenedor aislado, dejando al demonio anfitrión completamente intacto.
+Aislamos la ejecución real del entrenamiento dentro de contenedores Docker efímeros gestionados por una cola de tareas Celery, introduciendo el patrón Invocador-Ejecutor. Este límite físico asegura que si un script de entrenamiento YOLO filtra memoria, solo el contenedor aislado muere, dejando el demonio anfitrión completamente intacto.
 
 \section{Trabajo Relacionado}
-La convergencia entre agentes autónomos y la ingeniería de ML se ha acelerado rápidamente. Smith et al. \cite{mlagent2026} demostraron que el aprendizaje por refuerzo permite que los agentes asuman tareas básicas de ingeniería de ML, aunque su enfoque carecía de aislamiento físico de hardware. Doe et al. \cite{automl2024} propusieron sistemas multiagente para AutoML de ciclo completo, pero dependían de programadores centralizados susceptibles a puntos únicos de fallo.
+La convergencia de agentes autónomos y la ingeniería de ML se ha acelerado rápidamente. Smith et al. \cite{mlagent2026} demostraron que el aprendizaje por refuerzo permite que los agentes asuman tareas básicas de ingeniería de ML, aunque su enfoque carecía de aislamiento de hardware físico. Doe et al. \cite{automl2024} propusieron sistemas multiagente para AutoML de canal completo, pero dependían de programadores centralizados susceptibles a fallas de un solo punto.
 
-Los marcos AgentOps \cite{agentops2025} han intentado resolver los desafíos de monitorización inyectándose en la ventana de contexto del LLM. Sin embargo, ninguno de estos enfoques aborda la degradación específica de hardware causada por cargas masivas de visión computacional. Nuestro trabajo se construye sobre los cimientos teóricos de Liu et al. \cite{liu2024mcp} en relación con el Protocolo de Contexto de Modelos, extendiéndolo específicamente para interactuar con demonios de GPU respaldados por Celery. Diferenciamos nuestro enfoque al imponer un estricto mecanismo de validación "shift-left" \cite{chen2024shiftleft} antes de que cualquier instrucción del LLM alcance los nodos de cómputo. Investigaciones adicionales de Kim y Park \cite{kim2025oom} analizaron la mitigación de OOM utilizando cgroups de Linux, lo cual inspiró fuertemente nuestra estrategia de contenedores efímeros. La CLI fundamental de wisrovi-suit \cite{rodriguez2025wisrovi} sentó las bases para esta arquitectura, proporcionando los conjuntos de herramientas deterministas necesarios para LLMOps \cite{zhao2024llmops} y orquestación generativa autónoma \cite{nguyen2026autonomous}. Por último, las optimizaciones de Celery para entornos de alto rendimiento \cite{garcia2025celery} y el impacto ambiental de una programación eficiente \cite{brown2024efficiency} influyeron significativamente en el diseño de nuestro bróker.
+Los marcos AgentOps \cite{agentops2025} han intentado resolver los desafíos de monitoreo conectándose a la ventana de contexto del LLM. Sin embargo, ninguno de estos enfoques aborda la degradación específica del hardware causada por cargas masivas de trabajo de visión por computadora. Nuestro trabajo se basa en la base teórica de Liu et al. \cite{liu2024mcp} sobre el Protocolo de Contexto de Modelo, extendiéndolo específicamente para interactuar con demonios de GPU respaldados por Celery. Diferenciamos nuestro enfoque imponiendo un estricto mecanismo de validación shift-left \cite{chen2024shiftleft} antes de que cualquier instrucción del LLM llegue a los nodos de cómputo. Investigación adicional por Kim y Park \cite{kim2025oom} investigó la mitigación de OOM usando cgroups de Linux, lo que inspiró fuertemente nuestra estrategia de contenedores efímeros. La CLI fundacional wisrovi-suit \cite{rodriguez2025wisrovi} sentó las bases para esta arquitectura, proporcionando los conjuntos de herramientas deterministas necesarios para LLMOps \cite{zhao2024llmops} y la orquestación generativa autónoma \cite{nguyen2026autonomous}. Finalmente, las optimizaciones de Celery para entornos de alto rendimiento \cite{garcia2025celery} y el impacto ambiental de una programación eficiente \cite{brown2024efficiency} influyeron fuertemente en nuestro diseño del broker.
 
 \section{Arquitectura Propuesta / Metodología}
-Nuestro sistema desacopla la orquestación lógica de la ejecución física. La arquitectura consta de tres capas principales: la Interfaz LLM-MCP, la Puerta de Enlace Invocadora y el Ejecutor Efímero.
+Nuestro sistema desacopla la orquestación lógica de la ejecución física. La arquitectura consta de tres capas principales: la Interfaz LLM-MCP, el Gateway Invocador, y el Ejecutor Efímero.
 
 \subsection{La Interfaz LLM-MCP}
-Expusimos la API del clúster a través de un servidor personalizado de Protocolo de Contexto de Modelos (MCP). El LLM actúa como el cliente, recibiendo instrucciones en lenguaje natural por parte del usuario (por ejemplo, "Entrena un modelo YOLOv10 en el dataset de defectos personalizados"). El servidor MCP traduce las llamadas a herramientas del LLM a cargas útiles REST concretas. Esto elimina la necesidad de que los investigadores escriban scripts frágiles de Bash o configuren manualmente Helm charts, desplazando la complejidad del código determinista hacia un razonamiento probabilístico contenido de manera segura por esquemas de herramientas.
+Expusimos la API del clúster a través de un servidor personalizado de Model Context Protocol. El LLM actúa como el cliente, recibiendo indicaciones en lenguaje natural del usuario (ej., "Entrenar un modelo YOLOv10 en el dataset custom-defect"). El servidor MCP traduce las llamadas a herramientas del LLM en cargas útiles REST concretas y las despacha asincrónicamente vía \texttt{httpx} al Gateway FastAPI de NeuralForge. Esto desacopla al agente de las colas brutas de Celery y elimina la necesidad de que los investigadores escriban frágiles scripts de Bash.
 
 \subsection{Validación de Datos Shift-Left}
-Antes de despachar cualquier trabajo, el LLM dispara una herramienta estática de validación. Esta herramienta monta las unidades de red (CIFS/Samba) y verifica la integridad de los encabezados de imagen y las anotaciones de las cajas delimitadoras (bounding boxes). Formalizamos la restricción de validación de la siguiente manera:
+Antes de despachar cualquier trabajo, el LLM activa una herramienta de validación estática. Esta herramienta monta las unidades de red (CIFS/Samba) y verifica la integridad de los encabezados de las imágenes y las anotaciones de los cuadros delimitadores. Formalizamos la restricción de validación como:
 \begin{equation}
     V(D) = \prod_{i=1}^{N} \delta(H_i) \cdot \delta(B_i)
 \end{equation}
-donde $H_i$ representa la integridad del encabezado de la imagen $i$, y $B_i$ representa la validez de las coordenadas de las cajas delimitadoras. Si $V(D) = 0$, el dataset $D$ se rechaza. Al capturar archivos rotos o faltantes en el borde temprano del pipeline (shift-left), prevenimos asignar memoria de la GPU a procesos inevitablemente destinados a fallar.
+donde $H_i$ representa la integridad del encabezado de la imagen $i$, y $B_i$ representa la validez de las coordenadas del cuadro delimitador. Si $V(D) = 0$, el conjunto de datos $D$ es rechazado. Al detectar archivos rotos o faltantes en el borde del canal (shift-left), evitamos la asignación de memoria de la GPU a procesos inevitablemente condenados.
 
 \subsection{El Patrón Invocador-Ejecutor}
-Una vez validado, el servidor MCP encola la tarea en un bróker Celery distribuido (RabbitMQ). El demonio que se ejecuta en los nodos con GPU toma la tarea. Crucialmente, el invocador no ejecuta el bucle de entrenamiento en su propio espacio de proceso. En su lugar, lanza un contenedor Docker efímero (el Ejecutor) con un estricto límite de memoria (\texttt{--memory=16g --gpus=all}). Cuando termina el entrenamiento, o si se bloquea debido a un pico de memoria, el contenedor se destruye, liberando todos los recursos inmediatamente y protegiendo al demonio invocador.
+Una vez validado, el servidor MCP encola la tarea a través de la API en un broker Celery distribuido (Redis/RabbitMQ). El demonio que se ejecuta en los nodos de la GPU toma la tarea. Crucialmente, el invocador no ejecuta el bucle de entrenamiento en su propio espacio de procesos. En su lugar, genera un contenedor Docker efímero (el Ejecutor) con un límite estricto de memoria (\texttt{--memory=16g --gpus=all}). Cuando termina el entrenamiento, o si falla debido a un pico de memoria, el contenedor se destruye, liberando todos los recursos inmediatamente y protegiendo el demonio invocador.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{../en/figures/flowchart.pdf}
-\caption{Flujo de Orquestación desde Usuario hasta Contenedor}
-\label{fig:flowchart}
+\includegraphics[width=\columnwidth]{figures/fig1.pdf}
+\caption{Arquitectura Invocador-Ejecutor.}
 \end{figure}
 
 \section{Configuración Experimental y Detalles de Implementación}
-Desplegamos la arquitectura a lo largo de un clúster local de cuatro nodos. El nodo gerente principal ejecutó el bróker RabbitMQ y el servidor MCP. Tres nodos de trabajo, cada uno equipado con una GPU NVIDIA RTX 4090 (24GB VRAM) y 64GB de RAM de sistema, ejecutaron el demonio \texttt{wyoloservice2\_invoker}. Utilizamos un dataset curado internamente de 250,000 imágenes de alta resolución para la detección de defectos.
+Desplegamos la arquitectura a través de un clúster local que comprende cuatro nodos. El nodo administrador principal ejecutó el broker Redis y el servidor FastAPI. Tres nodos trabajadores, cada uno equipado con una GPU NVIDIA RTX 4090 (24GB VRAM) y 64GB de RAM del sistema, ejecutaron el demonio \texttt{wyoloservice2\_invoker}. Utilizamos un conjunto de datos curado internamente de 250,000 imágenes de alta resolución para la detección de defectos.
 
-Configuramos el LLM con una estricta temperatura de 0.1 para forzar un uso determinista de las herramientas y evitar alucinaciones al generar configuraciones de hiperparámetros. Sometimos al clúster a una prueba de estrés continua de 72 horas, simulando la presentación concurrente de trabajos masivos de entrenamiento YOLO por múltiples investigadores.
+Configuramos el LLM con una temperatura estricta de 0.1 para forzar el uso determinista de herramientas y prevenir alucinaciones al generar configuraciones de hiperparámetros. Sometimos al clúster a una prueba de estrés continua de 72 horas, simulando múltiples investigadores concurrentes enviando trabajos masivos de entrenamiento de YOLO.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Especificaciones de Hardware del Clúster}
 \label{tab:hardware}
 \begin{tabular}{@{}llll@{}}
 \toprule
 Tipo de Nodo & Núcleos CPU & RAM Sistema & GPU (VRAM) \\ \midrule
-Gerente & 16 & 32GB & N/A \\
+Administrador & 16 & 32GB & N/A \\
 Trabajador (x3) & 32 & 64GB & RTX 4090 (24GB) \\ \bottomrule
 \end{tabular}
 \end{table}
 
 \section{Resultados y Discusión}
-La orquestación agéntica demostró ser altamente resiliente bajo carga. El LLM analizó con éxito 142 solicitudes distintas en lenguaje natural, las tradujo a llamadas válidas a herramientas MCP y despachó los trabajos sin intervención humana.
+La orquestación agéntica demostró ser altamente resistente bajo carga. El LLM analizó con éxito 142 solicitudes distintas en lenguaje natural, las tradujo en llamadas válidas a herramientas MCP, y despachó los trabajos sin intervención humana.
 
 \subsection{Estudio de Ablación: Aislamiento de Hardware}
-Para validar matemáticamente el patrón Invocador-Ejecutor, ejecutamos un experimento de control en el que los bucles de entrenamiento operaban directamente dentro del espacio de procesos del demonio (el enfoque heredado). En la configuración heredada, registramos 12 fallas críticas OOM durante 48 horas, lo que requirió el reinicio manual del servidor y provocó 18 horas de tiempo de cómputo perdido.
+Para validar matemáticamente el patrón Invocador-Ejecutor, ejecutamos un experimento de control donde los bucles de entrenamiento se ejecutaron directamente dentro del espacio de procesos del demonio (el enfoque heredado). En la configuración heredada, registramos 12 caídas críticas de OOM en 48 horas, lo que requirió reinicios manuales del servidor y resultó en 18 horas de tiempo de cómputo perdido.
 
-Al forzar el límite con el Docker efímero, la cantidad de fallas del demonio cayó exactamente a cero. Cuando un trabajo intentaba asignar 28GB de memoria (superando el límite de 24GB de la VRAM), el núcleo del OS terminaba con éxito el contenedor efímero. El invocador de Celery detectó el código de salida, reportó el fallo al LLM y de inmediato aceptó el trabajo siguiente. El pico de uso de memoria en el SO del anfitrión disminuyó desde un inestable 28GB (derramándose a la memoria swap) a un tope estricto de 16GB.
+Al imponer el límite del contenedor Docker efímero, el número de caídas del demonio se redujo exactamente a cero. Cuando un trabajo intentó asignar 28GB de memoria (superando el límite de 24GB de VRAM), el kernel del SO eliminó elegantemente el contenedor efímero. El invocador de Celery capturó el código de salida, reportó el fallo al LLM, e inmediatamente aceptó el siguiente trabajo. El consumo máximo de memoria en el SO anfitrión cayó de un inestable 28GB (derramándose en el espacio de intercambio) a un límite estricto de 16GB.
 
-\begin{table}[h]
+\begin{table}[htbp]
 \centering
 \caption{Impacto del Patrón Invocador-Ejecutor}
 \label{tab:ablation_isolation}
@@ -90,33 +89,32 @@ Al forzar el límite con el Docker efímero, la cantidad de fallas del demonio c
 Métrica & Demonio Heredado & Invocador-Ejecutor \\ \midrule
 Caídas OOM (72h) & 12 & 0 \\
 Uso Pico Memoria & 28GB & 16GB \\
-Tiempo de Cómputo Perdido & 18 horas & 0 horas \\ \bottomrule
+Tiempo Cómputo Perdido & 18 horas & 0 horas \\ \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth]{../en/figures/barchart.pdf}
-\caption{Comparativa de Caídas OOM y Pico de Uso de Memoria}
-\label{fig:barchart}
+\includegraphics[width=\columnwidth]{figures/fig2.pdf}
+\caption{Comparación de caídas y uso de memoria.}
 \end{figure}
 
 \subsection{Estudio de Ablación: Validación Shift-Left}
-Introdujimos 500 archivos de imágenes deliberadamente dañados en el almacenamiento de red. Sin la compuerta shift-left, los trabajos de entrenamiento cargarían las imágenes, las mandarían a la GPU y se caerían a los 15 minutos de la primera época, malgastando un tiempo y energía importantes. Con la herramienta de validación de MCP habilitada, el agente detectó los bytes corruptos en 3.4 segundos y rechazó el trabajo antes de encolarlo. Este rechazo temprano mejoró el rendimiento general del clúster en un 35\% al mantener las GPUs enfocadas exclusivamente en cargas de trabajo válidas.
+Introdujimos 500 archivos de imagen deliberadamente corruptos en el almacenamiento de red. Sin el guardián shift-left, los trabajos de entrenamiento habrían cargado las imágenes, empujado a la GPU y fallado a los 15 minutos de la primera época, desperdiciando energía y tiempo significativos. Con la herramienta de validación MCP habilitada, el agente detectó los bytes corruptos en 3.4 segundos y rechazó el trabajo antes de encolarlo. Este rechazo temprano mejoró el rendimiento general del clúster en un 35\% al mantener a las GPUs enfocadas exclusivamente en cargas de trabajo válidas.
 
 \section{Declaración de Disponibilidad de Datos y Código}
-Esta arquitectura opera bajo un Modelo de Doble Licencia (PolyForm No Comercial / AGPLv3). El código fuente completo y los scripts de despliegue (\texttt{docker-compose up -d}) para reproducir estos experimentos se encuentran disponibles en el repositorio de producción en \url{https://github.com/wisrovi/wyoloservice2_production}. Esto sirve como un ejemplo concreto de cómo la investigación aplicada produce resultados excelentes y reproducibles para la comunidad.
+Esta arquitectura opera bajo un Modelo de Doble Licencia (PolyForm Noncommercial / AGPLv3). Para desplegar el proyecto y reproducir perfectamente estos experimentos declarados, se utiliza el repositorio \url{https://github.com/wisrovi/wyoloservice2_production}. Comandos de despliegue explícitos (ej., \texttt{docker-compose up -d}) están disponibles allí. Esto sirve como un ejemplo concreto de cómo la investigación aplicada produce resultados excelentes y reproducibles para la comunidad.
 
 \section{Impacto Más Amplio / Declaración Ética}
-Optimizar el uso de GPU conlleva implicaciones ambientales significativas. Al prevenir las caídas OOM y rechazar los datasets inválidos con prontitud, esta arquitectura reduce en gran medida el ocio y el derroche de los ciclos de la GPU, disminuyendo de forma directa la huella de carbono en sesiones masivas de entrenamiento. Además, el mover la validación a la izquierda permite que el agente audite el sesgo o desequilibrio en los datasets antes de que inicie el entrenamiento, asegurando un despliegue de modelo más confiable.
+Optimizar la utilización de la GPU conlleva importantes implicaciones ambientales. Al prevenir las caídas por OOM y rechazar los conjuntos de datos no válidos desde el principio, esta arquitectura reduce drásticamente los ciclos de GPU inactivos y desperdiciados, lo que reduce directamente la huella de carbono de las sesiones de entrenamiento masivas. Además, cambiar la validación a la izquierda permite que el agente audite los conjuntos de datos en busca de sesgos o desequilibrios antes de que comience el entrenamiento, garantizando un despliegue del modelo más seguro.
 
 \section{Conclusión y Trabajo Futuro}
-Establecimos que el integrar los LLMs con el Protocolo de Contexto de Modelos otorga una interfaz robusta para MLOps distribuidos. La combinación de validación de datos shift-left y el patrón Invocador-Ejecutor de aislamiento de hardware eliminan de manera efectiva las fuentes más comunes de degradación del clúster. Futuras investigaciones indagarán sobre cómo esparcir la capacidad de razonamiento del agente directamente a los nodos de borde, admitiendo una negociación descentralizada de tareas sin requerir un broker centralizado de Celery.
+Establecimos que la integración de LLMs con el Model Context Protocol proporciona una interfaz robusta para MLOps distribuido. La combinación de validación de datos shift-left y el patrón de aislamiento de hardware Invocador-Ejecutor elimina eficazmente las fuentes más comunes de degradación del clúster. La investigación futura explorará la distribución de las capacidades de razonamiento del agente directamente a los nodos de borde, permitiendo la negociación descentralizada de tareas sin un broker Celery centralizado.
 
 \section{Agradecimientos}
-Extendemos nuestra gratitud hacia los colaboradores del proyecto wisrovi-suit por su labor fundacional sobre los scripts subyacentes de orquestación, lo cual habilitó esta investigación aplicada.
+Extendemos nuestra gratitud a los contribuyentes del proyecto wisrovi-suit por su trabajo fundamental en los scripts de orquestación subyacentes, que permitieron esta investigación aplicada.
 
 \bibliographystyle{plain}
-\bibliography{../en/references}
+\bibliography{references}
 
 \end{document}
