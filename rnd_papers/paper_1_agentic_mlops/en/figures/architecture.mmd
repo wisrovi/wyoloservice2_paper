@@ -1,0 +1,7 @@
+graph LR
+    A[User] -->|Natural Language| B(LLM)
+    B -->|Tool Calls| C[MCP Server]
+    C -->|REST/Queue| D[Celery Broker]
+    D -->|Task Pickup| E[Invoker Daemon]
+    E -->|Spawn with Limits| F[Ephemeral Docker Container]
+    F -->|GPU Training| G[(GPU Resources)]
