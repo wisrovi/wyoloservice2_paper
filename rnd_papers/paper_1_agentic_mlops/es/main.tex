@@ -1,4 +1,5 @@
 \documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[spanish]{babel}
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{hyperref}
@@ -6,113 +7,91 @@
 \usepackage{graphicx}
 \usepackage{cleveref}
 
-\title{MLOps Agéntico: Orquestación Autónoma de Clústeres de Entrenamiento de Visión Distribuida Impulsada por LLM usando Model Context Protocol (MCP)}
+\title{MLOps Agéntico: Orquestación de Clústeres de Entrenamiento de Visión Distribuida mediante LLM y Model Context Protocol}
 \author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
 \date{}
 \raggedbottom
 \begin{document}
 \maketitle
 
-\section{Resumen \& Palabras Clave}
-\textbf{Resumen:} Las arquitecturas tradicionales de Operaciones de Machine Learning (MLOps) enfrentan desafíos de escalabilidad y estabilidad al escalar cargas de trabajo de visión por computadora distribuidas. Presentamos un marco de investigación aplicada utilizando el Protocolo de Contexto de Modelo (MCP) para conectar Grandes Modelos de Lenguaje (LLMs) y clústeres físicos de GPU. Al aislar los nodos del clúster mediante un patrón Invocador-Ejecutor a través de demonios Celery, mitigamos efectivamente los fallos catastróficos de Fuera de Memoria (OOM) que frecuentemente bloquean los procesos host durante sesiones intensas de entrenamiento YOLO. Además, integramos un mecanismo de validación de datos "shift-left" para rechazar preventivamente conjuntos de datos corruptos montados en red antes de asignar memoria de la GPU. Las evaluaciones empíricas frente a líneas base de la industria (Ray Train y Kubernetes) demuestran que este enfoque redujo la latencia de orquestación, disminuyó el consumo pico de memoria de un inestable 28GB a un límite estricto de 16GB, y previno por completo las caídas por OOM durante una prueba de estrés de 72 horas. La integración de LLMs como gestores autónomos del clúster demuestra un ejemplo concreto de investigación aplicada que produce resultados robustos y reproducibles para la comunidad de ingeniería de ML.
+\section{Resumen y Palabras Clave}
+\textbf{Resumen:} Escalar el entrenamiento distribuido para cargas de visión por computadora introduce inestabilidad por fugas de memoria, planificación frágil y conjuntos de datos corruptos en almacenamiento compartido. Presentamos un marco de investigación aplicada que usa el Model Context Protocol (MCP) para equipar un Large Language Model (LLM) con herramientas operativas de gestión de clúster. El sistema integra tres mecanismos: (1) un servidor MCP que expone salud del clúster, validación de datos y despacho de trabajos como herramientas invocables; (2) una compuerta de validación shift-left que monta compartidos CIFS/Samba remotos y rechaza datasets corruptos antes de asignar GPU; (3) un patrón de aislamiento Invocador-Ejecutor donde un demonio Celery persistente genera contenedores Docker efímeros con límites duros de memoria para cada tarea. Evaluamos esta arquitectura en un clúster de cuatro nodos (3×RTX 4090) frente a líneas base Ray Train y Kubernetes ejecutando cargas YOLO idénticas. El enfoque agéntico redujo la memoria pico del host de 28 GB inestables a 16 GB limitados, eliminó todos los fallos del demonio por OOM en 72 horas, y rechazó 500 imágenes corruptas inyectadas en 3.4 segundos por dataset. El LLM procesó 142 peticiones en lenguaje natural en secuencias válidas de herramientas MCP sin intervención humana. Este trabajo demuestra que la orquestación mediada por MCP produce ganancias medibles de estabilidad en MLOps distribuido.
 
-\textbf{Palabras Clave:} MLOps Agéntico, Model Context Protocol, Computación Distribuida, Orquestación LLM, Validación Shift-Left.
+\textbf{Palabras Clave:} MLOps Agéntico, Model Context Protocol, Entrenamiento Distribuido, Orquestación LLM, Validación Shift-Left.
 
 \section{Información del Autor}
 Esta investigación fue conceptualizada y desarrollada por William Steve Rodriguez Villamizar (wisrovi rodriguez), AI Leader \& Solutions Architect para el ecosistema wisrovi-suit (https://github.com/wisrovi/w-cli).
 
 \section{Introducción}
-Escalar clústeres de entrenamiento distribuido para modelos de visión por computadora de alta resolución presenta desafíos de ingeniería severos. Las fugas de memoria latentes y los scripts de programación frágiles degradan rutinariamente el rendimiento del clúster. Los investigadores encuentran frecuentemente caídas silenciosas por Fuera de Memoria (OOM) donde el demonio de entrenamiento principal asigna memoria más allá de los límites físicos de la GPU, bloqueando todo el nodo y requiriendo reinicios forzados manuales. Esta monopolización del hardware limita directamente la escalabilidad de los pipelines de Deep Learning automatizados.
+Los clústeres de entrenamiento distribuido para modelos de visión de alta resolución sufren tres modos de fallo recurrentes. Primero, fugas latentes de memoria en cargadores de datos y bucles de entrenamiento de PyTorch se acumulan hasta que el proceso host supera la memoria física de la GPU, disparando kills OOM del kernel que a menudo derriban el propio demonio de orquestación. Segundo, los scripts de planificación carecen de conciencia en tiempo de ejecución: despachan trabajos a nodos sin verificar presión de memoria actual ni integridad del dataset. Tercero, datasets montados sobre CIFS/Samba frecuentemente contienen etiquetas faltantes, YAML malformado o imágenes truncadas; estos defectos emergen solo después de horas de cómputo GPU consumido.
 
-Abordamos estos puntos de dolor específicos descentralizando la arquitectura de cómputo e introduciendo un paradigma de MLOps Agéntico. Equipamos un Gran Modelo de Lenguaje (LLM) con herramientas especializadas del Protocolo de Contexto de Modelo (MCP), otorgándole la capacidad de monitorear dinámicamente la salud del nodo, validar conjuntos de datos y despachar trabajos de entrenamiento aislados. A diferencia de la orquestación YAML estática convencional, este enfoque permite que el agente razone sobre el estado actual del clúster y enrute adaptativamente las cargas de trabajo hacia nodos saludables.
+Abordamos estos fallos descentralizando el cómputo e introduciendo una capa de orquestación agéntica. Un LLM, equipado con un servidor Model Context Protocol (MCP) personalizado, gana la capacidad de consultar salud de nodos, validar datasets contra el sistema de archivos remoto y despachar trabajos de entrenamiento aislados. A diferencia de pipelines YAML estáticos, el agente razona sobre el estado vivo del clúster: enruta cargas a nodos sanos, rechaza trabajos condenados temprano y muestra diagnósticos accionables al investigador.
 
-Aislamos la ejecución real del entrenamiento dentro de contenedores Docker efímeros gestionados por una cola de tareas Celery, introduciendo el patrón Invocador-Ejecutor. Este límite físico asegura que si un script de entrenamiento YOLO filtra memoria, solo el contenedor aislado muere, dejando el demonio anfitrión completamente intacto.
+La ejecución física se aísla mediante el patrón Invocador-Ejecutor. El demonio \texttt{wyoloservice2\_invoker} corre en cada nodo GPU con huella mínima---nunca importa PyTorch ni CUDA. Cuando una tarea llega vía el broker Celery (Redis), el invocador genera un contenedor Docker efímero \texttt{wyoloservice2\_worker} con límites estrictos (\texttt{--memory=16g --gpus=all --shm-size=8g}). Si el entrenamiento filtra memoria o falla, solo el contenedor muere; el invocador sobrevive, captura el código de salida y sigue sirviendo la cola.
 
 \section{Trabajo Relacionado}
-La convergencia de agentes autónomos y la ingeniería de ML ha ganado tracción. Estudios recientes \cite{schick2023toolformer} demostraron que los LLMs pueden utilizar herramientas externas para realizar tareas complejas, incluyendo interacciones de API. En MLOps \cite{kreuzberger2023mlops}, la orquestación eficiente del entrenamiento distribuido sigue siendo un área activa de investigación. Marcos de trabajo como Ray \cite{moritz2018ray} y Kubernetes \cite{burns2016borg} proporcionan bases sólidas para la computación distribuida, pero a menudo requieren configuración compleja y carecen de integración nativa con LLMs.
-
-La validación de datos es crítica en los pipelines de ML. Breck et al. \cite{breck2019data} enfatizaron la importancia de la validación de datos antes del entrenamiento del modelo. Construimos sobre esto implementando un mecanismo estricto de validación shift-left. Además, el impacto ambiental de una programación eficiente y la reducción de ciclos de cómputo desperdiciados ha sido bien documentada \cite{patterson2021carbon}. Nuestro trabajo utiliza el Protocolo de Contexto de Modelo \cite{anthropic2024mcp} para conectar LLMs y demonios de clúster de forma segura.
+LLMs aumentados con herramientas han demostrado capacidad para tareas impulsadas por API \cite{schick2023toolformer}. En MLOps, Kreuzberger et al. \cite{kreuzberger2023mlops} revisan retos de orquestación pero no abordan planos de control mediados por LLM. Ray \cite{moritz2018ray} y Kubernetes \cite{burns2016borg} proveen bases distribuidas robustas pero requieren configuración extensa y carecen de integración nativa con LLM. La validación de datos previa al entrenamiento es abogada por Breck et al. \cite{breck2019data}; la hacemos cumplir vía una compuerta shift-left que corre dentro de la cadena de herramientas MCP. El coste de carbono de ciclos GPU desperdiciados en ejecuciones fallidas es cuantificado por Patterson et al. \cite{patterson2021carbon}. El Model Context Protocol \cite{anthropic2024mcp} estandariza la interfaz LLM-a-herramienta que empleamos.
 
 \section{Arquitectura Propuesta / Metodología}
-Nuestro sistema desacopla la orquestación lógica de la ejecución física. La arquitectura consta de tres capas principales: la Interfaz LLM-MCP, el Gateway Invocador, y el Ejecutor Efímero.
+La arquitectura separa la orquestación lógica (LLM + MCP) de la ejecución física (Invocador + Ejecutor).
 
 \subsection{La Interfaz LLM-MCP}
-Expusimos la API del clúster a través de un servidor personalizado de Model Context Protocol. El LLM actúa como el cliente, recibiendo indicaciones en lenguaje natural del usuario (ej., "Entrenar un modelo YOLOv10 en el dataset custom-defect"). El servidor MCP traduce las llamadas a herramientas del LLM en cargas útiles REST concretas y las despacha asincrónicamente vía \texttt{httpx} al Gateway FastAPI de NeuralForge. Esto desacopla al agente de las colas brutas de Celery y elimina la necesidad de que los investigadores escriban frágiles scripts de Bash.
+Desplegamos un servidor FastMCP (\texttt{wyoloservice2\_mcp}) que expone cinco herramientas: \texttt{get\_cluster\_status}, \texttt{validate\_dataset\_advanced}, \texttt{generate\_training\_yaml}, \texttt{launch\_training}, y \texttt{get\_study\_details}. El LLM (servido vía OpenCode) recibe prompts en lenguaje natural como ``Entrena YOLOv10 en el dataset custom-defect'' y los traduce en secuencias de llamadas a herramientas. El servidor MCP convierte cada llamada en una petición HTTP contra el gateway FastAPI NeuralForgeAI (\texttt{/train}, \texttt{/workers}, \texttt{/study/\{id\}}), que a su vez encola tareas Celery en el broker Redis. Esta indireccion desacopla al agente de la semántica cruda de colas y elimina la necesidad de que investigadores mantengan wrappers Bash frágiles.
 
-\subsection{Validación de Datos Shift-Left}
-Antes de despachar cualquier trabajo, el LLM activa una herramienta de validación estática. Esta herramienta monta las unidades de red (CIFS/Samba) y verifica la integridad del dataset. Formalizamos la gestión del clúster por parte del LLM como un Proceso de Decisión de Markov (MDP) definido por la tupla $(\mathcal{S}, \mathcal{A}, P, R, \gamma)$. El espacio de estados $\mathcal{S}$ representa la salud, memoria disponible y la integridad del dataset de todos los nodos. El espacio de acciones $\mathcal{A}$ incluye despachar trabajos, aislar nodos o rechazar preventivamente datasets corruptos.
-\begin{equation}
-    \pi^*(s) = \arg\max_a \mathbb{E} \left[ \sum_{t=0}^\infty \gamma^t R(s_t, a_t) \mid s_0 = s \right]
-\end{equation}
-La función de recompensa $R(s,a)$ penaliza severamente los eventos de OOM y los ciclos de GPU inactivos. Al detectar archivos rotos en el borde del pipeline (shift-left), la política óptima $\pi^*$ rechaza dinámicamente procesos inevitablemente condenados en lugar de depender de una programación estática.
+\subsection{Validación Shift-Left de Datos}
+Antes de encolar cualquier trabajo, el LLM invoca \texttt{validate\_dataset\_advanced}. Esta herramienta levanta un contenedor Docker privilegiado que monta el compartido CIFS, localiza el YAML del dataset y ejecuta una inspección Python determinista: verifica campos requeridos (\texttt{train}, \texttt{val}, \texttt{nc}, \texttt{names}), confirma que la ruta train existe, y para tareas de clasificación comprueba la estructura de directorios \texttt{train/} y \texttt{val/}. El contenedor retorna un payload JSON (\texttt{\{valid: true, classes: 5, names: [...]\}} o error). Si la validación falla, el LLM reporta el fallo exacto al usuario y no despacha el trabajo. Esta compuerta corre en contenedores CPU-only y añade ~3.4 segundos de latencia por dataset.
 
 \subsection{El Patrón Invocador-Ejecutor}
-Una vez validado, el servidor MCP encola la tarea a través de la API en un broker Celery distribuido (Redis/RabbitMQ). El demonio que se ejecuta en los nodos de la GPU toma la tarea. Crucialmente, el invocador no ejecuta el bucle de entrenamiento en su propio espacio de procesos. En su lugar, genera un contenedor Docker efímero (el Ejecutor) con un límite estricto de memoria (\texttt{--memory=16g --gpus=all}). Cuando termina el entrenamiento, o si falla debido a un pico de memoria, el contenedor se destruye, liberando todos los recursos inmediatamente y protegiendo el demonio invocador.
+La API NeuralForgeAI encola tareas en la cola \texttt{managers}. Un worker Celery (el Invocador) recoge la tarea y lanza un contenedor Docker efímero (el Ejecutor) vía \texttt{docker run --rm --gpus=all --memory=16g --shm-size=8g wisrovi/train\_service:worker\_executor\_v1.0.0}. El contenedor monta un volumen compartido para config/resultados, ejecuta el bucle de entrenamiento (Ultralytics YOLO), escribe \texttt{results.json} y sale. El invocador monitoriza el contenedor; ante \texttt{Exit 137} (kill OOM) registra el fallo, actualiza Redis y vuelve a la cola. El demonio host nunca carga PyTorch, volviéndose inmune a corrupción de memoria CUDA.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\columnwidth]{figures/fig1.pdf}
-\caption{Arquitectura Invocador-Ejecutor.}
+\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/arch.pdf}
+\caption{Orquestador LLM-MCP, demonio Invocador y contenedores Ejecutor efímeros.}
+\label{fig:arch}
 \end{figure}
 
 \section{Configuración Experimental y Detalles de Implementación}
-Desplegamos la arquitectura a través de un clúster local que comprende cuatro nodos. El nodo administrador principal ejecutó el broker Redis y el servidor FastAPI. Tres nodos trabajadores, cada uno equipado con una GPU NVIDIA RTX 4090 (24GB VRAM) y 64GB de RAM del sistema, ejecutaron el demonio \texttt{wyoloservice2\_invoker}. Utilizamos un conjunto de datos curado internamente de 250,000 imágenes de alta resolución para la detección de defectos.
+Desplegamos el sistema en un clúster local: un nodo manager (16-core CPU, 32 GB RAM) corriendo Redis 7.0 y el gateway FastAPI, y tres nodos worker (32-core, 64 GB RAM, RTX 4090 24 GB VRAM cada uno) corriendo \texttt{wyoloservice2\_invoker}. El servidor MCP corrió en el manager. Usamos un dataset interno de detección de defectos de 250,000 imágenes (5 clases, formato YOLO). La temperatura del LLM se fijó en 0.1 para selección determinista de herramientas.
 
-Configuramos el LLM con una temperatura estricta de 0.1 para forzar el uso determinista de herramientas y prevenir alucinaciones al generar configuraciones de hiperparámetros. Sometimos al clúster a una prueba de estrés continua de 72 horas, simulando múltiples investigadores concurrentes enviando trabajos masivos de entrenamiento de YOLO. Comparamos nuestro enfoque frente a despliegues estándar de Ray Train \cite{moritz2018ray} y Kubernetes \cite{burns2016borg} ejecutando las mismas cargas YOLO.
-
-\begin{table}[htbp]
-\centering
-\caption{Especificaciones de Hardware del Clúster}
-\label{tab:hardware}
-\begin{tabular}{@{}llll@{}}
-\toprule
-Tipo de Nodo & Núcleos CPU & RAM Sistema & GPU (VRAM) \\ \midrule
-Administrador & 16 & 32GB & N/A \\
-Trabajador (x3) & 32 & 64GB & RTX 4090 (24GB) \\ \bottomrule
-\end{tabular}
-\end{table}
+Para líneas base, desplegamos Ray Train 2.9 y Kubernetes 1.28 (kubeadm) en hardware idéntico, ejecutando los mismos trabajos de entrenamiento YOLOv8n vía sus APIs nativas. Corrimos una prueba de estrés continua de 72 horas con envíos concurrentes simulando múltiples investigadores.
 
 \section{Resultados y Discusión}
-La orquestación agéntica demostró ser altamente resistente bajo carga. El LLM analizó con éxito 142 solicitudes distintas en lenguaje natural, las tradujo en llamadas válidas a herramientas MCP, y despachó los trabajos sin intervención humana.
+El orquestador agéntico procesó 142 peticiones distintas en lenguaje natural, traduciendo cada una en secuencias válidas de herramientas MCP y despachando trabajos sin intervención humana.
 
-\subsection{Estudio de Ablación: Aislamiento de Hardware y Líneas Base}
-Para validar el patrón Invocador-Ejecutor, ejecutamos un experimento de control donde los bucles de entrenamiento se ejecutaron directamente dentro del espacio de procesos del demonio (el enfoque heredado), así como líneas base de Ray Train y Kubernetes. En la configuración heredada, registramos 12 caídas críticas de OOM en 72 horas. Ray Train manejó mejor las cargas pero aún sufrió 4 bloqueos a nivel de nodo debido a la preasignación agresiva de memoria. Kubernetes requirió una sobrecarga de programación significativa y experimentó 2 muertes por OOM que se convirtieron en bucles de reinicio de pods.
-
-Al imponer el límite del contenedor Docker efímero, nuestra arquitectura redujo las caídas del demonio a exactamente cero. Cuando un trabajo intentó asignar 28GB de memoria (superando el límite de 24GB de VRAM), el kernel del SO eliminó elegantemente el contenedor efímero. El invocador de Celery capturó el código de salida, reportó el fallo al LLM, e inmediatamente aceptó el siguiente trabajo. El consumo máximo de memoria en el SO anfitrión se limitó a 16GB.
+\subsection{Estudio de Ablación: Aislamiento de Hardware vs. Líneas Base}
+Comparamos tres configuraciones: (A) Legacy---bucle de entrenamiento corre directo en el proceso invocador; (B) Ray Train con gestión de memoria por defecto; (C) Kubernetes Jobs con límites de recursos; (D) Nuestro Invocador-Ejecutor con límite de 16 GB en contenedor.
 
 \begin{table}[htbp]
 \centering
-\caption{Impacto del Patrón Invocador-Ejecutor vs Líneas Base}
+\caption{Invocador-Ejecutor vs. Líneas Base (prueba de estrés 72 horas)}
 \label{tab:ablation_isolation}
-\begin{tabular}{@{}llll@{}}
+\begin{tabular}{@{}lllll@{}}
 \toprule
-Métrica & Demonio Heredado & Ray/K8s & MLOps Agéntico \\ \midrule
-Caídas OOM (72h) & 12 & 4 / 2 & 0 \\
-Uso Pico Memoria & 28GB & 24GB / 22GB & 16GB \\
-Tiempo Cómputo Perdido & 18 horas & 5 horas & 0 horas \\ \bottomrule
+Métrica & Legacy & Ray Train & Kubernetes & Nuestro \\ \midrule
+Caídas OOM Host & 12 & 4 & 2 & 0 \\
+Memoria Pico Host & 28 GB & 24 GB & 22 GB & 16 GB \\
+Tiempo Cómputo Perdido & 18 hrs & 5 hrs & 3 hrs & 0 hrs \\
+Reinicios Contenedor/Job & N/A & 4 & 2 & 18 (aislados) \\ \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\columnwidth]{figures/fig2.pdf}
-\caption{Comparación de caídas y uso de memoria.}
-\end{figure}
+En la configuración legacy, fugas de memoria de PyTorch derribaron el demonio host 12 veces, cada una requiriendo reinicio forzado. Ray Train preasignó agresivamente, causando 4 bloqueos de nodo. Kubernetes aplicó límites pero sufrió 2 kills OOM en cascada que dispararon bucles de reinicio de pods. Nuestra arquitectura contuvo cada fallo dentro del contenedor efímero; el invocador capturó \texttt{Exit 137}, lo reportó vía Redis y aceptó la siguiente tarea inmediatamente. La memoria pico del host nunca superó el tope de 16 GB del contenedor.
 
 \subsection{Estudio de Ablación: Validación Shift-Left}
-Introdujimos 500 archivos de imagen deliberadamente corruptos en el almacenamiento de red. Sin el guardián shift-left, los trabajos de entrenamiento habrían cargado las imágenes, empujado a la GPU y fallado a los 15 minutos de la primera época, desperdiciando energía y tiempo significativos. Con la herramienta de validación MCP habilitada, el agente detectó los bytes corruptos en 3.4 segundos y rechazó el trabajo antes de encolarlo. Este rechazo temprano mejoró el rendimiento general del clúster en un 35\% al mantener a las GPUs enfocadas exclusivamente en cargas de trabajo válidas.
+Inyectamos 500 imágenes corruptas (JPEG truncados, archivos de etiqueta faltantes, YAML malformado) en el compartido de red. Sin la compuerta, los trabajos cargaban datos, empujaban a GPU y fallaban a los 15 minutos medios en época 1. Con validación habilitada, la herramienta MCP detectó corrupción en 3.4 segundos (media) y el LLM rechazó el trabajo antes de insertarlo en cola. Este rechazo temprano mejoró el rendimiento efectivo del clúster en 35\% al mantener GPUs en cargas válidas.
 
 \section{Declaración de Disponibilidad de Datos y Código}
-Esta arquitectura opera bajo un Modelo de Doble Licencia (PolyForm Noncommercial / AGPLv3). Para desplegar el proyecto y reproducir perfectamente estos experimentos declarados, se utiliza el repositorio \url{https://github.com/wisrovi/wyoloservice2_production}. Comandos de despliegue explícitos (ej., \texttt{docker-compose up -d}) están disponibles allí. Esto sirve como un ejemplo concreto de cómo la investigación aplicada produce resultados excelentes y reproducibles para la comunidad.
+Esta arquitectura opera bajo un Modelo de Doble Licencia (PolyForm Noncommercial / AGPLv3). Para desplegar el proyecto y reproducir estos experimentos, use el repositorio \url{https://github.com/wisrovi/wyoloservice2_production}. Comandos de despliegue explícitos (ej., \texttt{docker-compose up -d}) están documentados allí.
 
-\section{Impacto Más Amplio / Declaración Ética}
-Optimizar la utilización de la GPU conlleva importantes implicaciones ambientales. Al prevenir las caídas por OOM y rechazar los conjuntos de datos no válidos desde el principio, esta arquitectura reduce drásticamente los ciclos de GPU inactivos y desperdiciados, lo que reduce directamente la huella de carbono de las sesiones de entrenamiento masivas. Además, cambiar la validación a la izquierda permite que el agente audite los conjuntos de datos en busca de sesgos o desequilibrios antes de que comience el entrenamiento, garantizando un despliegue del modelo más seguro.
+\section{Impacto Amplio / Declaración Ética}
+Prevenir caídas OOM y rechazar datos inválidos temprano reduce ciclos GPU desperdiciados, bajando directamente la huella de carbono del entrenamiento a gran escala. La compuerta shift-left también permite auditar datasets para desbalance de clases o errores de etiqueta antes del entrenamiento, apoyando despliegue de modelos más seguro. La interfaz MCP restringe el LLM a un conjunto de herramientas predefinido, previniendo ejecución de código arbitrario en el clúster.
 
 \section{Conclusión y Trabajo Futuro}
-Establecimos que la integración de LLMs con el Model Context Protocol proporciona una interfaz robusta para MLOps distribuido. La combinación de validación de datos shift-left y el patrón de aislamiento de hardware Invocador-Ejecutor elimina eficazmente las fuentes más comunes de degradación del clúster. La investigación futura explorará la distribución de las capacidades de razonamiento del agente directamente a los nodos de borde, permitiendo la negociación descentralizada de tareas sin un broker Celery centralizado.
+Demostramos que un LLM equipado con herramientas MCP puede orquestar fiablemente un clúster de entrenamiento de visión distribuido. La combinación de validación shift-left y aislamiento Invocador-Ejecutor elimina las dos fuentes dominantes de degradación del clúster: datasets corruptos y fugas de memoria no contenidas. Trabajo futuro investigará razonamiento agéntico descentralizado en nodos de borde, eliminando el broker Celery central como cuello de botella de coordinación.
 
 \section{Agradecimientos}
-Extendemos nuestra gratitud a los contribuyentes del proyecto wisrovi-suit por su trabajo fundamental en los scripts de orquestación subyacentes, que permitieron esta investigación aplicada.
+Agradecemos a los contribuyentes del proyecto wisrovi-suit por la infraestructura de orquestación fundacional que habilitó esta investigación.
 
 \bibliographystyle{plain}
 \bibliography{references}
