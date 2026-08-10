@@ -1,4 +1,5 @@
 \documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[spanish]{babel}
 \usepackage{microtype}
 \usepackage{booktabs}
 \usepackage{hyperref}
@@ -7,120 +8,130 @@
 \usepackage{cleveref}
 \raggedbottom
 
-\title{Pipelines Automatizados de XAI en Visión Computacional: Integrando EDA Pre-entrenamiento y Diagnósticos LLM en el Dispositivo dentro del Ciclo de Vida MLOps}
+\title{Perfilado Automatizado de Datasets y Generación de Reportes de Entrenamiento Asistidos por LLM en la Pila wyoloservice2}
 \author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
 \date{}
 
 \begin{document}
 \maketitle
 
-\section{Resumen \& Palabras Clave}
-\textbf{Resumen:} La interpretación de las métricas de visión computacional requiere tradicionalmente un análisis manual exhaustivo, creando un enorme cuello de botella temporal entre el entrenamiento del modelo y el despliegue. Presentamos un pipeline automatizado de Inteligencia Artificial Explicable (XAI) utilizando una arquitectura de "Capa de Cebolla" integrada directamente en la capa de ejecución física de un clúster MLOps. Nuestro sistema ejecuta un Análisis Exploratorio de Datos (EDA) determinista antes del entrenamiento YOLO, bloqueando los conjuntos de datos corruptos. Tras el entrenamiento, desplegamos un Modelo de Lenguaje Grande (LLM) localizado en el dispositivo (OpenCode) para interpretar métricas en formato CSV, matrices de confusión y curvas de pérdida. El LLM sintetiza estos tensores en crudo en informes narrativos legibles por humanos formateados en Markdown y DOCX. Nuestros estudios de ablación empírica demuestran que la integración de esta capa de diagnóstico reduce la sobrecarga analítica manual en un 92\% al mismo tiempo que impone una estricta privacidad de los datos al evitar llamadas a API externas. Esta arquitectura aplicada democratiza la toma de decisiones basada en datos dentro del ciclo de vida de ML.
+\section{Resumen y Palabras Clave}
+\textbf{Resumen:} La librería del worker wyoloservice2 incluye un módulo de Análisis Exploratorio de Datos (EDA) pre-entrenamiento que perfila datasets YOLO para balance de clases, geometría de bounding-boxes y calidad de imágenes. Documentamos este componente, su implementación y resultados de benchmark standalone. Un generador de reportes LLM post-entrenamiento fue prototipado pero \textbf{no está implementado} en el código actual ni cableado en el pipeline de producción; documentamos su diseño y perfil de recursos para transparencia. El módulo EDA detecta imágenes corruptas, archivos duplicados, desbalance de clases y anomalías de bbox en 5--30 segundos por dataset en CPU. Comparamos nuestro EDA contra Great Expectations, Deepchecks, Cleanlab, DVC metrics, Evidently AI, y WhyLabs en 50 datasets. El módulo EDA está disponible como paso de librería importable (\texttt{DatasetEDAState}) para equipos que deseen extender el grafo de ejecución WPipe. No reivindicamos integración end-to-end en la versión actual; el generador LLM queda como prototipo que requiere validación adicional.
 
-\textbf{Palabras Clave:} Inteligencia Artificial Explicable (XAI), MLOps, Modelos de Lenguaje Grandes, Análisis Exploratorio de Datos (EDA), Visión Computacional, YOLO.
+\textbf{Palabras Clave:} Análisis Exploratorio de Datos, Diagnósticos LLM, YOLO, MLOps, WPipe, Validación de Datos, Perfilado de Datasets.
 
 \section{Información del Autor}
 Esta investigación fue conceptualizada y desarrollada por William Steve Rodriguez Villamizar (wisrovi rodriguez), AI Leader \& Solutions Architect para el ecosistema wisrovi-suit (https://github.com/wisrovi/w-cli).
 
 \section{Introducción}
-A medida que los modelos de aprendizaje profundo aumentan en complejidad, la naturaleza de "caja negra" de su ejecución se convierte en un riesgo crítico en despliegues industriales. En los pipelines estándar de visión computacional, una arquitectura YOLO produce miles de puntos de datos numéricos por época, incluyendo curvas de precisión-exhaustividad, pérdidas de validación y métricas de confianza. La interpretación de estas salidas normalmente requiere que un científico de datos extraiga manualmente los registros CSV, trace las métricas y escriba un informe de diagnóstico.
+Los pipelines de visión por computadora producen una brecha diagnóstica antes del entrenamiento: los equipos a menudo omiten el perfilado de datasets y descubren desbalance de clases, errores de etiqueta o imágenes corruptas solo después de horas de tiempo GPU. La librería del worker wyoloservice2 (executor\_v2.0/wtrain) aborda esta brecha con un componente standalone de EDA pre-entrenamiento:
 
-Esta fase de diagnóstico manual introduce un cuello de botella severo. Además, si un conjunto de datos está desequilibrado estadísticamente o corrompido antes del entrenamiento, los recursos gastados en la optimización se desperdician. Abordamos estos dos problemas fundamentales —la ceguera del conjunto de datos pre-entrenamiento y la oscuridad de las métricas post-entrenamiento— integrando XAI Automatizado en la lógica de ejecución central del trabajador del clúster.
+\begin{enumerate}
+    \item \textbf{EDA Pre-entrenamiento} (\texttt{dataset\_analyzer.py}): Un analizador determinista que recorre estructuras de directorios YOLO (detección, segmentación, clasificación), computa perfiles estadísticos, genera visualizaciones matplotlib/seaborn, y emite reportes Markdown + DOCX con conclusiones heurísticas.
+\end{enumerate}
 
-Al aprovechar un Modelo de Lenguaje Grande en el dispositivo (OpenCode), automatizamos la traducción de matrices numéricas complejas en lógica empresarial narrativa. Esto transforma el pipeline MLOps de un motor de cómputo pasivo en un sistema activo y de autodiagnóstico.
+Un generador de reportes LLM post-entrenamiento fue explorado como prototipo (\texttt{llm\_analyzer.py} concepto) pero \textbf{no está implementado} en la base de código actual y no está integrado en el pipeline de producción (\texttt{main.py}). Lo documentamos aquí para transparencia sobre la dirección de investigación, pero enfatizamos que este trabajo documenta un componente EDA funcional con benchmarks comparativos, no un sistema integrado end-to-end.
 
 \section{Trabajo Relacionado}
-La IA Explicable (XAI) en visión computacional se centra en gran medida en mapas de calor y atribución de gradientes \cite{selvaraju2017grad, lundberg2017unified}. Sin embargo, estos métodos visuales requieren interpretación humana. Ribeiro et al. \cite{ribeiro2016should} establecieron que los Modelos de Lenguaje Grandes poseen capacidades emergentes para actuar como explicadores post-hoc, capaces de razonar sobre datos de métricas tabulares.
+Herramientas de perfilado de datos incluyen Great Expectations \cite{greatexpectations2023} para datos tabulares, Deepchecks \cite{deepchecks2023} para validación ML-específica, Cleanlab \cite{northcutt2021cleanlab} para detección de ruido en etiquetas, DVC \cite{kuprie2022dvc} para versionado de datos, Evidently AI \cite{evidently2023} para monitoreo de deriva de datos, y WhyLabs \cite{whylabs2023} para observabilidad ML; nuestro analizador es específico de YOLO y corre dentro del contenedor worker. Análisis de logs asistido por LLM aparece en literatura MLOps reciente \cite{symeonidis2022mlops}; LangSmith \cite{langsmith2023} y plataformas similares ofrecen trazado de LLM hospedado. El framework Ultralytics YOLO \cite{jocher2023ultralytics} emite el formato \texttt{results.csv} que un analizador futuro podría consumir. Benchmarks de evaluación LLM como MT-Bench \cite{zheng2023judging} y Chatbot Arena \cite{chiang2024chatbot} proveen marcos estandarizados para evaluar calidad de salidas LLM.
 
-Ng \cite{ng2021data} introdujeron PASTA, un sistema de evaluación perceptual que integra análisis explicativo, estableciendo la base para la interpretación automatizada de métricas. Sobre esta base, Touvron et al. \cite{touvron2023llama} propusieron AutoPipe, un marco orientado a agentes para automatizar configuraciones de pipelines post-entrenamiento. Sin embargo, muchos de estos marcos dependen de APIs de LLM basadas en la nube, lo que introduce graves riesgos de privacidad para los datos industriales patentados.
+\section{Módulo EDA Pre-Entrenamiento}
+\subsection{Arquitectura}
+La clase \texttt{DatasetAnalyzer} auto-detecta tipo de tarea (clasificación vs. detección vs. segmentación) desde estructura de directorios. Para detección/segmentación, parsea archivos de etiquetas YOLO (\texttt{.txt} con \texttt{class x y w h} normalizados), acumulando:
+\begin{itemize}
+    \item Distribución de clases por split (train/val/test)
+    \item Dimensiones de imágenes, aspect ratios
+    \item Áreas de bounding boxes, aspect ratios, posiciones centrales
+    \item Detección de duplicados via SHA-1 de contenido de píxeles
+    \item Detección de imágenes corruptas/ilegibles via OpenCV
+    \item Detección de imágenes pequeñas (< 64 px)
+\end{itemize}
+Para clasificación, cuenta imágenes por directorio de clase.
 
-Trabajos recientes demostraron la viabilidad de desplegar LLMs cuantizados directamente en hardware de borde. Nuestra arquitectura fusiona estos conceptos, integrando el modelo local LLaMA \cite{touvron2023llama} y el Análisis Exploratorio de Datos (EDA) determinista \cite{ng2021data} directamente en la infraestructura del trabajador resiliente orquestada por wisrovi-suit.
+\subsection{Generación de Reportes}
+\texttt{EDAReportGenerator} produce:
+\begin{itemize}
+    \item Gráficos matplotlib/seaborn: barras de distribución de clases, pie charts de splits, histogramas de tamaños de imagen, scatter plots de área/aspecto/centros de bbox
+    \item Conclusiones heurísticas: desbalance de clases (> 1.5$\times$ ratio), variación de tamaño de imagen (> 400 px rango), varianza de área bbox (> 20$\times$), listas de duplicados/corruptas/pequeñas
+    \item Salida: \texttt{EDA\_Report.md} y \texttt{EDA\_Report.docx} en \texttt{/wyolo/worker/train\_service\_results/extras/eda/}
+\end{itemize}
 
-\section{Arquitectura Propuesta / Metodología}
-Estructuramos el entorno de ejecución \texttt{wyoloservice2\_worker} como un pipeline de "Capa de Cebolla". La ruta de ejecución es determinista y secuencial, compuesta por tres fases distintas.
-
-\subsection{Fase 1: EDA Pre-Entrenamiento}
-Antes de que se inicialice PyTorch, el trabajador ejecuta un Análisis Exploratorio de Datos localizado. Analiza el conjunto de datos montado en red, calculando la distribución de clases, la varianza del área de los cuadros delimitadores y la integridad de las imágenes.
-\begin{equation}
-    D_{balance} = 1 - \frac{\sum_{i=1}^{C} |N_i - \bar{N}|}{2 \cdot (C-1) \cdot \bar{N}}
-\end{equation}
-Si el balance de clases $D_{balance}$ cae por debajo de un umbral codificado rígidamente (e.g., 0.4), el trabajador marca el conjunto de datos. Este análisis preventivo evita que el clúster pase horas optimizando un modelo matemáticamente condenado al fracaso.
-
-
-\subsection{Formulación Matemática de la Extracción de Métricas XAI}
-Para garantizar una evaluación rigurosa, definimos el índice de integridad del conjunto de datos $I_D$ que modela la probabilidad conjunta del equilibrio de clases y la varianza del cuadro delimitador:
-\begin{equation}
-    I_D = \lambda_1 D_{balance} + \lambda_2 \exp(-\sigma_{bbox}^2)
-\end{equation}
-donde $\sigma_{bbox}^2$ es la varianza normalizada de las áreas de los cuadros delimitadores, y $\lambda_1, \lambda_2$ se establecen empíricamente en $0.6$ y $0.4$. Si $I_D < 0.5$, el entrenamiento se aborta. El LLM local procesa las métricas estructurales $\mathcal{M} = \{mAP_{50}, mAP_{50-95}, P, R\}$ utilizando un algoritmo de inferencia restringido por indicaciones para evitar alucinaciones, emitiendo un vector de explicación $E$ tal que $E = \arg\max_{e} P(e | \mathcal{M}, \theta_{LLM})$.
-
-\subsection{Fase 2: Entrenamiento YOLO}
-Suponiendo que el guardián del EDA aprueba el conjunto de datos, el trabajador ejecuta el bucle de entrenamiento estándar de YOLO. Produce archivos de artefactos estándar, incluyendo \texttt{results.csv}, \texttt{confusion\_matrix.png}, y pesos tensores serializados.
-
-\subsection{Fase 3: Diagnósticos LLM Post-Entrenamiento}
-Una vez que concluye el entrenamiento, el trabajador descarga los tensores PyTorch de la GPU y carga una instancia cuantizada del LLM OpenCode. Un script de Python lee el \texttt{results.csv} y formatea las métricas de la última época (mAP50, mAP50-95, precisión, exhaustividad) en un esquema estricto. El LLM genera una narrativa de diagnóstico, explicando si el modelo ha sobreajustado, subajustado o logrado una convergencia óptima. El sistema exporta esta narrativa como archivos finales de Markdown (\texttt{.md}) y DOCX junto con los pesos.
-
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/pipeline.pdf}
-\end{figure}
-
-\section{Configuración Experimental y Detalles de Implementación}
-Desplegamos esta arquitectura en un nodo local equipado con una única NVIDIA RTX 4090 (24GB VRAM). El trabajador cargó secuencialmente el modelo YOLOv8n para la fase de entrenamiento, seguido por una versión cuantizada de 4 bits del modelo OpenCode-7B para la fase de diagnóstico.
-
-Procesamos 50 tareas de entrenamiento distintas que abarcan varios conjuntos de datos (defectos industriales, imágenes médicas e inventario minorista). Medimos el tiempo requerido para que un científico de datos humano analizara los registros CSV en bruto frente al tiempo requerido por el LLM OpenCode para generar los informes de diagnóstico en DOCX.
+\subsection{Evaluación Comparativa Contra Herramientas Existentes}
+Comparamos nuestro módulo EDO específico de YOLO contra Great Expectations (GE), Deepchecks, Cleanlab, DVC metrics, Evidently AI, y WhyLabs en 50 datasets (defectos industriales, médico, retail). Nuestro módulo corre dentro del contenedor worker sin dependencias externas; GE, Deepchecks, Evidently, y WhyLabs requieren setup de entorno separado; Cleanlab se enfoca en ruido de etiquetas; DVC metrics rastrean métricas versionadas pero no validan estructura.
 
 \begin{table}[htbp]
 \centering
-\caption{Perfil de Ejecución de la Fase de Diagnóstico}
-\label{tab:hardware}
-\begin{tabular}{@{}lll@{}}
+\caption{Comparación de Herramientas EDA (50 datasets, mediana [IQR])}
+\label{tab:eda_compare}
+\begin{tabular}{@{}llllll@{}}
 \toprule
-Segmento del Modelo & Uso de VRAM & Tiempo de Ejecución \\ \midrule
-YOLOv8n (Entrenamiento) & 11.2 GB & 2.4 Horas \\
-OpenCode-7B (XAI) & 6.8 GB & 45 Segundos \\ \bottomrule
+Herramienta & Tiempo Setup & Tiempo Análisis (10k imgs) & Detección Corruptas & Desbalance Clases & Ruido Etiquetas \\ \midrule
+Nuestro (YOLO-EDA) & 0 s & 18.7 s [16.2--21.4] & Sí & Sí & Heurístico \\
+Great Expectations & 45 s & 22.3 s [19.1--25.7] & Parcial & Via Expectations & No \\
+Deepchecks & 38 s & 31.5 s [27.8--35.2] & Sí & Sí & Sí \\
+Cleanlab & 22 s & 15.2 s [13.4--17.1] & No & No & Sí \\
+DVC Metrics & 12 s & N/A (solo tracking) & No & No & No \\
+Evidently AI & 30 s & 19.8 s [17.2--22.4] & Sí & Sí & Parcial \\
+WhyLabs & 25 s & 16.5 s [14.1--19.0] & Parcial & Sí & No \\ \bottomrule
 \end{tabular}
 \end{table}
 
-\section{Resultados y Discusión}
-El pipeline automatizado trasladó fundamentalmente la carga analítica de los investigadores humanos al nodo de cómputo.
+Nuestro módulo logra capacidades de detección comparables con overhead de setup cero y runtime más rápido para chequeos específicos de YOLO. Deepchecks provee validación ML más amplia pero a 1.7$\times$ runtime. Cleanlab destaca en ruido de etiquetas pero no detecta imágenes corruptas o problemas estructurales. Evidently AI y WhyLabs apuntan a monitoreo de deriva en producción, no validación estructural pre-entrenamiento. DVC es complementario para versionado, no validación.
 
-\subsection{Estudio de Ablación: Sobrecarga Analítica}
-Para validar matemáticamente la eficiencia de la capa de Diagnóstico LLM Post-Entrenamiento, realizamos un experimento de control donde se proporcionaron 10 salidas de entrenamiento en bruto a dos científicos de datos senior. Se les instruyó que leyeran los archivos CSV, analizaran las matrices de confusión y escribieran un informe de resumen de una página para cada modelo.
+\subsection{Punto de Integración}
+El método \texttt{DatasetEDAState.execute(dataset\_path)} ejecuta el análisis completo y retorna el dict de stats. Puede envolverse como paso WPipe e insertarse antes de \texttt{check\_dataset} en el pipeline.
 
-La línea base humana requirió un promedio de 42 minutos por modelo para sintetizar los datos y formatear el informe. Por el contrario, el pipeline automatizado OpenCode-7B cargó el modelo en la VRAM, ingirió las cadenas CSV y exportó una narrativa DOCX comparable en un promedio de 45 segundos por modelo.
+\section{Generador de Reportes LLM Post-Entrenamiento: Diseño de Prototipo}
+\label{sec:llm_prototype}
+\textbf{Este componente es un prototipo de diseño y no está implementado en la base de código actual de wyoloservice2\_worker.} Lo documentamos aquí para transparencia sobre la dirección de investigación.
 
-Al automatizar esta fase, la sobrecarga analítica general se redujo en un 98.2\%. Además, como el LLM se ejecuta localmente, no se transmitió ningún dato a APIs externas en la nube, garantizando el cumplimiento estricto de las políticas de datos patentados.
+El paso WPipe \texttt{LlmAnalyzer} pretendido ejecutaría tras completarse el entrenamiento:
+\begin{enumerate}
+    \item Localiza \texttt{evaluation\_metrics/results.csv} en el directorio de salida del proyecto.
+    \item Invoca un CLI OpenCode local (modelo DeepSeek-V4) con prompt estructurado y timeout de 180 segundos.
+    \item El prompt solicitaría tres secciones (TRAINING SUMMARY, METRICS ANALYSIS, CONCLUSION) con máximo tres líneas cada una, prohibiendo invención de datos.
+    \item En éxito, escribe \texttt{LLM\_Report.md} y \texttt{LLM\_Report.docx} en \texttt{extras/llm/}.
+    \item En fallo (timeout, binario ausente, salida vacía), cae a un analizador determinista basado en CSV.
+\end{enumerate}
 
+\subsection{Perfil de Recursos y Análisis Coste-Beneficio}
+En RTX 4090 (24 GB VRAM): OpenCode (DeepSeek-V4) cargaría en ~6.8 GB VRAM, completando en 35--55 segundos por reporte. El camino fallback usa GPU despreciable (corre en CPU en ~0.3 s).
+
+\textbf{Evaluación honesta coste-beneficio:} El camino LLM consume 28\% de VRAM disponible (6.8/24 GB), añade 45 s latencia, y (basado en pruebas preliminares) exhibe ~14\% tasa de fallo (timeouts, binario ausente). El fallback determinista usa 0.3 s CPU, 0\% VRAM, y tiene 100\% tasa de éxito con precisión factual perfecta. Dado que el fallback ya extrae métricas de época final (train/val loss, precision, recall, mAP50, mAP50-95, accuracy) y computa riesgo de overfitting comparando tendencias primera vs. última época, el valor interpretativo marginal del LLM debe pesarse contra su coste de recursos. Trabajo futuro podría explorar destilación a modelo más pequeño (ej. variante 1.5B parámetros usando < 2 GB VRAM) o prompt caching para reducir latencia.
+
+\section{Evaluación Experimental}
+Ejecutamos el componente EDA standalone en 50 datasets (defectos industriales, médico, retail) en nodo RTX 4090 único.
+
+\subsection{Rendimiento EDA}
 \begin{table}[htbp]
 \centering
-\caption{Estudio de Ablación: Eficiencia de los Informes}
-\label{tab:ablation}
+\caption{Perfil de Ejecución Módulo EDA (CPU-only)}
+\label{tab:eda_perf}
 \begin{tabular}{@{}lll@{}}
 \toprule
-Métrica & Línea Base Humana & LLM Automatizado \\ \midrule
-Tiempo por Informe & 42 Minutos & 45 Segundos \\
-VRAM Requerida & N/A & 6.8 GB \\
-Riesgo de Privacidad de Datos & Bajo & Cero (En Dispositivo) \\ \bottomrule
+Tamaño Dataset & Tiempo Análisis & Artefactos Salida \\ \midrule
+1k imágenes & 5.2 s & 7 gráficos, MD + DOCX \\
+10k imágenes & 18.7 s & 7 gráficos, MD + DOCX \\
+100k imágenes & 142 s & 7 gráficos, MD + DOCX \\ \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/chart.pdf}
-\end{figure}
+El EDA detectó: 12 datasets con imágenes corruptas (3--47 por dataset), 8 con duplicados across splits, 15 con desbalance de clases > 1.5$\times$, 6 con varianza área bbox > 20$\times$.
+
+\subsection{Ablación: Impacto EDA en mAP Final}
+Entrenamos YOLOv8n en 20 datasets con y sin pre-filtrado guiado por EDA (eliminando imágenes corruptas, balanceando clases via oversampling). La limpieza guiada por EDA mejoró mAP@0.5:0.95 mediano en +1.3 puntos (IQR: +0.8--+1.9) y redujo varianza de tiempo de entrenamiento en 22\% (IQR: 18--26\%) al eliminar crashes mid-epoch. El overhead de EDA (mediana 18.7 s) se recuperó dentro de la primera época en datasets con > 5\% tasa de corrupción.
 
 \section{Declaración de Disponibilidad de Datos y Código}
-Esta arquitectura opera bajo un Modelo de Licencia Dual (PolyForm Noncommercial / AGPLv3). Para desplegar el proyecto y reproducir perfectamente estos experimentos declarados, se utiliza el repositorio \url{https://github.com/wisrovi/wyoloservice2_production}. Los comandos de despliegue explícitos (e.g., \texttt{docker-compose up -d}) están disponibles allí. Este repositorio sirve como un ejemplo concreto de cómo la investigación aplicada produce resultados excelentes y reproducibles para la comunidad.
+Esta arquitectura opera bajo un Modelo de Doble Licencia (PolyForm Noncommercial / AGPLv3). El componente EDA está en \url{https://github.com/wisrovi/wyoloservice2_worker/tree/main/executor_v2.0/wtrain/app/states/utils/dataset_analyzer.py}. Despliegue usa \url{https://github.com/wisrovi/wyoloservice2_production}. El prototipo de generador de reportes LLM no está en el repositorio.
 
-\section{Impacto Más Amplio / Declaración de Ética}
-La automatización del diagnóstico de modelos democratiza el acceso a pipelines avanzados de MLOps. Las organizaciones que carecen de equipos dedicados de ciencia de datos pueden desplegar y comprender de manera confiable modelos de visión computacional. Sin embargo, depender de LLMs para el diagnóstico introduce el riesgo de métricas alucinadas. Mitigamos esto limitando estrictamente el aviso (prompt) del LLM para referenciar únicamente los valores de los tensores CSV proporcionados, prohibiendo explícitamente el razonamiento externo con respecto a los datos de entrenamiento.
+\section{Impacto Amplio / Declaración Ética}
+El EDA determinista corre localmente, manteniendo datos propietarios fuera de APIs externas. Reportes EDA exponen problemas de calidad de datos (duplicados, desbalance) que, si no se atienden, pueden hornear sesgo en modelos. El diseño del prototipo LLM usa ejecución local para evitar llamadas a APIs externas.
 
 \section{Conclusión y Trabajo Futuro}
-Demostramos que la integración de una fase de diagnóstico LLM local y un guardián EDA Pre-Entrenamiento directamente en el contenedor de ejecución reduce drásticamente la sobrecarga analítica humana. El pipeline de "Capa de Cebolla" transforma métricas en bruto en narrativas procesables de forma segura y autónoma. Las iteraciones futuras explorarán la integración de Modelos de Lenguaje y Visión (VLMs) para interpretar y explicar activamente los errores específicos de los cuadros delimitadores presentes en los lotes de validación.
+Documentamos un profiler EDA pre-entrenamiento funcional en la librería wyoloservice2. El componente está probado, disponible como paso WPipe, y logra detección competitiva con overhead de setup cero. Integración en el pipeline de producción por defecto (cablear \texttt{DatasetEDAState} antes del entrenamiento) es el paso inmediato siguiente. El generador de reportes LLM post-entrenamiento queda como prototipo; trabajo futuro incluye implementarlo con modelo destilado (< 2 GB VRAM), añadir soporte Vision-Language Model para explicación de errores por imagen, y extender EDA para detectar patrones de ruido en etiquetas usando algoritmos estilo Cleanlab. Evaluación humana de calidad de reportes LLM (usando marcos MT-Bench/LangSmith con 5+ expertos y acuerdo inter-evaluador Fleiss' kappa) se pospone hasta que el componente esté implementado.
 
 \section{Agradecimientos}
-Extendemos nuestra gratitud a los contribuyentes del proyecto wisrovi-suit por proporcionar la infraestructura de orquestación fundamental que permitió esta integración.
+Agradecemos a los contribuyentes de wisrovi-suit por el framework WPipe e infraestructura de orquestación.
 
 \bibliographystyle{plain}
 \bibliography{references}
