@@ -123,8 +123,13 @@ while [ "$ROUND" -le "$MAX_ROUNDS" ]; do
   printf "STATUS: IN_REVIEW\nROUND: %s\n" "$ROUND" > "$WORKFLOW_STATE"
 
   # Ejecutar el Revisor (escribe STATUS: APPROVED si acepta)
+  VERDICT_MTIME_BEFORE=$(stat -c %Y "$IEEE_VERDICT" 2>/dev/null || echo 0)
   run_agent "$REVISOR_PROMPT"
   check_agent_exit "Revisor" $?
+  VERDICT_MTIME_AFTER=$(stat -c %Y "$IEEE_VERDICT" 2>/dev/null || echo 0)
+  if [ "$VERDICT_MTIME_AFTER" = "$VERDICT_MTIME_BEFORE" ]; then
+    echo "⚠️  El Revisor ($AGENT_CLI) no actualizó $IEEE_VERDICT en la ronda $ROUND."
+  fi
 
   # Verificar si el Revisor aprobó el trabajo
   if grep -q "STATUS: APPROVED" "$WORKFLOW_STATE"; then
