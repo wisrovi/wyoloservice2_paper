@@ -48,8 +48,15 @@ Genera el informe final listo para ser insertado en `IEEE_REVIEW_VERDICT.md` (ra
 
 ---
 
-# INSTRUCTION
-Analiza el contenido de los papers del repositorio (`rnd_papers/` y `normal_papers/`) y genera el reporte aplicando el formato anterior. Agrega este veredicto al archivo `IEEE_REVIEW_VERDICT.md` (raíz del proyecto) agregando la marca de tiempo correspondiente.
+# INSTRUCTION (ORDEN CRÍTICO — ESCRIBIR PRIMERO)
+Sigue este orden EXACTO. El paso 1 es obligatorio y va ANTES del análisis profundo:
+1. **Crea o actualiza YA el archivo `IEEE_REVIEW_VERDICT.md`** (raíz del proyecto): añade al final una nueva sección con el formato anterior y un **veredicto inicial conciso por cada paper** (4-6 líneas: veredicto, detección IA, novedad, bibliografía, 2-3 notas de mejora). Conserva el historial previo. GUARDA el archivo.
+2. **Analiza en profundidad**: lee los papers (`rnd_papers/` y `normal_papers/`) y, si hace falta, el código real del ecosistema para verificar afirmaciones.
+3. **Refina el veredicto en el archivo**: amplía la sección del paso 1 con el análisis detallado (Agentes A/B/C) y el plan de acción. Vuelve a GUARDAR el archivo.
+4. **Actualiza `WORKFLOW_STATE.md`** según la sección WORKFLOW STATE.
+5. **Crea el marcador `.freebuff_done`** con el contenido `DONE`.
+
+Si tu presupuesto de ejecución se agota antes de completar el análisis profundo, `IEEE_REVIEW_VERDICT.md` DEBE quedar igualmente escrito con el veredicto del paso 1. Nunca termines sin haber guardado el archivo.
 
 # WORKFLOW STATE (OBLIGATORIO)
 Después de emitir el veredicto, actualiza el archivo `WORKFLOW_STATE.md` (raíz del proyecto):
