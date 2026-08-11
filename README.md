@@ -34,6 +34,9 @@ We categorize our papers into two main branches: **Research & Development (R&D)*
 |:---:|:---|:---|:---|
 | **1** | **Agentic MLOps: LLM-Driven Autonomous Orchestration** | Proposes using LLMs equipped with MCP to autonomously manage, validate, and launch massive YOLO training sessions. | [EN](./rnd_papers/paper_1_agentic_mlops/en/main.md) - [ES](./rnd_papers/paper_1_agentic_mlops/es/main.md) |
 | **3** | **Automated XAI Pipelines in Computer Vision** | Introduces an "Onion-Layer" pipeline where statistical EDA and local LLMs (OpenCode) auto-generate post-training diagnostics. | [EN](./rnd_papers/paper_3_automated_xai/en/main.md) - [ES](./rnd_papers/paper_3_automated_xai/es/main.md) |
+| **6** | **Quantifying YOLO Robustness: Adversarial, Noise & Uncertainty** | Unified robustness evaluation via FGSM attacks, synthetic noise corruption, and MC Dropout uncertainty quantification. | [DRAFT](./rnd_papers/paper_6_robustness_adversarial/en/DRAFT.md) |
+| **7** | **Cross-Domain Generalization via FID** | FID-based domain shift detection between training and deployment distributions with hardware profiling. | [DRAFT](./rnd_papers/paper_7_cross_domain_generalization/en/DRAFT.md) |
+| **9** | **LLM-Powered Automated Research Reporting** | Local LLMs (OpenCode/DeepSeek-V4) generate scientific narratives from YOLO training metrics. | [DRAFT](./rnd_papers/paper_9_llm_research_reporting/en/DRAFT.md) |
 
 ### ⚙️ Standard Papers (MLOps Engineering and Architecture)
 *Systems architecture, High-Performance Computing (HPC), and industrial applied solutions.*
@@ -43,6 +46,8 @@ We categorize our papers into two main branches: **Research & Development (R&D)*
 | **2** | **The Invoker-Executor Pattern** | Mitigates memory leaks and hardware degradation in GPU clusters using Celery daemons and isolated ephemeral containers. | [EN](./normal_papers/paper_2_invoker_executor/en/main.md) - [ES](./normal_papers/paper_2_invoker_executor/es/main.md) |
 | **4** | **Decoupled Evolutionary Hyperparameter Search** | Details a distributed Genetic Algorithm approach (Optuna) over Celery that prevents edge-to-core bottlenecks. | [EN](./normal_papers/paper_4_evolutionary_hpo/en/main.md) - [ES](./normal_papers/paper_4_evolutionary_hpo/es/main.md) |
 | **5** | **Shift-Left Data Gatekeeping** | Validates the economic and operational impact of remote static validation on network-mounted datasets (CIFS/Samba). | [EN](./normal_papers/paper_5_shift_left_data/en/main.md) - [ES](./normal_papers/paper_5_shift_left_data/es/main.md) |
+| **8** | **Statistical Rigor in YOLO Evaluation** | Bootstrap confidence intervals, failure mode analysis, and Wilcoxon tests for statistically significant model comparison. | [DRAFT](./normal_papers/paper_8_statistical_rigor/en/DRAFT.md) |
+| **10** | **WPipe: Forensic Pipeline Framework** | Declarative pipeline framework with SQLite tracking, resource monitoring, and conditional branching for ML workflows. | [DRAFT](./normal_papers/paper_10_wpipe_framework/en/DRAFT.md) |
 
 ---
 
