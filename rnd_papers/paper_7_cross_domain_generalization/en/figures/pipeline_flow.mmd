@@ -1,0 +1,32 @@
+flowchart TD
+    subgraph Pipeline["Post-Training Pipeline (14 Steps)"]
+        S1["1. Clean Folder"] --> S2["2. Load YAML"]
+        S2 --> S3["3. Publish Redis"]
+        S3 --> S4["4. Check MinIO"]
+        S4 --> S5["5. Allocate GPU"]
+        S5 --> S6["6. Train Model"]
+        S6 --> S7["7. Post-Train Predictions"]
+        S7 --> S8["8. ImageECamYOLO"]
+        S8 --> S9["9. QuantitativeXAIValidator"]
+        S9 --> S10["10. LLM Report Generation"]
+        S10 --> S11["11. Bootstrap Evaluator"]
+        S11 --> S12["12. Model Complexity Profiler"]
+        S12 --> S13["13. Outlier Failure Analyzer"]
+        S13 --> S14["14. Robustness Noise Evaluator"]
+    end
+
+    subgraph DomainShift["Domain Shift Assessment (Steps 15-17)"]
+        D1["15. Adversarial Attack Tester"] --> D2["16. Cross-Domain Generalizer\n(FID Computation)"]
+        D2 --> D3["17. Feature Representation Analyzer\n(t-SNE / UMAP)"]
+    end
+
+    subgraph Hardware["Hardware Profiling & Export (Steps 18-19)"]
+        H1["18. Model Complexity Profiler\n(GFLOPs, Latency, VRAM)"] --> H2["19. LatexExporter\n(IEEE Table Generation)"]
+    end
+
+    S14 --> D1
+    D3 --> H1
+    H2 --> E["Exit: Publish Results"]
+
+    style DomainShift fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+    style Hardware fill:#e3f2fd,stroke:#2196f3,stroke-width:2px
