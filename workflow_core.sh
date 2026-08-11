@@ -1,25 +1,27 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-#  MOTOR COMPARTIDO del bucle de publicación IEEE.
-#  No se ejecuta directamente: cada run_workflow_<cli>.sh define AGENT_CLI y
-#  run_agent(), y luego hace source de este archivo, que lanza el bucle.
+#  MOTOR COMPARTIDO del bucle de publicación IEEE (modo paper-por-paper).
+#  Llamado desde run_workflow_<cli>.sh vía bash (subshell) para cada paper.
+#
+#  Requiere variables de entorno (exportadas por el wrapper):
+#    AGENT_CLI  — "agy" | "opencode" | "freebuff"
+#    PAPER_DIR  — ruta absoluta al directorio del paper a procesar
+#    PAPER_NAME — nombre legible del paper (opcional, se deriva de PAPER_DIR)
+#    run_agent() — función que ejecuta el agente IA con un prompt
 # ─────────────────────────────────────────────────────────────────────────────
-
-# Protección: este archivo no se ejecuta directamente
-if [ "${BASH_SOURCE[0]}" = "$0" ]; then
-  echo "❌ workflow_core.sh no se ejecuta directamente." >&2
-  echo "   Usa: run_workflow.sh, run_workflow_opencode.sh, run_workflow_freebuff.sh o run_workflow_agy.sh" >&2
-  exit 1
-fi
 
 set -u
 
-# El wrapper debe definir AGENT_CLI antes de hacer source
+# El wrapper debe definir AGENT_CLI y PAPER_DIR antes de invocar
 : "${AGENT_CLI:?Define AGENT_CLI antes de cargar workflow_core.sh}"
+: "${PAPER_DIR:?Define PAPER_DIR (ruta al directorio del paper) antes de cargar workflow_core.sh}"
 
 # Resuelve el directorio del proyecto (raíz del repo) y trabaja desde ahí
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
+
+# Nombre legible del paper
+PAPER_NAME="${PAPER_NAME:-$(basename "$PAPER_DIR")}"
 
 MAX_ROUNDS="${MAX_ROUNDS:-10}"
 ROUND=1
@@ -51,7 +53,7 @@ check_agent_exit() {
 
   # agy/opencode son no-interactivos: cualquier fallo aborta
   if { [ "$AGENT_CLI" = "agy" ] || [ "$AGENT_CLI" = "opencode" ]; } && [ "$rc" -ne 0 ]; then
-    echo "❌ El $role ($AGENT_CLI) falló en la ronda $ROUND. Revisa el error y reintenta." >&2
+    echo "❌ El $role ($AGENT_CLI) falló en la ronda $ROUND para '$PAPER_NAME'. Revisa el error y reintenta." >&2
     exit 1
   fi
 
@@ -98,33 +100,54 @@ case "$AGENT_CLI" in
     ;;
 esac
 
-for f in "$WORKFLOW_STATE" "$REVISOR_PROMPT" "$EDITOR_PROMPT"; do
+for f in "$REVISOR_PROMPT" "$EDITOR_PROMPT"; do
   if [ ! -f "$f" ]; then
     echo "❌ No existe el archivo requerido: $f" >&2
     exit 1
   fi
 done
 
+if [ ! -d "$PAPER_DIR" ]; then
+  echo "❌ No existe el directorio del paper: $PAPER_DIR" >&2
+  exit 1
+fi
+
 if [ ! -w "$WORKFLOW_STATE" ]; then
   echo "❌ El archivo de estado no es escribible: $WORKFLOW_STATE" >&2
   exit 1
 fi
 
-# --- Bucle de rondas ----------------------------------------------------------
-echo "🚀 Iniciando bucle de publicación IEEE con $AGENT_CLI"
+# --- Utilidades para prompts con placeholders ---------------------------------
+# Sustituye __PAPER_DIR__ y __PAPER_NAME__ en un prompt y escribe a un temp
+render_prompt() {
+  local src="$1"
+  local tmp
+  tmp=$(mktemp "/tmp/prompt_XXXXXX.md")
+  sed "s|__PAPER_DIR__|${PAPER_DIR}|g; s|__PAPER_NAME__|${PAPER_NAME}|g" "$src" > "$tmp"
+  echo "$tmp"
+}
+
+# --- Bucle de rondas (un solo paper) ------------------------------------------
+echo "🚀 Iniciando bucle de publicación IEEE con $AGENT_CLI para: $PAPER_NAME"
+
+# Renderiza prompts con el paper específico
+RENDERED_REVISOR=$(render_prompt "$REVISOR_PROMPT")
+RENDERED_EDITOR=$(render_prompt "$EDITOR_PROMPT")
+# Limpieza al salir
+trap "rm -f '$RENDERED_REVISOR' '$RENDERED_EDITOR'" EXIT
 
 while [ "$ROUND" -le "$MAX_ROUNDS" ]; do
   echo ""
   echo "=================================================="
-  echo "  RONDA $ROUND / $MAX_ROUNDS: Evaluación Revisor IEEE"
+  echo "  [$PAPER_NAME] RONDA $ROUND / $MAX_ROUNDS: Evaluación Revisor IEEE"
   echo "=================================================="
 
-  # Reinicia el estado de la ronda para evitar un "APPROVED" obsoleto de una ejecución anterior
-  printf "STATUS: IN_REVIEW\nROUND: %s\n" "$ROUND" > "$WORKFLOW_STATE"
+  # Reinicia el estado de la ronda para evitar un "APPROVED" obsoleto
+  printf "STATUS: IN_REVIEW\nROUND: %s\nPAPER: %s\n" "$ROUND" "$PAPER_NAME" > "$WORKFLOW_STATE"
 
   # Ejecutar el Revisor (escribe STATUS: APPROVED si acepta)
   VERDICT_MTIME_BEFORE=$(stat -c %Y "$IEEE_VERDICT" 2>/dev/null || echo 0)
-  run_agent "$REVISOR_PROMPT"
+  run_agent "$RENDERED_REVISOR"
   check_agent_exit "Revisor" $?
   VERDICT_MTIME_AFTER=$(stat -c %Y "$IEEE_VERDICT" 2>/dev/null || echo 0)
   if [ "$VERDICT_MTIME_AFTER" = "$VERDICT_MTIME_BEFORE" ]; then
@@ -134,18 +157,18 @@ while [ "$ROUND" -le "$MAX_ROUNDS" ]; do
   # Verificar si el Revisor aprobó el trabajo
   if grep -q "STATUS: APPROVED" "$WORKFLOW_STATE"; then
     echo ""
-    echo "🎉 ¡EL PAPER HA SIDO ACEPTADO PARA PUBLICACIÓN EN LA IEEE!"
+    echo "🎉 ¡'$PAPER_NAME' HA SIDO ACEPTADO PARA PUBLICACIÓN EN LA IEEE!"
     echo "Revisa el informe final en $IEEE_VERDICT"
     exit 0
   fi
 
   echo ""
   echo "=================================================="
-  echo "  RONDA $ROUND / $MAX_ROUNDS: Correcciones del Editor"
+  echo "  [$PAPER_NAME] RONDA $ROUND / $MAX_ROUNDS: Correcciones del Editor"
   echo "=================================================="
 
   # Ejecutar el Editor
-  run_agent "$EDITOR_PROMPT"
+  run_agent "$RENDERED_EDITOR"
   check_agent_exit "Editor" $?
 
   # Incrementar contador de rondas
@@ -153,5 +176,5 @@ while [ "$ROUND" -le "$MAX_ROUNDS" ]; do
 done
 
 echo ""
-echo "⚠️ Se alcanzó el límite de $MAX_ROUNDS rondas. Revisa '$IEEE_VERDICT' para ver el estado actual."
+echo "⚠️ Se alcanzó el límite de $MAX_ROUNDS rondas para '$PAPER_NAME'. Revisa '$IEEE_VERDICT' para ver el estado actual."
 exit 1
