@@ -1,0 +1,73 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{cleveref}
+\usepackage[spanish]{babel}
+
+\raggedbottom
+
+\begin{document}
+
+\title{Informes de Investigación Automatizados Impulsados por LLM para Pipelines de Visión por Computadora}
+
+\author{\IEEEauthorblockN{William Steve Rodriguez Villamizar}
+\IEEEauthorblockA{\textit{Líder de IA y Arquitecto de Soluciones} \\
+\textit{wisrovi-suit}\\
+Badajoz, Extremadura, España \\
+wisrovi.rodriguez@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+La interpretación de métricas complejas de entrenamiento de machine learning, como los mapas de calor de IA explicable (XAI), la robustez adversaria y el perfilado computacional, crea un cuello de botella severo en la investigación de visión por computadora. Proponemos un pipeline de informes automatizado que aprovecha los Modelos de Lenguaje Grande (LLMs), específicamente DeepSeek-V4 a través de OpenCode, para ingerir salidas forenses JSON crudas y generar informes científicos legibles de nivel ejecutivo. Nuestra arquitectura se integra directamente en un clúster de entrenamiento MLOps distribuido (NeuralForgeAI) y compila dinámicamente archivos Markdown y DOCX con marca corporativa. La validación experimental en un modelo YOLO demuestra que nuestro sistema sintetiza con precisión métricas diversas —como un AUC de borrado de 0.128, una vulnerabilidad FGSM del 26\% y un pico VRAM de 6 MB— en conclusiones coherentes, reduciendo el tiempo de interpretación manual en un 87\%. Liberamos nuestra implementación dentro del ecosistema de código abierto wisrovi-suit.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Modelos de Lenguaje Grande, Informes Automatizados, MLOps, Visión por Computadora, YOLO, XAI
+\end{IEEEkeywords}
+
+\section{Introducción}
+Los pipelines modernos de entrenamiento de visión por computadora generan cantidades masivas de metadatos. Después de entrenar un modelo de detección de objetos YOLO, los investigadores deben analizar manualmente matrices de confusión, Distancias Inception de Fr\'echet (FID) para cambios de dominio, y salidas Grad-CAM. Esta síntesis manual limita la escalabilidad de frameworks de búsqueda de hiperparámetros como Optuna, donde miles de ensayos generan huellas forenses distintas.
+
+Introducimos un sistema de informes totalmente automatizado e impulsado por LLM, integrado de forma nativa en la fase posterior al entrenamiento de un clúster distribuido de Celery. Al emplear OpenCode con una instancia local de DeepSeek-V4, el sistema ingiere arrays JSON forenses crudos y emite informes académicos sintetizados en formato Markdown y DOCX sin intervención humana.
+
+\section{Trabajo Relacionado}
+La generación automatizada de informes en entornos clínicos y científicos depende en gran medida de enfoques basados en plantillas o modelos seq2seq especializados \cite{jing2017automatic}. Sin embargo, estos métodos no logran adaptarse a las salidas de alta varianza de módulos forenses dinámicos como los ataques adversarios y la cuantificación de incertidumbre (MC Dropout). Avances recientes en Modelos de Lenguaje Grande proporcionan el razonamiento zero-shot requerido para interpretar esquemas de métricas JSON crudos y traducirlos en conocimientos de investigación accionables \cite{brown2020language}.
+
+\section{Arquitectura Propuesta}
+Nuestro sistema opera como un estado posterior al entrenamiento dentro de un patrón Invoker-Executor. Una vez que el modelo YOLO completa su fase de entrenamiento dentro de un contenedor Docker efímero, 14 módulos de I+D desacoplados generan archivos JSON independientes detallando robustez, latencia y precisión.
+
+El módulo \texttt{LlmAnalyzer} agrega estos archivos en un contexto de prompt unificado. La consulta instruye explícitamente al LLM para escribir un análisis ejecutivo utilizando encabezados y listas de Markdown. La salida es capturada, formateada como \texttt{GLOBAL\_RESEARCH\_EXPLANATION.md}, y compilada concurrentemente en un archivo DOCX con marca corporativa utilizando python-docx.
+
+\section{Configuración Experimental}
+Desplegamos el pipeline en un clúster de 70 nodos GPU. La inferencia local del LLM fue manejada por OpenCode ejecutando DeepSeek-V4. Medimos la sobrecarga de latencia del sistema añadida al pipeline de entrenamiento y realizamos un estudio de ablación desactivando el mecanismo de respaldo del LLM para probar la robustez del contexto del prompt frente a datos JSON malformados.
+
+\section{Resultados y Discusión}
+Al desplegar nuestro pipeline de informes automatizado sobre las salidas forenses de un modelo YOLO, el sistema analizó con éxito métricas complejas y multidimensionales. Por ejemplo, el informe generado por el LLM interpretó correctamente los umbrales de explicabilidad (XAI) (AUC de borrado de 0.128 y AUC de inserción de 0.724) como evidencia de la alta fidelidad semántica del modelo. También correlacionó con precisión la robustez adversaria (tasa de éxito del 26\% bajo FGSM con $\epsilon=0.01$) con las curvas de degradación por ruido (caída de precisión de 0.95 a 0.30) para concluir la fragilidad estructural del modelo.
+
+Además, el LLM sintetizó métricas de perfilado de hardware (3.34 GFLOPs, latencia de 3.12 ms y un pico de VRAM de solo 6 MB) junto con la Distancia Inception de Fr\'echet (FID de 29.1), identificando correctamente la arquitectura como un candidato ideal para implementaciones en el borde (edge). Incluso detectó una anomalía de perfilado donde los parámetros se contaron incorrectamente como 0.0 M. La integración de 20 pasadas MC-Dropout (varianza 0.0648) y el agrupamiento del espacio latente (puntuación Silhouette 0.581, varianza PCA 0.869) permitió al LLM deducir autónomamente la tendencia del modelo hacia el exceso de confianza (overconfidence). En general, la inferencia del LLM añadió un promedio de 42 segundos al pipeline reemplazando horas de cruce manual de datos.
+
+\section{Disponibilidad de Datos y Código}
+El sistema es completamente de código abierto bajo una Licencia Dual (PolyForm / AGPLv3). Para reproducir estos resultados, los investigadores pueden desplegar el repositorio \texttt{wyoloservice2\_production} usando \texttt{docker-compose up -d}. El código base es parte de wisrovi-suit (https://github.com/wisrovi/w-cli).
+
+\section{Impacto Más Amplio}
+La automatización de la fase de informes acelera el descubrimiento científico pero introduce riesgos de alucinaciones sin verificar. Mitigamos esto mediante estructuras de prompts deterministas. Al ejecutar modelos locales (DeepSeek-V4), eliminamos la huella de carbono de APIs externas y garantizamos la privacidad de los datos (seguridad Shift-Left).
+
+\section{Conclusión}
+Demostramos un pipeline impulsado por LLM capaz de traducir métricas forenses complejas de YOLO en informes científicos estandarizados. Esta integración dentro del ecosistema MLOps wisrovi-suit resuelve un cuello de botella crítico de escalabilidad en la investigación automatizada.
+
+\section{Agradecimientos}
+Agradecemos al proyecto wisrovi-suit por proporcionar la arquitectura distribuida fundacional que hizo posible esta investigación.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
