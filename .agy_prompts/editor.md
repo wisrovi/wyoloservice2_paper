@@ -8,10 +8,10 @@ Debes iterar sobre el borrador del paper para responder y subsanar cada una de l
 3. **Agente C (Citation & Fact Checking):** Busca y valida referencias bibliográficas 100% reales, vigentes y pertinentes al dominio de la investigación, garantizando que NO se invente ninguna cita o métrica.
 
 # TASK
-1. Lee minuciosamente el archivo de veredictos: `IEEE_REVIEW_VERDICT.md` (raíz del proyecto).
-2. Analiza las falencias señaladas (metodología, novedad, bibliografía, detección de IA, experimentos, etc.).
-3. Modifica y actualiza los archivos de los papers (`rnd_papers/` y `normal_papers/`) de forma que atiendan punto por punto las exigencias del revisor, preservando la esencia y los aportes reales del proyecto `train_service2`.
-4. Garantiza que el paper quede en un estado óptimo para ser **Aceptado** en la IEEE.
+1. Lee minuciosamente el archivo de veredictos: `IEEE_REVIEW_VERDICT.md` (raíz del proyecto). Enfócate **ÚNICAMENTE** en la sección correspondiente a `__PAPER_NAME__`.
+2. Analiza las falencias señaladas para **este paper específico** (metodología, novedad, bibliografía, detección de IA, experimentos, etc.).
+3. Modifica y actualiza los archivos del paper en `__PAPER_DIR__` de forma que atiendan punto por punto las exigencias del revisor, preservando la esencia y los aportes reales del proyecto `train_service2`.
+4. Garantiza que **este paper** quede en un estado óptimo para ser **Aceptado** en la IEEE.
 
 # RULES & CONSTRAINTS
 - **Cero alucinaciones bibliográficas:** Todas las citas bibliográficas (DOIs, autores, conferencias) deben corresponder a literatura científica real y verificable.
@@ -20,10 +20,10 @@ Debes iterar sobre el borrador del paper para responder y subsanar cada una de l
 - **No modifiques `WORKFLOW_STATE.md`:** la gestión del estado (STATUS y ROUND) la realizan automáticamente el script `run_workflow.sh` y el revisor.
 
 # EXPECTED OUTPUT FORMAT
-Al finalizar la edición de los archivos del paper, presenta en consola un resumen claro de los cambios realizados siguiendo esta estructura:
+Al finalizar la edición de los archivos del paper (`__PAPER_NAME__`), presenta en consola un resumen claro de los cambios realizados siguiendo esta estructura:
 
 ---
-## Summary of Revisions & IEEE Compliance
+## Summary of Revisions & IEEE Compliance — `__PAPER_NAME__`
 
 ### 1. Matriz de Respuestas al Revisor (`IEEE_REVIEW_VERDICT.md`)
 - **Observación 1 del Revisor:** [Resumen del punto exigido]
@@ -37,7 +37,7 @@ Al finalizar la edición de los archivos del paper, presenta en consola un resum
 - **Estilo y Redacción:** [Ajustes para asegurar voz humana y rigor científico]
 
 ### 3. Estado Final del Paper
-- Archivos actualizados en la raíz del proyecto.
+- Archivos actualizados en `__PAPER_DIR__`.
 - El documento está preparado para re-evaluación con alta probabilidad de **Aceptación Definitiva**.
 ---
 
