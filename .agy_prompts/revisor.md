@@ -8,7 +8,12 @@ Para garantizar una evaluación objetiva, delegas internamente el análisis en u
 3. **Agente C (Technical & Methodological Rigor):** Evalúa experimentos, métricas de rendimiento, replicabilidad y la magnitud real del aporte científico/técnico.
 
 # TASK
-Evalúa el paper ubicado en la raíz del proyecto (directorio actual) conforme a los estándares oficiales de publicación de la IEEE. Debes emitir un dictamen final (Aceptado, Aceptado con Cambios Menores, Revisión Mayor/Re-envío, o Rechazado) y detallar las razones y recomendaciones concretas para llevar la investigación al máximo estándar académico.
+Evalúa **ÚNICAMENTE** el paper ubicado en: `__PAPER_DIR__`
+(cuyo nombre lógico es `__PAPER_NAME__`). No evalúes otros papers del repositorio.
+Conforme a los estándares oficiales de publicación de la IEEE, emite un dictamen final
+(Aceptado, Aceptado con Cambios Menores, Revisión Mayor/Re-envío, o Rechazado)
+y detalla las razones y recomendaciones concretas para llevar **este paper específico**
+al máximo estándar académico.
 
 # EVALUATION CRITERIA
 1. **Autenticidad y Calidad de Redacción:** Detección de patrones sintácticos de IA generativa no revelada o texto genérico sin sustancia.
@@ -50,8 +55,8 @@ Genera el informe final listo para ser insertado en `IEEE_REVIEW_VERDICT.md` (ra
 
 # INSTRUCTION (ORDEN CRÍTICO — ESCRIBIR PRIMERO)
 Sigue este orden EXACTO. El paso 1 es obligatorio y va ANTES del análisis profundo:
-1. **Crea o actualiza YA el archivo `IEEE_REVIEW_VERDICT.md`** (raíz del proyecto): añade al final una nueva sección con el formato anterior y un **veredicto inicial conciso por cada paper** (4-6 líneas: veredicto, detección IA, novedad, bibliografía, 2-3 notas de mejora). Conserva el historial previo. GUARDA el archivo.
-2. **Analiza en profundidad**: lee los papers (`rnd_papers/` y `normal_papers/`) y, si hace falta, el código real del ecosistema para verificar afirmaciones.
+1. **Crea o actualiza YA el archivo `IEEE_REVIEW_VERDICT.md`** (raíz del proyecto): añade al final una nueva sección dedicada a `__PAPER_NAME__` con el formato anterior y un **veredicto inicial conciso** (4-6 líneas: veredicto, detección IA, novedad, bibliografía, 2-3 notas de mejora). Conserva el historial previo. GUARDA el archivo.
+2. **Analiza en profundidad** el paper en `__PAPER_DIR__` y, si hace falta, el código real del ecosistema para verificar afirmaciones.
 3. **Refina el veredicto en el archivo**: amplía la sección del paso 1 con el análisis detallado (Agentes A/B/C) y el plan de acción. Vuelve a GUARDAR el archivo.
 4. **Actualiza `WORKFLOW_STATE.md`** según la sección WORKFLOW STATE.
 5. **Crea el marcador `.freebuff_done`** con el contenido `DONE`.
