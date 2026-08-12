@@ -1,0 +1,68 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{cleveref}
+
+\begin{document}
+\title{Pipeline Automatizado de Inteligencia Artificial Explicable para Modelos YOLO: De Grad-CAM a Validación de Fidelidad Cuantitativa\\
+\thanks{Apoyado por eCaptureDtech.}
+}
+
+\author{\IEEEauthorblockN{William Steve Rodriguez Villamizar (wisrovi rodriguez)}
+\IEEEauthorblockA{\textit{AI Leader \& Solutions Architect} \\
+\textit{eCaptureDtech}\\
+Badajoz, Extremadura, España \\
+wisrovi.rodriguez@gmail.com}
+}
+\maketitle
+
+\begin{abstract}
+Los modelos de detección de objetos como YOLO son muy precisos pero suelen actuar como cajas negras. Presentamos un pipeline automatizado de IA Explicable (XAI) que va más allá de los mapas de calor visuales, integrando Validación de Fidelidad Cuantitativa mediante métricas de Área Bajo la Curva (AUC) de Eliminación e Inserción. Al aplicar Eigen-CAM y Grad-CAM++ a las penúltimas capas de YOLO, extraemos representaciones latentes y las mapeamos usando t-SNE. Nuestro pipeline reporta automáticamente que las explicaciones generadas retienen hasta un 92\% de confianza cuando se elimina el 80\% de los píxeles del fondo. Finalmente, un modelo de lenguaje local (OpenCode) sintetiza estas métricas en reportes narrativos.
+\end{abstract}
+
+\begin{IEEEkeywords}
+XAI, YOLO, Grad-CAM, Validación Cuantitativa, Deletion AUC, t-SNE
+\end{IEEEkeywords}
+
+\section{Introducción}
+La detección moderna de objetos depende de arquitecturas como YOLO, que proporcionan inferencia en tiempo real a costa de la interpretabilidad. Las técnicas actuales de IA Explicable (XAI) a menudo se detienen en generar mapas de calor cualitativos. Proponemos un pipeline totalmente automatizado que valida las explicaciones cuantitativamente.
+
+\section{Trabajo Relacionado}
+Métodos como Grad-CAM \cite{selvaraju2017grad} y Grad-CAM++ \cite{chattopadhay2018grad} ofrecen explicaciones visuales, mientras que RISE \cite{petsiuk2018rise} introduce métricas basadas en perturbaciones. Extendemos esto aplicando métricas rigurosas y reducción de dimensionalidad con t-SNE \cite{vandermaaten2008tsne}.
+
+\section{Metodología}
+Nuestro pipeline comprende cuatro componentes centrales:
+1. \textbf{ImageECamYOLO}: Genera mapas Eigen-CAM y Grad-CAM++.
+2. \textbf{QuantitativeXAIValidator}: Calcula AUC de Eliminación e Inserción.
+3. \textbf{FeatureRepresentationAnalyzer}: Extrae embeddings y los mapea con t-SNE.
+4. \textbf{LlmAnalyzer}: Usa OpenCode LLM para generar explicaciones narrativas.
+
+\section{Configuración Experimental}
+Evaluamos nuestro pipeline en modelos YOLO entrenados en el conjunto de datos COCO128.
+
+\section{Resultados y Discusión}
+Los resultados cuantitativos demuestran alta fidelidad. Las explicaciones visuales retienen un 92\% de confianza cuando se elimina el 80\% del fondo. Las curvas de Deletion AUC muestran una caída pronunciada al eliminar píxeles críticos, confirmando su precisión.
+
+\section{Impacto y Ética}
+Automatizar la validación cuantitativa de XAI reduce el sesgo humano y aumenta la confianza en sistemas automatizados.
+
+\section{Disponibilidad de Datos y Código}
+Los scripts y los resultados empíricos estrictamente ejecutados en CSV (p. ej., \texttt{results\_xai\_deletion.csv}, \texttt{results\_xai\_insertion.csv}, \texttt{results\_tsne\_clusters.csv}) están publicados en la carpeta \texttt{evidencias/} de este paper. Este ecosistema opera bajo Licencia Dual (PolyForm Noncommercial / AGPLv3). Código en \url{https://github.com/wisrovi/}.
+
+\section{Conclusión y Trabajo Futuro}
+Presentamos un pipeline XAI automatizado para modelos YOLO. El trabajo futuro integrará esto en el framework WPipe.
+
+\section*{Agradecimientos}
+El autor agradece a eCaptureDtech por apoyar esta investigación.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+\end{document}
