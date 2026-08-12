@@ -80,7 +80,7 @@ La Tabla~\ref{tab:llm} reporta la vía LLM sobre tres artefactos reales. El mode
 \centering
 \caption{Generación de informes con LLM sobre artefactos reales \texttt{results.csv} (prompt de producción)}
 \label{tab:llm}
-\begin{tabular}{@{}llll@{}}
+\resizebox{\columnwidth}{!}{ \begin{tabular}{@{}llll@{}}
 \toprule
 Tarea & Ejecución & Latencia (s) & Salida (caracteres) \\
 \midrule
@@ -90,7 +90,7 @@ Segmentation & S1 & 13.80 & 1390 \\
 \midrule
 \multicolumn{2}{l}{Mediana / éxito} & 12.36 / 3--3 & 1390 \\
 \bottomrule
-\end{tabular}
+\end{tabular} }
 \end{table}
 
 \subsection{Respaldo Determinista}
@@ -100,7 +100,7 @@ La Tabla~\ref{tab:fallback} agrega 120 ejecuciones del respaldo (20 ensayos por 
 \centering
 \caption{Respaldo determinista ($n=120$ ejecuciones sobre seis archivos (tres conjuntos de datos únicos))}
 \label{tab:fallback}
-\begin{tabular}{@{}lcc@{}}
+\resizebox{\columnwidth}{!}{ \begin{tabular}{@{}lcc@{}}
 \toprule
 Tipo de tarea & Archivos & Latencia media (ms) \\
 \midrule
@@ -111,7 +111,7 @@ Segmentation & 2 & 0.036 \\
 Media / mediana combinadas & --- & 0.0324 / 0.0304 \\
 Desv. estándar / máx. combinadas & --- & 0.0091 / 0.0815 \\
 \bottomrule
-\end{tabular}
+\end{tabular} }
 \end{table}
 
 \subsection{Valor Cualitativo de la Vía LLM}
@@ -124,7 +124,7 @@ Ablamos la cadena de informes a lo largo de tres ejes (Tabla~\ref{tab:ablation})
 \centering
 \caption{Ablación de la cadena de informes (seis archivos (tres conjuntos de datos únicos), 20 ensayos cada uno salvo indicación)}
 \label{tab:ablation}
-\begin{tabular}{@{}lcccc@{}}
+\resizebox{\columnwidth}{!}{ \begin{tabular}{@{}lcccc@{}}
 \toprule
 Configuración & Éxito & Mediana & Informe \\
  & & de latencia & presente \\
@@ -135,7 +135,7 @@ LLM + respaldo (caída inyectada) & 120/120 & 0.123\,ms & sí \\
 Sin \texttt{\_explain\_research\_states} & --- & 0\,ms & parcial \\
 Falta \texttt{results.csv} & falla rápido & --- & no \\
 \bottomrule
-\end{tabular}
+\end{tabular} }
 \end{table}
 
 \textbf{Solo LLM.} Sin el respaldo, una caída o una respuesta malformada dejan sin informe; el guardián de salida corta (\textless{}50 caracteres) convierte una finalización basura en fallo: una página en blanco es mejor que una fabricada. \textbf{Solo respaldo.} El analizador determinista nunca falló en 120 ejecuciones. \textbf{LLM + respaldo.} Con una caída inyectada en la llamada a OpenCode, la cadena produjo un informe válido en 0.123\,ms. \textbf{Sin \texttt{\_explain\_research\_states}.} Quitar ese canal solo elimina \texttt{GLOBAL\_RESEARCH\_EXPLANATION.md}; \texttt{LLM\_Report.md} y el DOCX vienen de \texttt{results.csv} y siguen disponibles. \textbf{Entrada faltante.} Un \texttt{results.csv} ausente se convierte en un informe vacío y una cadena de error, y \texttt{safe\_step} mantiene el pipeline corriendo.

@@ -80,7 +80,7 @@ Table~\ref{tab:llm} reports the LLM path on three real artifacts. The model retu
 \centering
 \caption{LLM report generation on real \texttt{results.csv} artifacts (production prompt)}
 \label{tab:llm}
-\begin{tabular}{@{}llll@{}}
+\resizebox{\columnwidth}{!}{ \begin{tabular}{@{}llll@{}}
 \toprule
 Task & Run & Latency (s) & Output (chars) \\
 \midrule
@@ -90,7 +90,7 @@ Segmentation & S1 & 13.80 & 1390 \\
 \midrule
 \multicolumn{2}{l}{Median / success} & 12.36 / 3--3 & 1390 \\
 \bottomrule
-\end{tabular}
+\end{tabular} }
 \end{table}
 
 \subsection{Deterministic Fallback}
@@ -100,7 +100,7 @@ Table~\ref{tab:fallback} aggregates 120 fallback runs (20 trials each over six f
 \centering
 \caption{Deterministic fallback ($n=120$ runs over six real \texttt{results.csv} artifacts)}
 \label{tab:fallback}
-\begin{tabular}{@{}lcc@{}}
+\resizebox{\columnwidth}{!}{ \begin{tabular}{@{}lcc@{}}
 \toprule
 Task type & Files & Mean latency (ms) \\
 \midrule
@@ -111,7 +111,7 @@ Segmentation & 2 & 0.036 \\
 Pooled mean / median & --- & 0.0324 / 0.0304 \\
 Pooled std / max & --- & 0.0091 / 0.0815 \\
 \bottomrule
-\end{tabular}
+\end{tabular} }
 \end{table}
 
 \subsection{Qualitative Value of the LLM Path}
@@ -124,7 +124,7 @@ We ablate the reporting chain along three axes (Table~\ref{tab:ablation}).
 \centering
 \caption{Ablation of the reporting chain (six files (three unique datasets), 20 trials each unless noted)}
 \label{tab:ablation}
-\begin{tabular}{@{}lcccc@{}}
+\resizebox{\columnwidth}{!}{ \begin{tabular}{@{}lcccc@{}}
 \toprule
 Configuration & Success & Median & Report \\
  & & latency & present \\
@@ -135,7 +135,7 @@ LLM + fallback (crash injected) & 120/120 & 0.123\,ms & yes \\
 No \texttt{\_explain\_research\_states} & --- & 0\,ms & partial \\
 Missing \texttt{results.csv} & fails fast & --- & no \\
 \bottomrule
-\end{tabular}
+\end{tabular} }
 \end{table}
 
 \textbf{LLM only.} Without the fallback, a model outage or malformed response means no report; the short-output guard (\textless{}50 chars) turns a confident-but-garbage completion into a failure, because a blank page beats a fabricated one. \textbf{Fallback only.} The deterministic parser never failed over 120 runs. \textbf{LLM + fallback.} Injecting a crash into the OpenCode call, the chain produced a valid report in 0.123\,ms---the outage cost less than a millisecond. \textbf{Without \texttt{\_explain\_research\_states}.} Removing that channel only removes \texttt{GLOBAL\_RESEARCH\_EXPLANATION.md}; \texttt{LLM\_Report.md} and the DOCX come from \texttt{results.csv} and remain available, which is why the channels are independent. \textbf{Missing input.} A missing \texttt{results.csv} becomes an empty report and an error string, and \texttt{safe\_step} keeps the pipeline running.
