@@ -44,11 +44,11 @@ El ResourceMonitor capturó con éxito los picos de utilización de RAM y CPU, p
 ### Recuperación y Paralelización
 El CheckpointManager redujo los tiempos de recuperación en un 85\% en promedio para los flujos fallidos. Además, el ParallelExecutor proporcionó una aceleración casi lineal al ejecutar pasos de aumento de datos independientes.
 
-## Conclusión
-WPipe proporciona un framework declarativo ligero pero potente para pipelines de ML. Su combinación de validación con Pydantic, seguimiento en SQLite y ejecución paralela lo convierte en una alternativa robusta a los orquestadores de MLOps más pesados.
+## Conclusión y Trabajo Futuro
+WPipe proporciona un framework declarativo ligero pero potente para pipelines de ML. Su combinación de validación con Pydantic, seguimiento en SQLite y ejecución paralela lo convierte en una alternativa robusta a los orquestadores de MLOps más pesados. El trabajo futuro explorará la integración de un generador de reportes narrativos LLM en el pipeline como un módulo de validación opcional para sintetizar estados de ejecución en lenguaje natural.
 
 ## Disponibilidad de Datos y Código
-Los scripts y sus resultados en CSV están en la carpeta `evidencias/`. El código fuente de WPipe y los conjuntos de datos están disponibles en GitHub.
+Los scripts y sus resultados en CSV están en la carpeta `evidencias/` de este paper. Este ecosistema opera bajo Licencia Dual (PolyForm Noncommercial / AGPLv3, compatible con normativas de publicación de IEEE). El código fuente de WPipe está disponible en GitHub en https://github.com/wisrovi/. Para reproducir las métricas, ejecute `python benchmark\_wpipe\_forensic.py` localmente o despliegue mediante `docker-compose -f docker-compose.yml up -d` en el entorno `wyoloservice2\_production`.
 
 ## Agradecimientos
 Este trabajo fue apoyado por wisrovi-suit.
