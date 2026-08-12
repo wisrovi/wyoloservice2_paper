@@ -27,27 +27,14 @@ All papers in this repository have been subjected to a rigorous peer review by a
 
 We categorize our papers into two main branches: **Research & Development (R&D)** for experimental frontier technologies, and **Standard Papers** for MLOps engineering and architecture.
 
-### 🚀 Research and Development (R&D) Papers
-*Experimental research, generative AI integration, and the AgentOps frontier.*
-
-| Paper ID | Title | Research Focus | Links |
-|:---:|:---|:---|:---|
-| **1** | **Agentic MLOps: LLM-Driven Autonomous Orchestration** | Proposes using LLMs equipped with MCP to autonomously manage, validate, and launch massive YOLO training sessions. | [EN](./rnd_papers/paper_1_agentic_mlops/en/main.md) - [ES](./rnd_papers/paper_1_agentic_mlops/es/main.md) |
-| **3** | **Automated XAI Pipelines in Computer Vision** | Introduces an "Onion-Layer" pipeline where statistical EDA and local LLMs (OpenCode) auto-generate post-training diagnostics. | [EN](./rnd_papers/paper_3_automated_xai/en/main.md) - [ES](./rnd_papers/paper_3_automated_xai/es/main.md) |
-| **6** | **Quantifying YOLO Robustness: Adversarial, Noise & Uncertainty** | Unified robustness evaluation via FGSM attacks, synthetic noise corruption, and MC Dropout uncertainty quantification. | [DRAFT](./rnd_papers/paper_6_robustness_adversarial/en/DRAFT.md) |
-| **7** | **Cross-Domain Generalization via FID** | FID-based domain shift detection between training and deployment distributions with hardware profiling. | [DRAFT](./rnd_papers/paper_7_cross_domain_generalization/en/DRAFT.md) |
-| **9** | **LLM-Powered Automated Research Reporting** | Local LLMs (OpenCode/DeepSeek-V4) generate scientific narratives from YOLO training metrics. | [DRAFT](./rnd_papers/paper_9_llm_research_reporting/en/DRAFT.md) |
+*(Note: Currently, only papers that have passed the strict IEEE Peer Review process and achieved APPROVED status are listed here. Other papers are currently undergoing revision).*
 
 ### ⚙️ Standard Papers (MLOps Engineering and Architecture)
 *Systems architecture, High-Performance Computing (HPC), and industrial applied solutions.*
 
 | Paper ID | Title | Research Focus | Links |
 |:---:|:---|:---|:---|
-| **2** | **The Invoker-Executor Pattern** | Mitigates memory leaks and hardware degradation in GPU clusters using Celery daemons and isolated ephemeral containers. | [EN](./normal_papers/paper_2_invoker_executor/en/main.md) - [ES](./normal_papers/paper_2_invoker_executor/es/main.md) |
-| **4** | **Decoupled Evolutionary Hyperparameter Search** | Details a distributed Genetic Algorithm approach (Optuna) over Celery that prevents edge-to-core bottlenecks. | [EN](./normal_papers/paper_4_evolutionary_hpo/en/main.md) - [ES](./normal_papers/paper_4_evolutionary_hpo/es/main.md) |
-| **5** | **Shift-Left Data Gatekeeping** | Validates the economic and operational impact of remote static validation on network-mounted datasets (CIFS/Samba). | [EN](./normal_papers/paper_5_shift_left_data/en/main.md) - [ES](./normal_papers/paper_5_shift_left_data/es/main.md) |
-| **8** | **Statistical Rigor in YOLO Evaluation** | Bootstrap confidence intervals, failure mode analysis, and Wilcoxon tests for statistically significant model comparison. | [DRAFT](./normal_papers/paper_8_statistical_rigor/en/DRAFT.md) |
-| **10** | **WPipe: Forensic Pipeline Framework** | Declarative pipeline framework with SQLite tracking, resource monitoring, and conditional branching for ML workflows. | [DRAFT](./normal_papers/paper_10_wpipe_framework/en/DRAFT.md) |
+| **6** | **LLM-Powered Automated Research Reporting** | Local LLMs (OpenCode) generate verifiable, deterministic post-training scientific narratives, avoiding hallucinations via strict fallback mechanisms. | [EN](./normal_papers/paper_6_llm_reporting/en/main.md) - [ES](./normal_papers/paper_6_llm_reporting/es/main.md) |
 
 ---
 
@@ -77,6 +64,7 @@ These papers document an ecosystem that operates under a **Dual Licensing Model*
 
 ## 🔄 Changelog
 
+- **v1.0.3 (2026-08-12)**: Updated directory to only list strictly approved papers.
 - **v1.0.2 (2026-08-07)**: Added new timestamped IEEE expert panel review verdicts for all 5 papers.
 - **v1.0.1 (2026-08-07)**: Added official IEEE expert panel review verdicts for all papers.
 
