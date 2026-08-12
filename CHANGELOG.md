@@ -5,6 +5,10 @@ All notable changes to the `wyoloservice2_paper` repository will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2026-08-12
+### Added
+- **Paper 4**: "Cross-Domain Generalization Assessment for Object Detection Models: FID-Based Domain Shift Detection" has been officially ACCEPTED by the IEEE.
+
 ## [1.5.0] - 2026-08-12
 ### Added
 - **Paper 3**: "Quantifying YOLO Model Robustness: Adversarial Attacks, Noise Resilience, and Uncertainty Estimation in Real-World Deployment" has been officially ACCEPTED by the IEEE.
