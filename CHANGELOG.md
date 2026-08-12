@@ -5,6 +5,10 @@ All notable changes to the `wyoloservice2_paper` repository will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-08-12
+### Added
+- **Paper 1**: "NeuralForge: A Distributed MLOps Framework" has been officially ACCEPTED by the IEEE and promoted to the standard publications directory.
+
 ## [1.1.0] - 2026-08-12
 ### Added
 - **Paper 6**: "LLM-Powered Automated Research Reporting" has been officially ACCEPTED by the IEEE and promoted to the standard publications directory.
