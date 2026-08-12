@@ -1,0 +1,11 @@
+graph TD
+    A[API Gateway / FastAPI] -->|Queue| B(Redis Broker)
+    M[Manager Node / Optuna] -->|Sample HPO| B
+    B -->|Dispatch| C{Celery Invoker}
+    C -->|gpus_high| D1[Docker Executor]
+    C -->|gpus_medium| D2[Docker Executor]
+    C -->|gpus_low| D3[Docker Executor]
+    D1 -->|Write Results| E[(CIFS Volume)]
+    D2 -->|Write Results| E
+    D3 -->|Write Results| E
+    E -->|Read| M
