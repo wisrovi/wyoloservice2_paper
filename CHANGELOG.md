@@ -5,6 +5,10 @@ All notable changes to the `wyoloservice2_paper` repository will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-08-12
+### Added
+- **Paper 7**: "WPipe: A Declarative Pipeline Framework with Forensic Tracking for ML Workflows" has been officially ACCEPTED by the IEEE.
+
 ## [1.3.0] - 2026-08-12
 ### Added
 - **Paper 2**: "Automated Explainable AI Pipeline for YOLO Models" has been officially ACCEPTED by the IEEE and promoted to the standard publications directory.

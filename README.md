@@ -37,6 +37,7 @@ We categorize our papers into two main branches: **Research & Development (R&D)*
 | **1** | **NeuralForge: A Distributed MLOps Framework** | Invoker-Executor pattern with ephemeral Docker isolated tasks that prevents catastrophic cluster failures via dynamic task orchestration. | [EN](./normal_papers/paper_1_mlops/en/main.md) - [ES](./normal_papers/paper_1_mlops/es/main.md) |
 | **2** | **Automated Explainable AI Pipeline for YOLO Models** | Methodological framework for quantitative fidelity validation of visual explanations using Deletion/Insertion AUC and t-SNE latent space mappings. | [EN](./normal_papers/paper_2_xai/en/main.md) - [ES](./normal_papers/paper_2_xai/es/main.md) |
 | **6** | **LLM-Powered Automated Research Reporting** | Local LLMs (OpenCode) generate verifiable, deterministic post-training scientific narratives, avoiding hallucinations via strict fallback mechanisms. | [EN](./normal_papers/paper_6_llm_reporting/en/main.md) - [ES](./normal_papers/paper_6_llm_reporting/es/main.md) |
+| **7** | **WPipe: A Declarative Pipeline Framework with Forensic Tracking** | SQLite-based forensic tracking, strict Pydantic type validation, and checkpointing for rapid failure recovery in ML workflows. | [EN](./normal_papers/paper_7_wpipe/en/main.md) - [ES](./normal_papers/paper_7_wpipe/es/main.md) |
 
 ---
 
@@ -66,6 +67,7 @@ These papers document an ecosystem that operates under a **Dual Licensing Model*
 
 ## 🔄 Changelog
 
+- **v1.4.0 (2026-08-12)**: Paper 7 (WPipe: A Declarative Pipeline Framework with Forensic Tracking for ML Workflows) has been officially ACCEPTED by the IEEE.
 - **v1.3.0 (2026-08-12)**: Paper 2 (Automated Explainable AI Pipeline for YOLO Models) has been officially ACCEPTED by the IEEE.
 - **v1.2.0 (2026-08-12)**: Paper 1 (NeuralForge: A Distributed MLOps Framework) has been officially ACCEPTED by the IEEE.
 - **v1.1.0 (2026-08-12)**: Paper 6 (LLM-Powered Automated Research Reporting) has been officially ACCEPTED by the IEEE.
