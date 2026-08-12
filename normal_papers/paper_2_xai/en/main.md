@@ -1,18 +1,15 @@
 \IEEEoverridecommandlockouts
 
-# Automated Explainable AI Pipeline for YOLO Models: From Grad-CAM to Quantitative Fidelity Validation
-}
+# Automated Explainable AI Pipeline for YOLO Models: From Grad-CAM to Quantitative Fidelity Validation}
 
-**Author:** \IEEEauthorblockN{William Steve Rodriguez Villamizar (wisrovi rodriguez)
-\textit{AI Leader \& Solutions Architect \\
-*eCaptureDtech*\\
+\textit{wisrovi-suit\\
 Badajoz, Extremadura, Spain \\
 wisrovi.rodriguez@gmail.com}
 }
 
 ## Abstract
 
-Deep learning object detection models like YOLO are highly accurate but often act as black boxes. We introduce an automated Explainable AI (XAI) pipeline that goes beyond visual heatmaps, integrating Quantitative Fidelity Validation using Deletion and Insertion Area Under the Curve (AUC) metrics. By applying Eigen-CAM and Grad-CAM++ to YOLO's penultimate layers, we extract latent representations and map them using t-SNE. Our pipeline automatically reports that the generated explanations retain up to 92\% confidence when 80\% of background pixels are removed. Finally, a local Large Language Model (OpenCode) synthesizes these empirical metrics into comprehensive narrative reports, creating the first automated, quantitative XAI framework for YOLO architectures.
+Deep learning object detection models like YOLO are highly accurate but often act as black boxes. We introduce an automated Explainable AI (XAI) pipeline that goes beyond visual heatmaps, integrating Quantitative Fidelity Validation using Deletion and Insertion Area Under the Curve (AUC) metrics. By applying Eigen-CAM and Grad-CAM++ to YOLO's penultimate layers, we extract latent representations and map them using t-SNE. Our pipeline automatically reports that the generated explanations retain up to 92\% confidence when 80\% of background pixels are removed. Finally, we propose a design for a local Large Language Model (OpenCode) to synthesize these empirical metrics into comprehensive narrative reports, establishing a novel automated, quantitative XAI methodological framework for YOLO architectures.
 
 **Keywords:** 
 XAI, YOLO, Grad-CAM, Quantitative Validation, Deletion AUC, t-SNE
@@ -44,10 +41,7 @@ Our ablation study highlights that the isolated Grad-CAM component provides qual
 Automating quantitative XAI validation reduces human bias in interpreting AI outputs and increases trust in safety-critical automated visual systems.
 
 ## Data \& Code Availability
-Scripts and their strictly executed empirical CSV results (e.g., `results\_xai\_deletion.csv`, `results\_xai\_insertion.csv`, `results\_tsne\_clusters.csv`) are published in the `evidencias/` folder of this paper. This ecosystem operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). Code is available at https://github.com/wisrovi/. The Spanish and English versions of this manuscript are maintained synchronously via the `fix.py` script ensuring a single source of truth.
+Scripts and their strictly executed empirical CSV results (e.g., `results\_xai\_deletion.csv`, `results\_xai\_insertion.csv`, `results\_tsne\_clusters.csv`) are published in the `evidencias/` folder of this paper. This ecosystem operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3, fully compatible with IEEE publishing standards when distributing underlying code separately). Code is available at https://github.com/wisrovi/. The reproduction commands are: `python benchmark\_xai\_fidelity.py` for metric generation. The Spanish and English versions of this manuscript are maintained synchronously via the `fix.py` script ensuring a single source of truth.
 
 ## Conclusion \& Future Work
-We presented an automated XAI pipeline that enforces quantitative fidelity validation for YOLO models. We reiterate that this constitutes a methodological contribution; the pipeline is not currently fully wired into the production environment. Future work will integrate this pipeline deeper into the WPipe framework for real-time model auditing.
-
-## Acknowledgment
-The author would like to thank eCaptureDtech for supporting this research.
+We presented an automated XAI pipeline that enforces quantitative fidelity validation for YOLO models. We reiterate that this constitutes a methodological contribution; the pipeline is not currently fully wired into the production environment. Future work will integrate this pipeline deeper into the WPipe framework for real-time model auditing, alongside the operationalization of the LLM narrative report module.

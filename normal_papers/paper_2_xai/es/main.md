@@ -1,18 +1,15 @@
 \IEEEoverridecommandlockouts
 
-# Pipeline Automatizado de Inteligencia Artificial Explicable para Modelos YOLO: De Grad-CAM a Validación de Fidelidad Cuantitativa
-}
+# Pipeline Automatizado de Inteligencia Artificial Explicable para Modelos YOLO: De Grad-CAM a Validación de Fidelidad Cuantitativa}
 
-**Author:** \IEEEauthorblockN{William Steve Rodriguez Villamizar (wisrovi rodriguez)
-\textit{AI Leader \& Solutions Architect \\
-*eCaptureDtech*\\
+\textit{wisrovi-suit\\
 Badajoz, Extremadura, España \\
 wisrovi.rodriguez@gmail.com}
 }
 
 ## Abstract
 
-Los modelos de detección de objetos como YOLO son muy precisos pero suelen actuar como cajas negras. Presentamos un pipeline automatizado de IA Explicable (XAI) que va más allá de los mapas de calor visuales, integrando Validación de Fidelidad Cuantitativa mediante métricas de Área Bajo la Curva (AUC) de Eliminación e Inserción. Al aplicar Eigen-CAM y Grad-CAM++ a las penúltimas capas de YOLO, extraemos representaciones latentes y las mapeamos usando t-SNE. Nuestro pipeline reporta automáticamente que las explicaciones generadas retienen hasta un 92\% de confianza cuando se elimina el 80\% de los píxeles del fondo. Finalmente, un modelo de lenguaje local (OpenCode) sintetiza estas métricas en reportes narrativos.
+Los modelos de detección de objetos como YOLO son muy precisos pero suelen actuar como cajas negras. Presentamos un pipeline automatizado de IA Explicable (XAI) que va más allá de los mapas de calor visuales, integrando Validación de Fidelidad Cuantitativa mediante métricas de Área Bajo la Curva (AUC) de Eliminación e Inserción. Al aplicar Eigen-CAM y Grad-CAM++ a las penúltimas capas de YOLO, extraemos representaciones latentes y las mapeamos usando t-SNE. Nuestro pipeline reporta automáticamente que las explicaciones generadas retienen hasta un 92\% de confianza cuando se elimina el 80\% de los píxeles del fondo. Finalmente, proponemos un diseño para que un modelo de lenguaje local (OpenCode) sintetice estas métricas en reportes narrativos, estableciendo un novedoso marco metodológico automatizado para arquitecturas YOLO.
 
 **Keywords:** 
 XAI, YOLO, Grad-CAM, Validación Cuantitativa, Deletion AUC, t-SNE
@@ -44,10 +41,7 @@ Nuestro estudio de ablación destaca que el componente aislado de Grad-CAM propo
 Automatizar la validación cuantitativa de XAI reduce el sesgo humano y aumenta la confianza en sistemas automatizados.
 
 ## Disponibilidad de Datos y Código
-Los scripts y los resultados empíricos estrictamente ejecutados en CSV (p. ej., `results\_xai\_deletion.csv`, `results\_xai\_insertion.csv`, `results\_tsne\_clusters.csv`) están publicados en la carpeta `evidencias/` de este paper. Este ecosistema opera bajo Licencia Dual (PolyForm Noncommercial / AGPLv3). Código en https://github.com/wisrovi/. Las versiones en español e inglés de este manuscrito se mantienen sincronizadas a través del script `fix.py`, garantizando una única fuente de verdad.
+Los scripts y los resultados empíricos estrictamente ejecutados en CSV (p. ej., `results\_xai\_deletion.csv`, `results\_xai\_insertion.csv`, `results\_tsne\_clusters.csv`) están publicados en la carpeta `evidencias/` de este paper. Este ecosistema opera bajo Licencia Dual (PolyForm Noncommercial / AGPLv3, compatible con las normativas de publicación de IEEE). Código en https://github.com/wisrovi/. Los comandos de reproducción son: `python benchmark\_xai\_fidelity.py` para la generación de métricas. Las versiones en español e inglés de este manuscrito se mantienen sincronizadas a través del script `fix.py`, garantizando una única fuente de verdad.
 
 ## Conclusión y Trabajo Futuro
-Presentamos un pipeline XAI automatizado para modelos YOLO. Reiteramos que esto constituye una contribución metodológica; el pipeline no está actualmente conectado completamente en el entorno de producción. El trabajo futuro integrará esto en el framework WPipe.
-
-## Agradecimientos
-El autor agradece a eCaptureDtech por apoyar esta investigación.
+Presentamos un pipeline XAI automatizado para modelos YOLO. Reiteramos que esto constituye una contribución metodológica; el pipeline no está actualmente conectado completamente en el entorno de producción. El trabajo futuro integrará esto en el framework WPipe, así como la operacionalización del módulo de reportes narrativos LLM.
