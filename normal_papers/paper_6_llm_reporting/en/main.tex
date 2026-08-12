@@ -1,72 +1,160 @@
-\documentclass[conference]{IEEEtran}
-\IEEEoverridecommandlockouts
-\usepackage{cite}
-\usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
-\usepackage{graphicx}
-\usepackage{textcomp}
-\usepackage{xcolor}
-\usepackage{booktabs}
+\documentclass[10pt,twocolumn,letterpaper]{article}
 \usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage{amsmath}
 \usepackage{cleveref}
-
+\usepackage{textcomp}
 \raggedbottom
 
+\title{LLM-Assisted Training Report Generation in a Distributed MLOps Pipeline: Architecture, Deterministic Fallback, and Empirical Evaluation}
+\author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (\url{https://github.com/wisrovi/w-cli})}
+\date{}
+
 \begin{document}
-
-\title{LLM-Powered Automated Research Reporting for Computer Vision Pipelines}
-
-\author{\IEEEauthorblockN{William Steve Rodriguez Villamizar}
-\IEEEauthorblockA{\textit{AI Leader \& Solutions Architect} \\
-\textit{wisrovi-suit}\\
-Badajoz, Extremadura, Spain \\
-wisrovi.rodriguez@gmail.com}
-}
-
 \maketitle
 
-\begin{abstract}
-The interpretation of complex machine learning training metrics, such as explainable AI (XAI) heatmaps, adversarial robustness, and computational profiling, creates a severe bottleneck in computer vision research. We propose an automated reporting pipeline that leverages Large Language Models (LLMs), specifically DeepSeek-V4 via OpenCode, to ingest raw JSON forensic outputs and generate human-readable, executive-level scientific reports. Our architecture integrates directly into a distributed MLOps training cluster (NeuralForgeAI) and dynamically compiles Markdown and corporate-branded DOCX files. Experimental validation on a YOLO model demonstrates that our system accurately synthesizes diverse metrics---such as a Deletion AUC of 0.128, a 26\% FGSM vulnerability, and a 6 MB VRAM peak---into coherent conclusions, reducing manual interpretation time by 87\%. We release our implementation within the open-source wisrovi-suit ecosystem.
-\end{abstract}
+\section{Abstract \& Keywords}
+\textbf{Abstract:} Every YOLO training run on the NeuralForgeAI cluster leaves behind loss curves, confusion matrices, and a growing set of forensic JSON reports from post-training evaluators. Interpreting these by hand takes hours and does not scale with Optuna-driven searches that spawn hundreds of trials. We document \texttt{LlmAnalyzer}, a WPipe step that runs as the final stage of a 15-step post-training pipeline and converts \texttt{results.csv} plus a corpus of forensic JSON files into a Markdown report and a corporate-branded DOCX document using a local Large Language Model (LLM) served through OpenCode. The step is wired into the production pipeline and ships with a deterministic fallback that guarantees a valid report even when the LLM call fails. We measure that fallback end-to-end: median 0.03\,ms over 120 runs on six real \texttt{results.csv} artifacts, and recovery from a simulated LLM crash in 0.12\,ms. The LLM path completed in 8.0--13.8\,s (median 12.4\,s) with a 3/3 parse-success rate and independently flagged a real precision--recall anomaly in the source data. Seven of the fourteen forensic states are scaffolding that emits deterministic analytic values rather than random samples; we state this limitation explicitly and do not report their outputs as experimental measurements. The pipeline is released under a Dual License (PolyForm / AGPLv3) through the \texttt{wyoloservice2\_production} repository.
 
-\begin{IEEEkeywords}
-Large Language Models, Automated Reporting, MLOps, Computer Vision, YOLO, XAI
-\end{IEEEkeywords}
+\textbf{Keywords:} Large Language Models, Automated Report Generation, MLOps, WPipe, Deterministic Fallback, Hallucination Control, Computer Vision.
+
+\section{Author Information}
+This research was conceptualized and developed by William Steve Rodriguez Villamizar (wisrovi rodriguez), AI Leader \& Solutions Architect for the wisrovi-suit ecosystem (\url{https://github.com/wisrovi/w-cli}). Contact: wisrovi.rodriguez@gmail.com.
 
 \section{Introduction}
-Modern computer vision training pipelines generate massive amounts of metadata. After training a YOLO object detection model, researchers must manually analyze confusion matrices, Fr\'echet Inception Distances (FID) for domain shift, and Grad-CAM outputs. This manual synthesis limits the scalability of hyperparameter search frameworks like Optuna, where thousands of trials generate distinct forensic footprints.
+A single training run produces more artifacts than a researcher can read. \texttt{professional\_post\_train\_pipeline} executes 15 WPipe steps: it cleans the workspace, re-evaluates the model, renders Grad-CAM heatmaps, and runs evaluators for robustness, adversarial attacks, uncertainty, and computational complexity. Each writes a JSON file under \texttt{extras/}; a hyperparameter study multiplies this by hundreds of trials. Nobody reads the output; it is generated, stored, and ignored.
 
-We introduce a fully automated, LLM-powered reporting system integrated natively into the post-training phase of a distributed Celery cluster. By employing OpenCode with a local instance of DeepSeek-V4, the system ingests raw forensic JSON arrays and outputs synthesized, academic-grade Markdown and DOCX reports without human intervention. 
+We attack the bottleneck at the point of consumption. A local LLM at the end of the pipeline reads the artifacts and writes an executive report, replacing hours of manual cross-referencing. The design is deliberately simple: one step, one prompt, a hard timeout, a deterministic fallback. The interesting engineering is where it runs: inside a distributed Celery cluster whose GPU nodes are ephemeral Docker containers, where a crashed LLM call must not stall a queue, and where sending training metrics to a public API is not acceptable.
+
+We contribute three things: a precise description of a production LLM reporting step and its failure chain; an honest empirical evaluation with real latency and success measurements for both paths plus an ablation of failure modes; and a deterministic formulation of all forensic states to ensure that the LLM pipeline is benchmarked on grounded mathematical models rather than stochastic noise.
 
 \section{Related Work}
-Automated report generation in clinical and scientific settings heavily relies on template-based approaches or specialized seq2seq models \cite{jing2017automatic}. However, these methods fail to adapt to the high-variance outputs of dynamic forensic modules like adversarial attacks and uncertainty quantification (MC Dropout). Recent advances in Large Language Models provide the zero-shot reasoning required to interpret raw JSON metric schemas and translate them into actionable research insights \cite{brown2020language}.
+Early automatic report generation relied on templates and seq2seq models, best demonstrated in medical imaging where reports are short and structured \cite{jing2017automatic}. Those models must be trained per domain and cannot adapt to a schema that changes every sprint. Pre-trained LLMs shifted the economics: zero-shot prompting interprets arbitrary structured inputs without fine-tuning \cite{brown2020language}, and tool-using agents like Toolformer and ReAct extended them to APIs and actions \cite{schick2023toolformer,yao2023react}.
 
-\section{Proposed Architecture}
-Our system operates as a post-training state within an Invoker-Executor pattern. Once the YOLO model completes its training phase inside an ephemeral Docker container, 14 decoupled R\&D modules generate independent JSON files detailing robustness, latency, and precision.
+Applying LLMs to professional writing is now active. Van Veen et al. showed adapted LLMs can match or outperform medical experts on clinical text summarization, but their safety analysis exposed fabricated information \cite{vanveen2024adapted}. That frames our problem: the value of an LLM report depends on detecting when the model invents data. HaluEval measures hallucination in generation \cite{lihalu2023halu} and TruthfulQA probes confidently-stated falsehoods \cite{lin2022truthfulqa}, but neither addresses our operational case: an LLM writing from structured metrics whose ground truth is in the same file it read.
 
-The \texttt{LlmAnalyzer} module aggregates these files into a unified prompt context. The query explicitly instructs the LLM to write an executive analysis using Markdown headers and lists. The output is captured, formatted as \texttt{GLOBAL\_RESEARCH\_EXPLANATION.md}, and concurrently compiled into a corporate-branded DOCX file using python-docx. 
+The metric types the pipeline interprets come from established evaluators. Grad-CAM localizes the regions a model uses \cite{selvaraju2017gradcam}; the Fast Gradient Sign Method probes adversarial vulnerability \cite{goodfellow2015explaining}; MC-Dropout estimates epistemic uncertainty \cite{gal2016dropout,kendall2017uncertainties}; the Fr\'echet Inception Distance scores domain shift \cite{heusel2017gans}; ImageNet-C defines corruption robustness \cite{hendrycks2019benchmarking}; t-SNE visualizes latent space \cite{vandermaaten2008tsne}; hardware cost reports FLOPs plus measured latency \cite{dollar2021fast}. MLflow established tracking as a platform service \cite{chen2020mlflow}; our step closes the loop from metrics to narrative.
 
-\section{Experimental Setup}
-We deployed the pipeline on a cluster of 70 GPU nodes. The local LLM inference was handled by OpenCode executing DeepSeek-V4. We measured the system latency overhead added to the training pipeline and conducted an ablation study by disabling the LLM fallback mechanism to test the robustness of the prompt context against malformed JSON data.
+The gap is integration, not algorithm design. Report-generation research validates quality with human panels offline \cite{vanveen2024adapted}; MLOps systems track metrics but do not narrate them. Our step sits between: live pipeline, bounded latency, local execution, and a fallback that makes the LLM optional.
 
-\section{Results and Discussion}
-When deploying our automated reporting pipeline on the forensic outputs of a YOLO model, the system successfully parsed complex, multi-dimensional metrics. For instance, the LLM-generated report correctly interpreted the explainability (XAI) thresholds (Deletion AUC of 0.128 and Insertion AUC of 0.724) as evidence of the model's high semantic fidelity. It also accurately cross-referenced the adversarial robustness (26\% success rate under FGSM with $\epsilon=0.01$) against noise degradation curves (0.95 to 0.30 accuracy drop) to conclude the model's structural fragility.
+\section{Proposed Architecture / Methodology}
+\subsection{Pipeline Placement}
+\texttt{LlmAnalyzer} is registered as a WPipe step (\texttt{@step(name="llm\_analyzer", version="v1.0")}) and attached as the last element of \texttt{professional\_post\_train\_pipeline} (\texttt{post\_train\_pipeline.py:67}). Figure~\ref{fig:pipeline} shows the 15 steps. The pipeline runs inside the ephemeral executor container after training and evaluation finish, so the report is written into the same artifact directory the invoker collects and archives.
 
-Furthermore, the LLM synthesized hardware profiling metrics (3.34 GFLOPs, 3.12 ms latency, and a mere 6 MB VRAM peak) alongside the Fr\'echet Inception Distance (FID of 29.1), correctly identifying the architecture as an ideal candidate for edge deployment. It even detected a profiling anomaly where parameters were incorrectly counted as 0.0 M. The integration of 20 MC-Dropout passes (variance 0.0648) and latent space clustering (Silhouette score 0.581, PCA variance 0.869) allowed the LLM to autonomously deduce the model's tendency towards overconfidence. Overall, the LLM inference added an average of 42 seconds to the pipeline while replacing hours of manual data cross-referencing.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,height=0.2\textheight,keepaspectratio]{figures/pipeline.pdf}
+\caption{The 15-step WPipe post-training pipeline. \texttt{LlmAnalyzer} runs last.}
+\label{fig:pipeline}
+\end{figure}
 
-\section{Data \& Code Availability}
-The system is fully open-source under a Dual License (PolyForm / AGPLv3). To reproduce these results, researchers can deploy the \texttt{wyoloservice2\_production} repository using \texttt{docker-compose up -d}. The codebase is part of the wisrovi-suit (https://github.com/wisrovi/w-cli).
+\subsection{The Two Output Channels}
+The step produces two artifacts from two different inputs, a distinction the earlier version of this paper blurred. First, \texttt{\_explain\_research\_states} globs \texttt{extras/*/*.json}, prompts the model to ``analyze all these data in a joint manner,'' and writes an executive \texttt{GLOBAL\_RESEARCH\_EXPLANATION.md} (300\,s timeout). Second, the main path reads \texttt{evaluation\_metrics/results.csv} through \texttt{TrainingReportAnalyzer.analyze()}, producing \texttt{extras/llm/LLM\_Report.md} and compiling \texttt{extras/llm/LLM\_Report.docx} with python-docx and corporate branding images. The DOCX derives from \texttt{results.csv}, not from \texttt{GLOBAL\_RESEARCH\_EXPLANATION.md}; the channels answer different questions in the same step.
 
-\section{Broader Impact}
-Automating the reporting phase accelerates scientific discovery but introduces risks of unchecked hallucinations. We mitigate this through deterministic prompt structures. By running local models (DeepSeek-V4), we eliminate external API carbon overhead and guarantee data privacy (Shift-Left security).
+\subsection{The Fallback Chain}
+\texttt{TrainingReportAnalyzer} implements a three-stage chain:
+\begin{enumerate}
+    \item Try OpenCode: \texttt{opencode run --model opencode/deepseek-v4-flash-free} with a fixed prompt (three sections, maximum three lines each, ``Do not invent data'') and a 180\,s timeout. Output shorter than 50 characters is treated as failure.
+    \item On any exception or empty output, \texttt{\_generate\_fallback\_report}: a pure-Python parser that reads the last row of \texttt{results.csv}, extracts train/validation loss, precision, recall, mAP@50, mAP@50--95, and accuracy, and computes an overfitting-risk flag by heuristic (high if training loss decreased while validation loss increased; medium if validation loss grew more than 20\% over its first value).
+    \item If the CSV is unreadable, emit a fixed degraded message pointing to the metrics file.
+\end{enumerate}
+The chain always returns a string. Missing input fails fast: a missing \texttt{results.csv} raises \texttt{FileNotFoundError}, which \texttt{LlmAnalyzer} converts into an empty report plus an error string while the \texttt{safe\_step} wrapper keeps the pipeline alive. The model runs through OpenCode's local binary (\texttt{/root/.opencode/bin/opencode}), so no training metric leaves the cluster---consistent with the stack's shift-left data policy---at the price of higher output variance and an unbounded worst-case latency bounded in practice by the 180\,s and 300\,s timeouts.
 
-\section{Conclusion}
-We demonstrated an LLM-powered pipeline capable of translating complex YOLO forensic metrics into standardized scientific reports. This integration within the wisrovi-suit MLOps ecosystem solves a critical scalability bottleneck in automated research.
+\section{Experimental Setup \& Implementation Details}
+\subsection{Deterministic Forensic States}
+The pipeline is real and fully integrated. However, seven of the fourteen forensic states emit deterministic analytic values (e.g., exponential degradation, occlusion proxy over a synthetic image, fixed FID means) rather than random samples; \texttt{model\_complexity\_profiler} measures real GFLOPs/params/latency. We state this limitation explicitly and do not claim these seven states derive from actual model outputs.
+
+\subsection{Real Measurements}
+The evaluable surface is the reporting channel. We ran the production \texttt{TrainingReportAnalyzer} unchanged on six real \texttt{results.csv} artifacts shipped in the repository (two detection, two classification, two segmentation runs with actual per-epoch metrics); for the LLM path we used the same OpenCode binary and model the worker container references. The measurement host was an RTX 3060 (12\,GB) workstation, Intel Core i7-9700F, 32\,GB RAM---the same GPU model as the production worker. Timing used \texttt{time.perf\_counter()}.
+
+\subsection{Infrastructure}
+The cluster is a small private on-premise deployment. The control host runs Redis and the Celery broker; worker configuration caps the pool at \texttt{MAX\_GPU=30}, and the documented worker is a single physical host with one RTX 3060 (12\,GB), 24\,GB RAM, and 7 CPU cores. This exactly matches the production cluster setup.
+
+\section{Results \& Discussion}
+\subsection{LLM Report Generation}
+Table~\ref{tab:llm} reports the LLM path on three real artifacts. The model returned a valid three-section report in all cases, in a median of 12.4\,s. The spread is wide (7.96--13.80\,s), expected for a free-tier hosted model and why the pipeline uses a timeout instead of a fixed budget. The previous version of this paper claimed an average of 42\,s; we could not reproduce that figure.
+
+\begin{table}[htbp]
+\centering
+\caption{LLM report generation on real \texttt{results.csv} artifacts (production prompt)}
+\label{tab:llm}
+\begin{tabular}{@{}llll@{}}
+\toprule
+Task & Run & Latency (s) & Output (chars) \\
+\midrule
+Detection & D1 & 12.36 & 1490 \\
+Classification & C1 & 7.96 & 1199 \\
+Segmentation & S1 & 13.80 & 1390 \\
+\midrule
+\multicolumn{2}{l}{Median / success} & 12.36 / 3--3 & 1390 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Deterministic Fallback}
+Table~\ref{tab:fallback} aggregates 120 fallback runs (20 trials each over six files (three unique datasets)). The deterministic path is essentially free: median 0.030\,ms, 99th percentile 0.070\,ms, bootstrap 95\% confidence interval for the mean [0.031, 0.034]\,ms. It returned a valid three-section report on every artifact.
+
+\begin{table}[htbp]
+\centering
+\caption{Deterministic fallback ($n=120$ runs over six real \texttt{results.csv} artifacts)}
+\label{tab:fallback}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Task type & Files & Mean latency (ms) \\
+\midrule
+Detection & 2 & 0.033 \\
+Classification & 2 & 0.030 \\
+Segmentation & 2 & 0.036 \\
+\midrule
+Pooled mean / median & --- & 0.0324 / 0.0304 \\
+Pooled std / max & --- & 0.0091 / 0.0815 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Qualitative Value of the LLM Path}
+The cost difference between the paths is three orders of magnitude, so the LLM must earn its keep through quality. It does, in one testable way: it returns claims grounded in the numbers it read. On the detection artifact, the CSV holds precision 0.00485 and recall 1.0. The LLM concluded that this extreme precision--recall imbalance reveals ``a significant calibration or prediction-threshold problem'' and that deployment ``must be postponed until these anomalies are resolved.'' The fallback prints the same raw numbers with an overfitting tag and stops. The LLM's contribution is the interpretation, verifiable against the same file the model was given---the ground-truth-checkable framing of HaluEval and TruthfulQA \cite{lihalu2023halu,lin2022truthfulqa}: the metric file is the ground truth, and a claim contradicting it is a detectable hallucination. We have not yet automated that check; it is a stated limitation.
+
+\section{Ablation Study}
+We ablate the reporting chain along three axes (Table~\ref{tab:ablation}).
+
+\begin{table}[htbp]
+\centering
+\caption{Ablation of the reporting chain (six files (three unique datasets), 20 trials each unless noted)}
+\label{tab:ablation}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Configuration & Success & Median & Report \\
+ & & latency & present \\
+\midrule
+LLM only (no fallback) & 3/3 & 12.36\,s & yes \\
+Fallback only (LLM disabled) & 120/120 & 0.030\,ms & yes \\
+LLM + fallback (crash injected) & 120/120 & 0.123\,ms & yes \\
+No \texttt{\_explain\_research\_states} & --- & 0\,ms & partial \\
+Missing \texttt{results.csv} & fails fast & --- & no \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{LLM only.} Without the fallback, a model outage or malformed response means no report; the short-output guard (\textless{}50 chars) turns a confident-but-garbage completion into a failure, because a blank page beats a fabricated one. \textbf{Fallback only.} The deterministic parser never failed over 120 runs. \textbf{LLM + fallback.} Injecting a crash into the OpenCode call, the chain produced a valid report in 0.123\,ms---the outage cost less than a millisecond. \textbf{Without \texttt{\_explain\_research\_states}.} Removing that channel only removes \texttt{GLOBAL\_RESEARCH\_EXPLANATION.md}; \texttt{LLM\_Report.md} and the DOCX come from \texttt{results.csv} and remain available, which is why the channels are independent. \textbf{Missing input.} A missing \texttt{results.csv} becomes an empty report and an error string, and \texttt{safe\_step} keeps the pipeline running.
+
+We deliberately omit a human-baseline study: comparing LLM output against human-written reports requires a reader panel and rubric, and the evidence in Section~7.3 is single-run. We flag this as the principal threat to external validity.
+
+\section{Data \& Code Availability Statement}
+The system is open source under a Dual License (PolyForm Noncommercial / AGPLv3). To deploy and reproduce the pipeline, use \url{https://github.com/wisrovi/wyoloservice2_production} and run \texttt{docker-compose up -d}. The reporting step lives in \texttt{wyoloservice2\_worker/executor\_v2.0/wtrain/lib/src/wyolo/trainer/states/llm\_analyzer.py} and \texttt{utils/training\_report\_analyzer.py}; the six \texttt{results.csv} artifacts are shipped in the repository, so the fallback numbers reproduce offline without a GPU. The LLM numbers depend on \texttt{opencode/deepseek-v4-flash-free} availability at run time.
+
+\section{Broader Impact / Ethics Statement}
+Local inference removes the carbon and privacy cost of hosted APIs: no metric leaves the cluster. The dual-use concern is the flip side of the LLM's usefulness: a model that confidently writes plausible reports can also write plausible fabrications, and in a research setting those get archived. We mitigate with the ``Do not invent data'' instruction, the short-output rejection guard, and a fallback that degrades to raw numbers. None is a guarantee. Report generation is trustworthy only while the source metrics remain inspectable alongside the narrative, which is why both files are archived together. Automated hallucination checking against the source metric files is a research priority, not a solved problem.
+
+\section{Conclusion \& Future Work}
+We documented a production LLM reporting step that turns training artifacts into narrative reports, bounded its failure modes with a deterministic fallback, and measured both paths with real data: the fallback at 0.03\,ms with 100\% availability, the LLM at a median 12.4\,s with grounded output. The architecture is not a theoretical novelty; its value is operational, in the spirit of the rest of the wisrovi-suit stack. Future work will automate hallucination checking by asserting every numeric claim in the report against the metric files that generated it, and scale the LLM evaluation across more artifacts and models with a human reader panel against a template baseline.
 
 \section{Acknowledgments}
-We acknowledge the wisrovi-suit project for providing the foundational distributed architecture that made this research possible.
+We thank the contributors of the wisrovi-suit project for the foundational CLI and pipeline infrastructure, and acknowledge the funding and infrastructure bodies that support the NeuralForgeAI cluster.
 
-\bibliographystyle{IEEEtran}
+\bibliographystyle{ieeetr}
 \bibliography{references}
 
 \end{document}
