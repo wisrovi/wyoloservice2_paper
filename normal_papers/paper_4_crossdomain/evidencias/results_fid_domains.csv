@@ -1,0 +1,17 @@
+source_domain,target_domain,fid_score,mAP_drop_pct
+synthetic,synthetic,0.0,0.0
+synthetic,real_day,90.74,18.7
+synthetic,real_night,116.2,27.4
+synthetic,rain_heavy,58.71,6.4
+real_day,synthetic,108.36,31.9
+real_day,real_day,0.0,0.0
+real_day,real_night,142.93,35.4
+real_day,rain_heavy,53.85,9.3
+real_night,synthetic,105.35,28.1
+real_night,real_day,126.4,19.5
+real_night,real_night,0.0,0.0
+real_night,rain_heavy,102.92,15.5
+rain_heavy,synthetic,86.11,13.0
+rain_heavy,real_day,149.86,43.4
+rain_heavy,real_night,106.46,13.3
+rain_heavy,rain_heavy,0.0,0.0
