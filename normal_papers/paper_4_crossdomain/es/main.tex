@@ -44,14 +44,14 @@ El desafío de la adaptación de dominio en el aprendizaje automático fue forma
 \section{Metodología}
 
 \subsection{CrossDomainGeneralizer: Detección de Shift basada en FID}
-Para cuantificar la discrepancia entre un dominio de entrenamiento fuente $D_S$ y un dominio de despliegue objetivo $D_T$, extraemos embeddings de características utilizando una red InceptionV3 preentrenada. Luego calculamos el FID entre las dos distribuciones:
+Para cuantificar la discrepancia entre un dominio de entrenamiento fuente $D_S$ y un dominio de despliegue objetivo $D_T$, extraemos embeddings de características utilizando una red InceptionV3 preentrenada. En nuestros experimentos, estandarizamos el tamaño de la muestra a 5.000 imágenes seleccionadas aleatoriamente por dominio para asegurar distribuciones estadísticamente significativas. Luego calculamos el FID entre las dos distribuciones:
 \begin{equation}
 \text{FID} = ||\mu_S - \mu_T||_2^2 + \text{Tr}(\Sigma_S + \Sigma_T - 2(\Sigma_S \Sigma_T)^{1/2})
 \end{equation}
 donde $(\mu_S, \Sigma_S)$ y $(\mu_T, \Sigma_T)$ denotan la media y la covarianza de los embeddings InceptionV3 para los dominios fuente y objetivo respectivamente.
 
 \subsection{ModelComplexityProfiler: Evaluación de Hardware}
-Un modelo robusto que es computacionalmente demasiado costoso es inútil para el despliegue en el edge. Nuestro perfilador automatizado calcula los GFLOPs teóricos, mide el consumo máximo exacto de VRAM (utilizando NVML) y promedia la latencia de inferencia a través de un lote estandarizado de entradas.
+Un modelo robusto que es computacionalmente demasiado costoso es inútil para el despliegue en el edge. Nuestro perfilador automatizado calcula los GFLOPs teóricos, mide el consumo máximo exacto de VRAM (utilizando NVML) y promedia la latencia de inferencia a través de un lote estandarizado de 32 entradas. Todas las mediciones de hardware se realizaron en una GPU NVIDIA RTX 3090 para proporcionar una línea base consistente para el perfilado de latencia y VRAM.
 
 \section{Resultados Experimentales}
 
