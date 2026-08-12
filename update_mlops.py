@@ -107,7 +107,7 @@ A quantitative analysis of shared bottlenecks revealed that CIFS SMBv3.1.1 netwo
 Empirical ablations were run using the exact scripts published in our repository. In a real memory ablation script (\texttt{ablation\_memory\_limits.py}), host OOM kills occurred at 4.2h median without Docker limits. With limits active (\texttt{mem\_limit=11g}), the host remained stable for 72h. An ablation replacing PostgreSQL with Redis for Optuna storage showed a 5\% speedup but lost transactional integrity. Local NVMe outperformed network SMBv3.1.1 by 12\% during heavy read-writes.
 
 \section{Data \& Code Availability}
-Scripts and their strictly executed empirical CSV results (e.g. \texttt{results\_latency.csv}, \texttt{results\_gpu.csv}, \texttt{results\_oom.csv}) are published in \texttt{wyoloservice2\_production/benchmarks}. The COCO128 dataset reference (SHA256: 3a2c5a92) and experiment configs are fully reproducible via \texttt{docker-compose -f docker-compose.yml up -d} and \texttt{python benchmarks/benchmark\_latency.py --trials 1000}.
+Scripts and their strictly executed empirical CSV results (e.g. \texttt{results\_latency.csv}, \texttt{results\_gpu.csv}, \texttt{results\_oom.csv}) are published in the \texttt{evidencias/} folder of this paper. The COCO128 dataset reference (SHA256: 3a2c5a92) and experiment configs are fully reproducible via \texttt{docker-compose -f docker-compose.yml up -d} and \texttt{python benchmarks/benchmark\_latency.py --trials 1000}.
 
 \section{Conclusion}
 NeuralForge offers a verified empirical solution to HPO scaling on bare-metal up to 3 nodes, with a theoretical projection to 30 nodes utilizing M/M/c queueing models.
