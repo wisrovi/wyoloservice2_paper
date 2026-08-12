@@ -52,3 +52,33 @@ Este roadmap rige la agenda de publicaciones científicas (Research & Developmen
 ### 7. Paper: Cross-Domain Generalization Assessment (Paper 4)
 *   **Objetivo:** Publicar en WACV o IROS.
 *   **Acción:** Habilitar el cálculo de *Fréchet Inception Distance (FID)* entre los datasets de entrenamiento y despliegue para anticipar fallos en el mundo real.
+
+---
+
+## 🟣 Metas de Expansión y Visión (Prioridad 4 - 2028)
+*Foco: Independizar los módulos restantes de I+D en contribuciones científicas autónomas.*
+
+### 8. Paper: Automated Hardware Complexity Profiling for Edge-Deployed YOLO Models (Paper 8)
+*   **Objetivo:** Publicar en IEEE IoT Journal o DAC.
+*   **Estado:** `ModelComplexityProfiler` funcional (ptflops/pynvml).
+*   **Acción:** Demostrar cómo el profiling automático de GFLOPs, latencia y consumo de VRAM guía la poda (pruning) y cuantización para despliegues en el borde.
+
+### 9. Paper: Outlier Failure Analysis: A Data-Centric Approach to Hard-Negative Mining (Paper 9)
+*   **Objetivo:** Publicar en CVPR (Data-Centric AI Workshop).
+*   **Estado:** `OutlierFailureAnalyzer` estructurado (Mock).
+*   **Acción:** Integrar con FiftyOne para aislar sistemáticamente falsos positivos y falsos negativos críticos, creando un ciclo de retroalimentación de *Active Learning*.
+
+### 10. Paper: Semantic Feature Representation: Disentangling Latent Spaces in YOLO (Paper 10)
+*   **Objetivo:** Publicar en ICLR o AAAI.
+*   **Estado:** `FeatureRepresentationAnalyzer` estructurado (Mock).
+*   **Acción:** Extraer embeddings de las capas profundas y calcular el *Silhouette Score* para evaluar matemáticamente la separabilidad de las clases aprendidas.
+
+### 11. Paper: Generative LaTeX Export Automation for High-Throughput Scientific Publishing (Paper 11)
+*   **Objetivo:** Publicar en SciPy Conference o JORS.
+*   **Estado:** `LatexExporter` completamente funcional.
+*   **Acción:** Formalizar la herramienta como un puente esencial entre las salidas crudas (CSV/JSON) y el formato publicable IEEE/ACM estandarizado, evitando el error humano en las transcripciones.
+
+### 12. Paper: Holistic Post-Training Pipelines: Bridging the Gap Between Training and Academic Dissemination (Paper 12)
+*   **Objetivo:** Publicar en Nature Machine Intelligence o TPAMI.
+*   **Estado:** Core funcional, integración parcial.
+*   **Acción:** El *Master Paper* final del ecosistema, demostrando cómo la concatenación de los 14 módulos MLOps + I+D reduce el tiempo desde el modelo entrenado hasta la publicación científica de meses a minutos.
