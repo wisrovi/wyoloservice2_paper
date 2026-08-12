@@ -64,6 +64,7 @@ These papers document an ecosystem that operates under a **Dual Licensing Model*
 
 ## 🔄 Changelog
 
+- **v1.1.0 (2026-08-12)**: Paper 6 (LLM-Powered Automated Research Reporting) ha sido ACEPTADO oficialmente por la IEEE.
 - **v1.0.3 (2026-08-12)**: Updated directory to only list strictly approved papers.
 - **v1.0.2 (2026-08-07)**: Added new timestamped IEEE expert panel review verdicts for all 5 papers.
 - **v1.0.1 (2026-08-07)**: Added official IEEE expert panel review verdicts for all papers.
