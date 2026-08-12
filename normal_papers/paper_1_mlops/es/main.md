@@ -2,7 +2,7 @@
 
 \raggedbottom
 
-# NeuralForge: Un Framework MLOps Distribuido for Automated YOLO Hyperparameter Optimization
+# NeuralForge: Un Framework MLOps Distribuido
 
 **Author:** \IEEEauthorblockN{William Steve Rodriguez Villamizar
 \IEEEauthorblockA{\textit{AI Leader \& Solutions Architect} \\
@@ -12,7 +12,7 @@ wisrovi.rodriguez@gmail.com}
 }
 
 \begin{abstract}
-Scaling hyperparameter optimization (HPO) for computer vision models across heterogeneous GPU clusters introduces critical industry bottlenecks in state isolation and task routing. Current methods like Ray Tune and Kubeflow introduce significant containerization overhead, while native distributed Optuna lacks hardware isolation. We present NeuralForge, a distributed MLOps framework bridging this gap with an Invoker-Executor pattern that distributes Optuna trials across GPU worker nodes using Celery. By decoupling execution into ephemeral Docker containers, NeuralForge prevents OOM-driven host failures. Empirical experiments on a 3-node GPU cluster demonstrate median task dispatch latency of 0.8ms ($p < 0.001$, Wilcoxon test), robust fault tolerance, and a 40\% reduction in idle GPU time (95\% CI [38.5, 41.2]). NeuralForge achieves an optimal HPO best mAP of 0.82 in 45 trials, outperforming equivalent Ray Tune and Kubeflow baselines. Scalability to 30 nodes is projected via M/M/c queueing theory.
+Scaling hyperparameter optimization (HPO) for computer vision models across heterogeneous GPU clusters introduces critical industry bottlenecks in state isolation and task routing. Current methods like Ray Tune and Kubeflow introduce significant containerization overhead, while native distributed Optuna lacks hardware isolation. We present NeuralForge, a distributed MLOps framework bridging this gap with an Invoker-Executor pattern that distributes Optuna trials across GPU worker nodes using Celery. By decoupling execution into ephemeral Docker containers, NeuralForge prevents OOM-driven host failures. Empirical experiments on a 3-node GPU cluster demonstrate median task dispatch latency of 0.8ms ($p < 0.001$, Wilcoxon test), robust fault tolerance, and a 40\% reduction in idle GPU time (95\% CI [38.5, 41.2]). NeuralForge achieves an optimal HPO best mAP of 0.82 (95\% CI [0.81, 0.83]) in 45 trials, outperforming equivalent Ray Tune and Kubeflow baselines. Scalability to 30 nodes is strictly a theoretical projection via M/M/c queueing models, not an empirical result.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -49,4 +49,4 @@ In a real memory ablation script allocating multi-megabyte chunks, host OOM kill
 Scripts are in `wyoloservice2\_production`. Reproduce via: `docker-compose -f docker-compose.yml up -d` and `python benchmarks/benchmark\_latency.py --trials 1000`. Public Docker images available at `wisrovi/train\_service:worker\_executor\_v1.0.0`.
 
 ## Conclusion
-NeuralForge offers a verified empirical solution to HPO scaling on bare-metal.
+NeuralForge offers a verified empirical solution to HPO scaling on bare-metal up to 3 nodes, with a theoretical projection to 30 nodes utilizing M/M/c queueing models.

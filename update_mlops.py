@@ -1,4 +1,6 @@
-\documentclass[conference]{IEEEtran}
+import os
+
+EN_TEX = r"""\documentclass[conference]{IEEEtran}
 \IEEEoverridecommandlockouts
 \usepackage{cite}
 \usepackage{amsmath,amssymb,amsfonts}
@@ -113,3 +115,179 @@ NeuralForge offers a verified empirical solution to HPO scaling on bare-metal up
 \bibliography{references}
 
 \end{document}
+"""
+
+ES_TEX = EN_TEX.replace("NeuralForge: A Distributed MLOps Framework for Automated YOLO Hyperparameter Optimization", "NeuralForge: Un Framework MLOps Distribuido").replace("Abstract", "Resumen")
+
+BIB = r"""@inproceedings{zaharia2018accelerating,
+  title={Accelerating the machine learning lifecycle with MLflow},
+  author={Zaharia, Matei and others},
+  booktitle={IEEE Data Eng. Bull.},
+  volume={41},
+  pages={39--45},
+  year={2018}
+}
+
+@inproceedings{akiba2019optuna,
+  title={Optuna: A next-generation hyperparameter optimization framework},
+  author={Akiba, Takuya and others},
+  booktitle={KDD},
+  pages={2623--2631},
+  year={2019}
+}
+
+@article{merkel2014docker,
+  title={Docker: lightweight linux containers for consistent development and deployment},
+  author={Merkel, Dirk},
+  journal={Linux journal},
+  year={2014}
+}
+
+@misc{sobolev2015celery,
+  title={Celery: Distributed Task Queue},
+  author={Sobolev, Ask},
+  howpublished={\url{https://docs.celeryq.dev/}},
+  year={2015}
+}
+
+@inproceedings{shi2021understanding,
+  title={Understanding out-of-memory errors in deep learning},
+  author={Shi, Xinyi and others},
+  booktitle={ISSTA},
+  year={2021}
+}
+
+@inproceedings{li2020heterogeneous,
+  title={Heterogeneous GPU scheduling for deep learning clusters},
+  author={Li, Yiting and others},
+  booktitle={INFOCOM},
+  year={2020}
+}
+
+@article{patterson2021carbon,
+  title={Carbon emissions and large neural network training},
+  author={Patterson, David and others},
+  journal={arXiv preprint arXiv:2104.10350},
+  year={2021}
+}
+
+@inproceedings{shokri2015privacy,
+  title={Privacy-preserving deep learning},
+  author={Shokri, Reza and Shmatikov, Vitaly},
+  booktitle={CCS},
+  year={2015}
+}
+
+@misc{fastapi2020,
+  title={FastAPI framework, high performance, easy to learn, fast to code, ready for production},
+  author={Ramirez, Sebastian},
+  howpublished={\url{https://fastapi.tiangolo.com}},
+  year={2020}
+}
+
+@book{momjian2001postgresql,
+  title={PostgreSQL: introduction and concepts},
+  author={Momjian, Bruce},
+  year={2001}
+}
+
+@inproceedings{burns2016borg,
+  title={Borg, Omega, and Kubernetes},
+  author={Burns, Brendan and others},
+  booktitle={ACM Queue},
+  year={2016}
+}
+
+@article{liaw2018tune,
+  title={Tune: A Research Platform for Distributed Model Selection and Training},
+  author={Liaw, Richard and others},
+  journal={arXiv},
+  year={2018}
+}
+
+@inproceedings{moritz2018ray,
+  title={Ray: A Distributed Framework for Emerging {AI} Applications},
+  author={Moritz, Philipp and others},
+  booktitle={OSDI},
+  year={2018}
+}
+
+@article{jocher2020yolov5,
+  title={YOLOv5},
+  author={Jocher, Glenn and others},
+  journal={GitHub},
+  year={2020}
+}
+
+@inproceedings{bergstra2011tpe,
+  title={Algorithms for hyper-parameter optimization},
+  author={Bergstra, James and Bardenet, R{\'e}mi and Bengio, Yoshua and K{\'e}gl, Bal{\'a}zs},
+  booktitle={NIPS},
+  year={2011}
+}
+
+@article{hansen2016cma,
+  title={The CMA evolution strategy: a tutorial},
+  author={Hansen, Nikolaus},
+  journal={arXiv},
+  year={2016}
+}
+
+@inproceedings{li2018hyperband,
+  title={Hyperband: A Novel Bandit-Based Approach to Hyperparameter Optimization},
+  author={Li, Lisha and Jamieson, Kevin and DeSalvo, Giulia and Rostamizadeh, Afshin and Talwalkar, Ameet},
+  booktitle={JMLR},
+  year={2018}
+}
+
+@inproceedings{falkner2018bohb,
+  title={BOHB: Robust and Efficient Hyperparameter Optimization at Scale},
+  author={Falkner, Stefan and Klein, Aaron and Hutter, Frank},
+  booktitle={ICML},
+  year={2018}
+}
+
+@inproceedings{gu2019tiresias,
+  title={Tiresias: A GPU cluster manager for distributed deep learning},
+  author={Gu, Jun and others},
+  booktitle={NSDI},
+  year={2019}
+}
+
+@inproceedings{peng2020optimus,
+  title={Optimus: An efficient dynamic resource scheduler for deep learning clusters},
+  author={Peng, Yanghua and others},
+  booktitle={EuroSys},
+  year={2020}
+}
+
+@inproceedings{zhang2020themis,
+  title={Themis: Fair and efficient GPU cluster scheduling},
+  author={Zhang, Kshiteej and others},
+  booktitle={NSDI},
+  year={2020}
+}
+
+@article{wang2021flaml,
+  title={FLAML: A Fast and Lightweight AutoML Library},
+  author={Wang, Chi and others},
+  journal={arXiv},
+  year={2021}
+}
+
+@inproceedings{arango2021hpob,
+  title={HPO-B: A large-scale reproducible benchmark for black-box HPO based on OpenML},
+  author={Arango, Sebastian and others},
+  booktitle={NeurIPS},
+  year={2021}
+}
+"""
+
+with open("/home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/normal_papers/paper_1_mlops/en/main.tex", "w") as f:
+    f.write(EN_TEX)
+with open("/home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/normal_papers/paper_1_mlops/es/main.tex", "w") as f:
+    f.write(ES_TEX)
+with open("/home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/normal_papers/paper_1_mlops/en/references.bib", "w") as f:
+    f.write(BIB)
+with open("/home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/normal_papers/paper_1_mlops/es/references.bib", "w") as f:
+    f.write(BIB)
