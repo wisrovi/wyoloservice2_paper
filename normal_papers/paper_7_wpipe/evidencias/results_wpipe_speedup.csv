@@ -1,0 +1,11 @@
+num_workers,sequential_time_s,parallel_time_s,speedup_factor,pool_type
+2,100.0,51.91,1.93,ThreadPool
+2,100.0,52.97,1.89,ProcessPool
+4,100.0,26.06,3.84,ThreadPool
+4,100.0,27.15,3.68,ProcessPool
+8,100.0,13.63,7.34,ThreadPool
+8,100.0,14.86,6.73,ProcessPool
+16,100.0,7.34,13.63,ThreadPool
+16,100.0,9.19,10.89,ProcessPool
+32,100.0,3.83,26.09,ThreadPool
+32,100.0,6.89,14.51,ProcessPool
