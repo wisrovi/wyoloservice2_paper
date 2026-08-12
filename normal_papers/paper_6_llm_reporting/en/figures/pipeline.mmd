@@ -1,0 +1,25 @@
+flowchart TD
+    subgraph S1["Cleaning & Re-evaluation"]
+        A[CleanFolderExtra] --> B[PostTrain]
+    end
+
+    subgraph S2["Forensic Evaluators"]
+        B --> C[ImageECamYOLO / Grad-CAM]
+        C --> D[ModelFocusDescriber]
+        D --> E[QuantitativeXAIValidator]
+        E --> F[BootstrapEvaluator]
+        F --> G[ModelComplexityProfiler]
+        G --> H[OutlierFailureAnalyzer]
+        H --> I[RobustnessNoiseEvaluator]
+        I --> J[AdversarialAttackTester]
+        J --> K[CrossDomainGeneralizer]
+        K --> L[FeatureRepresentationAnalyzer]
+        L --> M[UncertaintyQuantifier]
+        M --> N[LatexExporter]
+    end
+
+    subgraph S3["Reporting"]
+        N --> O["LlmAnalyzer (WPipe step)"]
+        O --> P["LLM_Report.md / .docx"]
+        O --> Q["GLOBAL_RESEARCH_EXPLANATION.md"]
+    end
