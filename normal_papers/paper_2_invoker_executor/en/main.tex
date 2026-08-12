@@ -81,10 +81,11 @@ Baselines:
 
 \section{Results \& Discussion}
 \subsection{Ablation Study: Legacy vs. Baselines vs. Ephemeral Isolation}
-\begin{table}[htbp]
+\begin{table*}[htbp]
 \centering
 \caption{Host Stability and Latency Comparison (72-hour stress test, median [IQR] across 5 seeds)}
 \label{tab:ablation}
+\resizebox{\textwidth}{!}{
 \begin{tabular}{@{}lllllllll@{}}
 \toprule
 Metric & Direct Exec & Ray (no container) & Kubernetes & containerd & Kata & gVisor & Firecracker & Invoker-Executor \\ \midrule
@@ -93,13 +94,14 @@ Manual Reboots Required & 18 [16--20] & 9 [7--11] & 0 & 0 & 0 & 0 & 0 & 0 \\
 Container/Job Kills (contained) & 0 & 0 & 18 [16--20] & 18 [16--20] & 18 [16--20] & 18 [16--20] & 18 [16--20] & 18 [16--20] \\
 Avg. Task Startup Latency (s) & 2.1 [1.9--2.3] & 3.8 [3.4--4.2] & 14.2 [12.8--15.6] & 2.6 [2.3--2.9] & 6.2 [5.6--6.8] & 8.2 [7.5--8.9] & 10.4 [9.6--11.2] & 2.4 [2.1--2.7] \\ \bottomrule
 \end{tabular}
-\end{table}
+}
+\end{table*}
 
 Direct execution crashed the host daemon a median of 18 times (IQR: 16--20); each required a physical reboot to restore GPU usability. Ray workers leaked memory similarly, causing a median of 11 host OOM events (IQR: 9--13; 9 required reboots; 2 recovered via driver reset). Kubernetes, containerd CRI, Kata Containers, gVisor, and Firecracker contained all failures at the pod/container/VM level (median 18 container kills, all \texttt{Exit 137}, zero host impact). However, startup latency varied significantly: Kubernetes added 14.2 s (IQR: 12.8--15.6 s) due to scheduler and kubelet overhead; containerd CRI achieved 2.6 s (IQR: 2.3--2.9 s), comparable to our 2.4 s (IQR: 2.1--2.7 s); VM-based runtimes added 3.8--8.2 s overhead due to VM boot (Kata: 6.2 s, gVisor: 8.2 s, Firecracker: 10.4 s).
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/latency.pdf}
+\includegraphics[width=\columnwidth]{figures/latency.pdf}
 \caption{Startup latency and crash containment across configurations.}
 \label{fig:latency}
 \end{figure}

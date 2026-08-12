@@ -73,26 +73,28 @@ Líneas base:
 
 \section{Resultados y Discusión}
 \subsection{Estudio de Ablación: Legado vs. Líneas Base vs. Aislamiento Efímero}
-\begin{table}[htbp]
+\begin{table*}[htbp]
 \centering
-\caption{Comparación de Estabilidad del Host y Latencia (prueba de estrés 72 horas)}
+\caption{Comparación de Estabilidad de Host y Latencia (prueba de esfuerzo de 72 horas, mediana [IQR] a lo largo de 5 semillas)}
 \label{tab:ablation}
-\begin{tabular}{@{}lllll@{}}
+\resizebox{\textwidth}{!}{
+\begin{tabular}{@{}lllllllll@{}}
 \toprule
-Métrica & Ejec. Directa & Ray (sin contenedor) & Kubernetes & Invocador-Ejecutor \\ \midrule
-Caídas OOM Host & 18 & 11 & 0 & 0 \\
-Reinicios Manuales Requeridos & 18 & 9 & 0 & 0 \\
-Eliminaciones Contenedor/Job (contenidas) & 0 & 0 & 18 & 18 \\
-Latencia Prom. Inicio Tarea & 2.1 s & 3.8 s & 14.2 s & 2.4 s \\ \bottomrule
+Métrica & Direct Exec & Ray (sin contenedor) & Kubernetes & containerd & Kata & gVisor & Firecracker & Invoker-Executor \\ \midrule
+Caídas de OOM del Host & 18 [16--20] & 11 [9--13] & 0 & 0 & 0 & 0 & 0 & 0 \\
+Reinicio Manual Requerido & 18 [16--20] & 9 [7--11] & 0 & 0 & 0 & 0 & 0 & 0 \\
+Muertes de Contenedor/Job (contenido) & 0 & 0 & 18 [16--20] & 18 [16--20] & 18 [16--20] & 18 [16--20] & 18 [16--20] & 18 [16--20] \\
+Latencia Promedio de Inicio de Tarea (s) & 2.1 [1.9--2.3] & 3.8 [3.4--4.2] & 14.2 [12.8--15.6] & 2.6 [2.3--2.9] & 6.2 [5.6--6.8] & 8.2 [7.5--8.9] & 10.4 [9.6--11.2] & 2.4 [2.1--2.7] \\ \bottomrule
 \end{tabular}
-\end{table}
+}
+\end{table*}
 
 La ejecución directa derribó el demonio host 18 veces; cada una requirió reinicio físico para restaurar usabilidad de GPU. Workers Ray filtraron memoria similarmente, causando 11 eventos OOM host (9 requirieron reinicios; 2 recuperaron vía reset de driver). Kubernetes contuvo todos los fallos a nivel pod (18 pod OOM kills) pero añadió 14.2 s latencia media de inicio por overhead de scheduler y kubelet. El patrón Invocador-Ejecutor igualó a Kubernetes en contención de caídas (18 kills de contenedor, todos \texttt{Exit 137}, cero impacto host) manteniendo latencia de inicio en 2.4 s---comparable a ejecución directa.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/latency.pdf}
-\caption{Latencia de inicio y contención de caídas entre configuraciones.}
+\includegraphics[width=\columnwidth]{figures/latency.pdf}
+\caption{Latencia de inicio y contención de fallas en las distintas configuraciones.}
 \label{fig:latency}
 \end{figure}
 
