@@ -19,7 +19,7 @@ YOLO, Robustness, Adversarial Attacks, FGSM, MC Dropout, Uncertainty Estimation,
 ## Introduction
 Real-time object detection systems, particularly YOLO architectures, have achieved state-of-the-art accuracy under ideal laboratory conditions. However, real-world deployments are often subject to sensor noise, weather conditions, and potentially malicious adversarial perturbations. Traditional accuracy metrics (such as mAP) fail to capture a model's reliability when confronted with out-of-distribution (OOD) data.
 
-This study introduces an automated post-training robustness pipeline that quantifies model vulnerabilities along three critical axes: adversarial resilience, noise tolerance, and uncertainty estimation. By integrating these metrics, we provide a holistic view of model dependability suitable for MLOps environments.
+Building upon foundational robustness works , this study introduces an automated post-training robustness pipeline that quantifies model vulnerabilities along three critical axes: adversarial resilience, noise tolerance, and uncertainty estimation. By integrating these metrics, we provide a holistic view of model dependability suitable for MLOps environments.
 
 ## Related Work
 Adversarial vulnerabilities in deep neural networks were highlighted by Goodfellow et al. , introducing the Fast Gradient Sign Method (FGSM). Hendrycks and Dietterich  established standardized benchmarks for evaluating robustness against common corruptions. For uncertainty quantification, Gal and Ghahramani  demonstrated that Dropout can be used as a Bayesian approximation to estimate epistemic uncertainty. Subsequent works  have further formalized the decomposition of epistemic and aleatoric uncertainty in computer vision tasks.
@@ -50,11 +50,11 @@ Across the five severity levels, Gaussian blur and Gaussian noise induced the st
 ### Uncertainty Decomposition
 The MC Dropout analysis over 20 passes successfully disentangled uncertainty sources. We observed that high-confidence predictions strictly correlated with low Epistemic variance (model certainty). Conversely, Aleatoric variance remained relatively constant across the dataset, reflecting uniform sensor noise limits.
 
-## Conclusion
-We have presented an automated robustness pipeline that strictly quantifies adversarial vulnerability, noise resilience, and uncertainty for YOLO models. Integrating these metrics into standard CI/CD pipelines ensures that models deployed in the wild possess verified resilience boundaries. Future work will explore integrating these metrics into our declarative WPipe framework.
+## Conclusion \& Future Work
+We have presented an automated robustness pipeline that strictly quantifies adversarial vulnerability, noise resilience, and uncertainty for YOLO models. Integrating these metrics into standard CI/CD pipelines ensures that models deployed in the wild possess verified resilience boundaries. Future work will explore integrating an LLM narrative report generator as an optional module to summarize these robustness metrics in natural language.
 
 ## Data and Code Availability
-Scripts and their strictly executed empirical CSV results are published in the `evidencias/` folder of this paper. This ecosystem operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3, fully compatible with IEEE publishing standards). The source code is available on GitHub at https://github.com/wisrovi/. To reproduce the metrics, execute `python benchmark\_robustness.py` locally.
+Scripts and their strictly executed empirical CSV results are published in the `evidencias/` folder of this paper. This ecosystem operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3, fully compatible with IEEE publishing standards for research). The source code is available on GitHub at https://github.com/wisrovi/. To reproduce the metrics exactly, execute `docker-compose -f docker-compose.yml up -d` in the `wyoloservice2\_production` environment, or run `python benchmark\_robustness.py` locally.
 
 ## Acknowledgment
 This work was supported by wisrovi-suit.

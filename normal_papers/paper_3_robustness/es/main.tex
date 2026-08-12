@@ -36,7 +36,7 @@ YOLO, Robustez, Ataques Adversarios, FGSM, MC Dropout, Estimación de Incertidum
 \section{Introducción}
 Los sistemas de detección de objetos en tiempo real, particularmente las arquitecturas YOLO, han alcanzado una precisión de vanguardia bajo condiciones ideales de laboratorio. Sin embargo, los despliegues en el mundo real a menudo están sujetos al ruido de los sensores, condiciones climáticas y perturbaciones adversarias potencialmente maliciosas. Las métricas de precisión tradicionales (como mAP) no logran capturar la confiabilidad de un modelo cuando se enfrenta a datos fuera de distribución (OOD).
 
-Este estudio introduce un pipeline de robustez post-entrenamiento automatizado que cuantifica las vulnerabilidades del modelo a lo largo de tres ejes críticos: resiliencia adversaria, tolerancia al ruido y estimación de incertidumbre. Al integrar estas métricas, proporcionamos una visión holística de la confiabilidad del modelo adecuada para entornos MLOps.
+Basándose en trabajos fundamentales de robustez \cite{madry2018towards, carlini2017towards}, este estudio introduce un pipeline de robustez post-entrenamiento automatizado que cuantifica las vulnerabilidades del modelo a lo largo de tres ejes críticos: resiliencia adversaria, tolerancia al ruido y estimación de incertidumbre. Al integrar estas métricas, proporcionamos una visión holística de la confiabilidad del modelo adecuada para entornos MLOps.
 
 \section{Trabajo Relacionado}
 Las vulnerabilidades adversarias en redes neuronales profundas fueron destacadas por Goodfellow et al. \cite{goodfellow2015fgsm}, introduciendo el Método del Signo del Gradiente Rápido (FGSM). Hendrycks y Dietterich \cite{hendrycks2019benchmarking} establecieron benchmarks estandarizados para evaluar la robustez contra corrupciones comunes. Para la cuantificación de incertidumbre, Gal y Ghahramani \cite{gal2016dropout} demostraron que el Dropout puede usarse como una aproximación Bayesiana para estimar la incertidumbre epistémica. Trabajos posteriores \cite{kendall2017uncertainties, lakshminarayanan2017simple} han formalizado aún más la descomposición de la incertidumbre epistémica y aleatoria en tareas de visión por computadora.
@@ -67,11 +67,11 @@ A lo largo de los cinco niveles de severidad, el desenfoque gaussiano y el ruido
 \subsection{Descomposición de Incertidumbre}
 El análisis de MC Dropout a través de 20 pases desentrañó exitosamente las fuentes de incertidumbre. Observamos que las predicciones de alta confianza se correlacionaban estrictamente con una baja varianza Epistémica (certeza del modelo). Por el contrario, la varianza Aleatoria se mantuvo relativamente constante en todo el conjunto de datos, reflejando límites uniformes de ruido del sensor.
 
-\section{Conclusión}
-Hemos presentado un pipeline de robustez automatizado que cuantifica estrictamente la vulnerabilidad adversaria, la resiliencia al ruido y la incertidumbre para modelos YOLO. Integrar estas métricas en pipelines CI/CD estándar asegura que los modelos desplegados posean límites de resiliencia verificados. El trabajo futuro explorará la integración de estas métricas en nuestro framework declarativo WPipe.
+\section{Conclusión y Trabajo Futuro}
+Hemos presentado un pipeline de robustez automatizado que cuantifica estrictamente la vulnerabilidad adversaria, la resiliencia al ruido y la incertidumbre para modelos YOLO. Integrar estas métricas en pipelines CI/CD estándar asegura que los modelos desplegados posean límites de resiliencia verificados. El trabajo futuro explorará la integración de un generador de reportes narrativos LLM como módulo opcional para resumir estas métricas de robustez en lenguaje natural.
 
 \section*{Disponibilidad de Datos y Código}
-Los scripts y sus resultados empíricos en CSV están en la carpeta \texttt{evidencias/} de este documento. Este ecosistema opera bajo Licencia Dual (PolyForm Noncommercial / AGPLv3, compatible con normativas de publicación de IEEE). El código fuente está disponible en GitHub en \url{https://github.com/wisrovi/}. Para reproducir las métricas, ejecute \texttt{python benchmark\_robustness.py} localmente.
+Los scripts y sus resultados empíricos en CSV están en la carpeta \texttt{evidencias/} de este documento. Este ecosistema opera bajo Licencia Dual (PolyForm Noncommercial / AGPLv3, compatible con normativas de publicación de IEEE para investigación). El código fuente está disponible en GitHub en \url{https://github.com/wisrovi/}. Para reproducir las métricas exactamente, ejecute \texttt{docker-compose -f docker-compose.yml up -d} en el entorno \texttt{wyoloservice2\_production}, o ejecute \texttt{python benchmark\_robustness.py} localmente.
 
 \section*{Agradecimientos}
 Este trabajo fue apoyado por wisrovi-suit.
