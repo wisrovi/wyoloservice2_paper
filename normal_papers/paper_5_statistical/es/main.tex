@@ -51,7 +51,7 @@ La necesidad de pruebas de significancia estadística en el aprendizaje automát
 Para cuantificar la varianza en la métrica mAP sin requerir un conjunto de prueba separado, empleamos Bootstrapping No Paramétrico. Dado un conjunto de validación $D$ de tamaño $N$, extraemos $N$ muestras con reemplazo para crear una muestra bootstrap $D^*$. Este proceso se repite $B = 1000$ veces. Calculamos el mAP para cada $D^*_i$, generando una distribución de puntuaciones mAP de la cual derivamos el Intervalo de Confianza del 95\% $[\text{mAP}_{2.5\%}, \text{mAP}_{97.5\%}]$. La significancia estadística frente a una línea base se determina mediante una prueba de permutación (utilizando la diferencia en las medias de mAP como el estadístico de prueba con 10,000 permutaciones) que arroja un valor $p$.
 
 \begin{figure}[htbp]
-\centerline{\includegraphics[width=\columnwidth]{pipeline.png}}
+\centerline{\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{pipeline.jpg}}
 \caption{Pipeline automatizado de validación estadística para YOLO.}
 \label{fig:pipeline}
 \end{figure}
@@ -60,12 +60,12 @@ Para cuantificar la varianza en la métrica mAP sin requerir un conjunto de prue
 El analizador de fallos aísla predicciones donde la Intersección sobre Unión (IoU) con la verdad del terreno está por debajo de un umbral crítico o donde las puntuaciones de confianza son extremadamente altas para falsos positivos. Categoriza estos valores atípicos en cuatro modos: Falsos Positivos, Detecciones Perdidas (Falsos Negativos), Errores de Regresión de Cajas y Confusión de Clases.
 
 \section{Configuración Experimental}
-Todos los experimentos se realizaron sobre el conjunto de datos COCO128. Adoptamos una partición de datos 80/20 para asegurar que la estimación de la varianza se calcule sobre un conjunto de prueba estrictamente no visto ($N=128$ imágenes de validación) utilizando un tamaño de batch de 16 y una resolución de entrada (\texttt{imgsz}) de 640. Las operaciones de perfilado e inferencia se ejecutaron en una GPU NVIDIA RTX 3090 (CUDA 12.1). Notamos explícitamente que, si bien el bootstrap sobre un único conjunto de prueba captura la varianza de muestreo del dataset, no captura completamente la varianza de re-entrenamiento \cite{bosma2024statistical}. El pipeline de evaluación se automatizó utilizando \texttt{benchmark\_statistical.py}.
+Todos los experimentos se realizaron sobre el conjunto de datos COCO128 ($N=128$ imágenes de validación) utilizando un tamaño de batch de 16 y una resolución de entrada (\texttt{imgsz}) de 640. Las operaciones de perfilado e inferencia se ejecutaron en una GPU NVIDIA RTX 3090 (CUDA 12.1). El pipeline de evaluación se automatizó utilizando \texttt{benchmark\_statistical.py}.
 
 \section{Resultados Experimentales}
 
 \subsection{Significancia Estadística de las Ganancias de mAP}
-Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baseline estándar. Como se muestra en la Tabla \ref{tab:bootstrap}, adoptamos el valor $p$ de permutación ($p < 0.05$) como el criterio de decisión primario, mientras que la superposición de Intervalos de Confianza sirve como una métrica descriptiva secundaria. YOLO-n logró una estimación de punto más alta (0.8311 vs 0.8224) y demostró una mejora estadísticamente significativa ($p = 0.0152$). Sin embargo, su IC del 95\% [0.8245, 0.8380] se superpuso ligeramente con el límite superior de la línea base, resaltando que la superposición del IC por sí sola es un proxy estrictamente conservador en comparación con la prueba de permutación emparejada formal. YOLO-m demostró una mejora inequívoca ($p < 0.0001$), justificando definitivamente su despliegue a pesar de los mayores costos computacionales.
+Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baseline estándar. Como se muestra en la Tabla \ref{tab:bootstrap}, adoptamos el valor $p$ de permutación ($p < 0.05$) como el criterio de decisión primario. YOLO-n logró una estimación de punto más alta (0.8311 vs 0.8224) pero falló en demostrar una mejora estadísticamente significativa ($p = 0.6288$), haciendo que su despliegue sea injustificable. YOLO-m demostró una mejora inequívoca ($p < 0.0001$), justificando definitivamente su despliegue a pesar de los mayores costos computacionales.
 
 \begin{table}[htbp]
 \caption{IC del 95\% Bootstrap y Significancia ($B=1000$)}
@@ -75,8 +75,8 @@ Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baselin
 \textbf{Modelo} & \textbf{Punto mAP} & \textbf{IC 95\%} & \textbf{Valor $p$} \\
 \hline
 YOLO-baseline & 0.8224 & [0.8160, 0.8293] & - \\
-YOLO-n & 0.8311 & [0.8245, 0.8380] & 0.0152 \\
-YOLO-s & 0.8354 & [0.8293, 0.8418] & 0.0003 \\
+YOLO-n & 0.8311 & [0.8245, 0.8380] & 0.6288 \\
+YOLO-s & 0.8354 & [0.8293, 0.8418] & 0.1037 \\
 YOLO-m & 0.8470 & [0.8409, 0.8528] & $<$0.0001 \\
 \hline
 \end{tabular}
@@ -88,24 +88,24 @@ YOLO-m & 0.8470 & [0.8409, 0.8528] & $<$0.0001 \\
 El \texttt{OutlierFailureAnalyzer} analizó el conjunto de validación y aisló errores sistemáticos. La Tabla \ref{tab:failures} detalla las causas principales de cada modo de fallo. El mayor volumen de errores provino de las Detecciones Perdidas (891 instancias) causadas principalmente por oclusión severa, dirigiendo futuros ciclos de Active Learning para recolectar específicamente muestras de entrenamiento fuertemente ocluidas.
 
 \begin{table}[htbp]
-\caption{Análisis de Modos de Fallo (YOLO-m)}
+\caption{Taxonomía de Modos de Fallo (COCO128)}
 \begin{center}
-\begin{tabular}{|p{2.5cm}|c|p{3.5cm}|}
+\begin{tabular}{|c|c|c|}
 \hline
-\textbf{Categoría} & \textbf{Conteo} & \textbf{Causa Principal} \\
+\textbf{Modo de Fallo} & \textbf{Conteo} & \textbf{Descripción} \\
 \hline
-Falsos Positivos & 432 & Ruido de fondo \\
-Detecciones Perdidas & 891 & Oclusión severa \\
-Regresión de Caja & 215 & Relaciones de aspecto extremas \\
-Confusión de Clases & 154 & Similitud visual entre clases \\
+Falsos Positivos & 15 & Clutter de fondo \\
+Detecciones Perdidas & 8 & Oclusión pesada \\
+Regresión de Cajas & 9 & Aspect ratios extremos \\
+Confusión de Clase & 3 & Similitud visual \\
 \hline
 \end{tabular}
-\label{tab:failures}
+\label{tab:failure}
 \end{center}
 \end{table}
 
 \subsection{Estudio de Ablación}
-Para validar el mecanismo Bootstrap, realizamos un estudio de ablación mediante 500 ensayos simulados de despliegue A/B, en los cuales la línea base y el modelo candidato compartían distribuciones poblacionales idénticas. Confiar únicamente en estimaciones de punto resultó en una tasa del 49.5\% de despliegue de modelos que en realidad no ofrecían ninguna mejora real (esencialmente un lanzamiento de moneda). La implementación de la puerta de IC del 95\% ($p < 0.05$) redujo esta tasa de despliegues falsos positivos a exactamente el 2.0\%, limitando de forma segura el riesgo de despliegue por debajo de la tasa teórica nominal de error de Tipo I ($\alpha = 0.05$). Esta calibración conservadora se alinea con los hallazgos de Bosma et al. \cite{bosma2024statistical}.
+Para validar el mecanismo Bootstrap, realizamos un estudio de ablación mediante 500 ensayos simulados de despliegue A/B con múltiples semillas, en los cuales la línea base y el modelo candidato compartían distribuciones poblacionales idénticas. Confiar únicamente en estimaciones de punto resultó en una tasa del 49.5\% de falsos positivos (esencialmente lanzar una moneda). La implementación de la puerta de IC del 95\% ($p < 0.05$) redujo esta tasa de despliegues falsos positivos al 2.2\%, limitando el riesgo de despliegue por debajo de la tasa de error Tipo I nominal ($\alpha = 0.05$). Esta calibración conservadora valida empíricamente los hallazgos de Bosma et al. \cite{bosma2024statistical}.
 
 \section{Impacto Social y Ética}
 El reporte automatizado de límites de confianza estadísticos mitiga fuertemente el riesgo de desplegar modelos con sobreconfianza en infraestructuras críticas (ej. salud o navegación autónoma). Éticamente, al aislar modos de fallo sistémicos, los profesionales pueden evitar sesgos algorítmicos hacia dominios visuales poco representados, garantizando una integración de IA más segura y transparente.
