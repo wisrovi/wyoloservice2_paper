@@ -69,7 +69,7 @@ These papers document an ecosystem that operates under a **Dual Licensing Model*
 
 ## 🔄 Changelog
 
-- **v1.6.0 (2026-08-12)**: Paper 4 (Cross-Domain Generalization Assessment for Object Detection Models) has been officially ACCEPTED by the IEEE.
+- **v1.7.0 (2026-08-12)**: Paper 4 (Cross-Domain Generalization Assessment for Object Detection Models) has been officially ACCEPTED by the IEEE.
 - **v1.5.0 (2026-08-12)**: Paper 3 (Quantifying YOLO Model Robustness) has been officially ACCEPTED by the IEEE.
 - **v1.4.0 (2026-08-12)**: Paper 7 (WPipe: A Declarative Pipeline Framework with Forensic Tracking for ML Workflows) has been officially ACCEPTED by the IEEE.
 - **v1.3.0 (2026-08-12)**: Paper 2 (Automated Explainable AI Pipeline for YOLO Models) has been officially ACCEPTED by the IEEE.
@@ -81,3 +81,5 @@ These papers document an ecosystem that operates under a **Dual Licensing Model*
 
 ---
 *Developed with ❤️ in Badajoz, Extremadura, Spain.*
+
+- **Paper 5:** Statistical Rigor in YOLO Model Evaluation (ACEPTADO - v1.7.0)

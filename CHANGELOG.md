@@ -1,3 +1,6 @@
+## [v1.7.0] - 2026-08-13
+- **Paper 5**: Statistical Rigor in YOLO Model Evaluation (Aceptado y Compilado)
+
 # Changelog
 
 All notable changes to the `wyoloservice2_paper` repository will be documented in this file.
