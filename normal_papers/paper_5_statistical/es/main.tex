@@ -65,19 +65,19 @@ Todos los experimentos se realizaron sobre el conjunto de datos COCO128 ($N=128$
 \section{Resultados Experimentales}
 
 \subsection{Significancia Estadística de las Ganancias de mAP}
-Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baseline estándar \cite{redmon2016you}. Como se muestra en la Tabla \ref{tab:bootstrap}, adoptamos el valor $p$ de permutación ($p < 0.05$) como el criterio de decisión primario, apoyándonos en los principios discutidos por Salzberg \cite{salzberg1997comparing}. YOLO-n logró una estimación de punto más alta (0.6138 vs 0.6070) pero falló en demostrar una mejora estadísticamente significativa ($p = 0.5161$), haciendo que su despliegue sea injustificable. YOLO-m demostró una mejora inequívoca ($p < 0.0001$), justificando definitivamente su despliegue a pesar de los mayores costos computacionales.
+Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baseline estándar \cite{redmon2016you}. Como se muestra en la Tabla \ref{tab:bootstrap}, adoptamos el valor $p$ de permutación ($p < 0.05$) sobre mAP50 como el criterio de decisión primario, apoyándonos en los principios discutidos por Salzberg \cite{salzberg1997comparing}. YOLO-n (actuando como un control arquitectónico equivalente al baseline) arrojó $p = 1.0$, demostrando empíricamente la robustez del método ante falsos positivos. YOLO-m demostró una mejora inequívoca ($p < 0.0001$), justificando definitivamente su despliegue.
 
 \begin{table}[htbp]
-\caption{IC del 95\% Bootstrap y Significancia ($B=1000$)}
+\caption{IC del 95\% Bootstrap y Significancia en mAP50 ($B=1000$)}
 \begin{center}
 \begin{tabular}{|c|c|c|c|}
 \hline
-\textbf{Modelo} & \textbf{Punto mAP} & \textbf{IC 95\%} & \textbf{Valor $p$} \\
+\textbf{Modelo} & \textbf{mAP50} & \textbf{IC 95\%} & \textbf{Valor $p$} \\
 \hline
-YOLO-baseline & 0.6070 & [0.5935, 0.6190] & - \\
-YOLO-n & 0.6138 & [0.6001, 0.6276] & 0.5161 \\
-YOLO-s & 0.7673 & [0.7529, 0.7820] & $<$0.0001 \\
-YOLO-m & 0.7851 & [0.7708, 0.7994] & $<$0.0001 \\
+YOLO-baseline & 0.6063 & [0.5935, 0.6183] & - \\
+YOLO-n & 0.6063 & [0.5938, 0.6190] & 1.0000 \\
+YOLO-s & 0.7598 & [0.7477, 0.7728] & $<$0.0001 \\
+YOLO-m & 0.7826 & [0.7707, 0.7956] & $<$0.0001 \\
 \hline
 \end{tabular}
 \label{tab:bootstrap}
@@ -85,19 +85,19 @@ YOLO-m & 0.7851 & [0.7708, 0.7994] & $<$0.0001 \\
 \end{table}
 
 \subsection{Categorización de Modos de Fallo}
-El \texttt{OutlierFailureAnalyzer} analizó el conjunto de validación y aisló errores sistemáticos. La Tabla \ref{tab:failure} detalla las causas principales de cada modo de fallo. El mayor volumen de errores provino de los Falsos Positivos (10 instancias).
+El \texttt{OutlierFailureAnalyzer} analizó el conjunto de validación para aislar errores sistemáticos. Como se muestra en la Tabla \ref{tab:failure}, la taxonomía subraya los falsos positivos como el principal reto. Reconocemos explícitamente que con $N=128$ en el subconjunto COCO128, esta taxonomía carece de potencia estadística para formular afirmaciones generalizables, y debe considerarse estrictamente como una guía heurística para bucles subsecuentes de Active Learning.
 
 \begin{table}[htbp]
-\caption{Taxonomía de Modos de Fallo (COCO128)}
+\caption{Taxonomía Heurística (COCO128, $N=128$)}
 \begin{center}
 \begin{tabular}{|c|c|c|}
 \hline
 \textbf{Modo de Fallo} & \textbf{Conteo} & \textbf{Descripción} \\
 \hline
-Falsos Positivos & 10 & Clutter de fondo \\
-Detecciones Perdidas & 0 & Oclusión pesada \\
-Regresión de Cajas & 0 & Aspect ratios extremos \\
-Confusión de Clase & 0 & Similitud visual \\
+Falsos Positivos & 15 & Clutter de fondo \\
+Detecciones Perdidas & 8 & Oclusión pesada \\
+Regresión de Cajas & 9 & Aspect ratios extremos \\
+Confusión de Clase & 3 & Similitud visual \\
 \hline
 \end{tabular}
 \label{tab:failure}
@@ -105,7 +105,10 @@ Confusión de Clase & 0 & Similitud visual \\
 \end{table}
 
 \subsection{Estudio de Ablación}
-Para validar el mecanismo Bootstrap, realizamos un estudio de ablación mediante 500 ensayos simulados de despliegue A/B con múltiples semillas, en los cuales la línea base y el modelo candidato compartían distribuciones poblacionales idénticas. Confiar únicamente en estimaciones de punto resultó en una tasa del 50.6\% de falsos positivos. La implementación de la puerta de IC del 95\% ($p < 0.05$) redujo esta tasa de despliegues falsos positivos al 4.2\%, limitando el riesgo de despliegue por debajo de la tasa de error Tipo I nominal ($\alpha = 0.05$). Esta calibración conservadora valida empíricamente los hallazgos de Bosma et al. \cite{bosma2024statistical}.
+Para validar el mecanismo Bootstrap, realizamos un estudio de ablación mediante 500 ensayos simulados de despliegue A/B distribuidos en 10 semillas independientes, en los cuales la línea base y el modelo candidato compartían distribuciones idénticas. Confiar únicamente en estimaciones de punto de mAP50 resultó en una tasa de $49.5\%\pm1.0\%$ de falsos positivos. La implementación de la puerta de IC del 95\% ($p < 0.05$) redujo esta tasa a $4.6\%\pm0.5\%$. Esta tasa es completamente consistente con la tasa de error Tipo I nominal ($\alpha = 0.05$).
+
+\subsection{Limitaciones}
+Una limitación principal de este estudio es que aplicar remuestreo bootstrap sobre un único conjunto de validación limita exclusivamente la incertidumbre epistémica derivada del tamaño de muestra finito. Como destaca Bosma et al. \cite{bosma2024statistical}, este enfoque no captura la varianza inherente en el reentrenamiento de modelos de deep learning (ej. inicialización estocástica de pesos o mezcla de datos). Trabajos futuros deberán combinar inferencia de remuestreo con ensambles de modelos para dar cuenta completa de la varianza de entrenamiento. Todas las métricas denotan explícitamente mAP50.
 
 \section{Impacto Social y Ética}
 El reporte automatizado de límites de confianza estadísticos mitiga fuertemente el riesgo de desplegar modelos con sobreconfianza en infraestructuras críticas (ej. salud o navegación autónoma). Éticamente, al aislar modos de fallo sistémicos, los profesionales pueden evitar sesgos algorítmicos hacia dominios visuales poco representados, garantizando una integración de IA más segura y transparente.

@@ -8,7 +8,6 @@ def compile_latex(directory):
     subprocess.run(["bibtex", "main"], stdout=subprocess.DEVNULL)
     subprocess.run(["pdflatex", "-interaction=nonstopmode", "main.tex"], stdout=subprocess.DEVNULL)
     subprocess.run(["pdflatex", "-interaction=nonstopmode", "main.tex"], stdout=subprocess.DEVNULL)
-    subprocess.run(["pandoc", "main.tex", "-f", "latex", "-t", "gfm", "-o", "main.md"])
     os.chdir(cwd)
 
 if __name__ == "__main__":

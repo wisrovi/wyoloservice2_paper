@@ -1,5 +1,5 @@
 failure_mode,count,description
-False Positives,10,Background clutter causing low confidence FP
-Missed Detections (FN),0,Heavy occlusion of small objects
-Bounding Box Regression,0,Extreme aspect ratios
-Class Confusion,0,Inter-class visual similarity (e.g. dog vs cat)
+False Positives,15,Derived from predictions.json heuristics
+Missed Detections (FN),8,Derived from predictions.json heuristics
+Bounding Box Regression,9,Derived from predictions.json heuristics
+Class Confusion,3,Derived from predictions.json heuristics

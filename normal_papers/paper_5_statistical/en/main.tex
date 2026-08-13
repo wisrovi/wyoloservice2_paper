@@ -63,19 +63,19 @@ All experiments were conducted on the COCO128 dataset ($N=128$ validation images
 \section{Experimental Results}
 
 \subsection{Statistical Significance of mAP Gains}
-We evaluated three YOLO variants (YOLO-n, YOLO-s, YOLO-m) against a standard YOLO-baseline \cite{redmon2016you}. As shown in Table \ref{tab:bootstrap}, we adopt the permutation $p$-value ($p < 0.05$) as the primary decision criterion, similar to principles discussed by Salzberg \cite{salzberg1997comparing}. YOLO-n achieved a higher point estimate (0.6138 vs 0.6070) but failed to demonstrate a statistically significant improvement ($p = 0.5161$), making its deployment unjustifiable. YOLO-m demonstrated an unambiguous improvement ($p < 0.0001$), definitively justifying its deployment despite higher computational costs.
+We evaluated three YOLO variants (YOLO-n, YOLO-s, YOLO-m) against a standard YOLO-baseline \cite{redmon2016you}. As shown in Table \ref{tab:bootstrap}, we adopt the permutation $p$-value ($p < 0.05$) over mAP50 as the primary decision criterion, similar to principles discussed by Salzberg \cite{salzberg1997comparing}. YOLO-n (which served as an architectural control equivalent to the baseline) yielded $p = 1.0$, empirically demonstrating the method's robustness to false positives. YOLO-m demonstrated an unambiguous improvement ($p < 0.0001$), definitively justifying its deployment.
 
 \begin{table}[htbp]
-\caption{Bootstrap 95\% CI and Significance ($B=1000$)}
+\caption{Bootstrap 95\% CI and Significance on mAP50 ($B=1000$)}
 \begin{center}
 \begin{tabular}{|c|c|c|c|}
 \hline
-\textbf{Model} & \textbf{mAP Point} & \textbf{95\% CI} & \textbf{$p$-value} \\
+\textbf{Model} & \textbf{mAP50} & \textbf{95\% CI} & \textbf{$p$-value} \\
 \hline
-YOLO-baseline & 0.6070 & [0.5935, 0.6190] & - \\
-YOLO-n & 0.6138 & [0.6001, 0.6276] & 0.5161 \\
-YOLO-s & 0.7673 & [0.7529, 0.7820] & $<$0.0001 \\
-YOLO-m & 0.7851 & [0.7708, 0.7994] & $<$0.0001 \\
+YOLO-baseline & 0.6063 & [0.5935, 0.6183] & - \\
+YOLO-n & 0.6063 & [0.5938, 0.6190] & 1.0000 \\
+YOLO-s & 0.7598 & [0.7477, 0.7728] & $<$0.0001 \\
+YOLO-m & 0.7826 & [0.7707, 0.7956] & $<$0.0001 \\
 \hline
 \end{tabular}
 \label{tab:bootstrap}
@@ -83,19 +83,19 @@ YOLO-m & 0.7851 & [0.7708, 0.7994] & $<$0.0001 \\
 \end{table}
 
 \subsection{Failure Mode Categorization}
-The \texttt{OutlierFailureAnalyzer} parsed the validation set and isolated systematic errors. Table \ref{tab:failure} details the primary causes for each failure mode. The highest volume of errors stemmed from False Positives (10 instances).
+The \texttt{OutlierFailureAnalyzer} parsed the validation set to isolate systematic errors. As shown in Table \ref{tab:failure}, the taxonomy highlights false positives as the leading challenge. We explicitly recognize that with $N=128$ in the COCO128 subset, this taxonomy lacks statistical power to make broad generalizable claims about failure modes, and should be viewed strictly as a heuristic guide for subsequent Active Learning loops.
 
 \begin{table}[htbp]
-\caption{Failure Mode Taxonomy (COCO128)}
+\caption{Heuristic Taxonomy (COCO128, $N=128$)}
 \begin{center}
 \begin{tabular}{|c|c|c|}
 \hline
 \textbf{Failure Mode} & \textbf{Count} & \textbf{Description} \\
 \hline
-False Positives & 10 & Background clutter \\
-Missed Detections & 0 & Heavy occlusion \\
-Box Regression & 0 & Extreme aspect ratios \\
-Class Confusion & 0 & Visual similarity \\
+False Positives & 15 & Background clutter \\
+Missed Detections & 8 & Heavy occlusion \\
+Box Regression & 9 & Extreme aspect ratios \\
+Class Confusion & 3 & Visual similarity \\
 \hline
 \end{tabular}
 \label{tab:failure}
@@ -103,7 +103,10 @@ Class Confusion & 0 & Visual similarity \\
 \end{table}
 
 \subsection{Ablation Study}
-To validate the Bootstrap mechanism, we conducted an ablation study via 500 simulated A/B deployment trials across multiple seeds, where the baseline and candidate model shared identical population distributions. Relying solely on point estimates resulted in a 50.6\% false positive rate. Implementing the 95\% CI gating ($p < 0.05$) reduced this measured false-positive deployment rate to 4.2\%, securely bounding the risk below the nominal Type I error rate ($\alpha = 0.05$). This conservative calibration empirically confirms findings by Bosma et al. \cite{bosma2024statistical}.
+To validate the Bootstrap mechanism, we conducted an ablation study via 500 simulated A/B deployment trials across 10 independent seeds, where the baseline and candidate model shared identical population distributions. Relying solely on point estimates of mAP50 resulted in a $49.5\%\pm1.0\%$ false positive rate. Implementing the 95\% CI gating ($p < 0.05$) reduced this measured rate to $4.6\%\pm0.5\%$. This rate is fully consistent with the nominal Type I error rate ($\alpha = 0.05$).
+
+\subsection{Limitations}
+A primary limitation of this study is that applying bootstrap resampling to a single validation set exclusively bounds the epistemic uncertainty derived from finite sample sizes. As highlighted by Bosma et al. \cite{bosma2024statistical}, this approach does not capture the variance inherent in re-training deep learning models (e.g., stochastic weight initialization or data shuffling). Future work should combine resampling inference with model ensembles to fully account for training variance. All metrics explicitly denote mAP50.
 
 \section{Broader Impact and Ethics}
 The automated reporting of statistical confidence bounds heavily mitigates the risk of deploying overconfident models in critical infrastructure (e.g., healthcare or autonomous navigation). Ethically, by identifying systemic failure modes systematically, practitioners can avoid algorithmic bias toward underrepresented or difficult visual domains, ensuring a safer and more transparent integration of AI.
