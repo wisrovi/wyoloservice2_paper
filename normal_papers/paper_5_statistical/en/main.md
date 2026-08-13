@@ -4,8 +4,7 @@
 *AI Leader & Solutions Architect*  
 *wisrovi-suit*  
 Badajoz, Spain  
-wisrovi.rodriguez@gmail.com  
-ORCID: 0000-0002-4740-9734
+wisrovi.rodriguez@gmail.com
 
 **Abstract**— In computer vision, object detection architectures are routinely benchmarked using single point estimates of mean Average Precision (mAP). This practice obscures epistemic uncertainty and can lead to the deployment of models whose empirical gains are indistinguishable from statistical noise. This paper presents a fully automated MLOps post-training pipeline for YOLO models that fundamentally shifts evaluation from point estimates to distribution metrics. We implement a non-parametric Bootstrap evaluator that generates 95% Confidence Intervals for mAP scores, coupled with a permutation test to rigorously gate model deployments based on statistical significance ($p < 0.05$). Additionally, we integrate an automated Outlier Failure Analyzer that isolates and categorizes systemic prediction errors. By running our pipeline on the COCO128 dataset, we demonstrate that a superficially higher mAP does not always equate to a deployable model, whereas statistically validated architectural scaling (from YOLO-n to YOLO-m) yields robust, actionable improvements.
 
@@ -22,12 +21,12 @@ The necessity of statistical significance testing in machine learning was highli
 ## III. Methodology
 
 ### A. BootstrapEvaluator: Confidence Intervals
-To quantify the variance in the mAP metric without requiring a separate test set, we employ Non-parametric Bootstrapping. Given a validation set $D$ of size $N$, we draw $N$ samples with replacement to create a bootstrap sample $D^*$. This process is repeated $B = 1000$ times. We calculate the mAP for each $D^*_i$, yielding a distribution of mAP scores from which we derive the 95% Confidence Interval $[\text{mAP}_{2.5\%}, \text{mAP}_{97.5\%}]$. Statistical significance against a baseline is determined using a permutation test (using the difference in mAP means as the test statistic with 10,000 permutations) yielding a $p$-value.
+To quantify the variance in the mAP metric without requiring a separate test set, we employ Non-parametric Bootstrapping. Given a validation set $D$ of size $N$, we draw $N$ samples with replacement to create a bootstrap sample $D^*$. This process is repeated $B = 1000$ times. Rather than calculating full mAP for each sample directly, we calculate a per-image confidence proxy (scaled to match the global mAP50) for each $D^*_i$, yielding a distribution of surrogate AP scores from which we derive the 95% Confidence Interval $[\text{mAP}_{2.5\%}, \text{mAP}_{97.5\%}]$. Statistical significance against a baseline is determined using a paired permutation test yielding a $p$-value.
 
 ![Automated Bootstrap Pipeline for YOLO Model Evaluation.](pipeline.jpg)
 
-### B. OutlierFailureAnalyzer: Data-Centric Debugging
-The failure analyzer isolates predictions where the Intersection over Union (IoU) with the ground truth is below a critical threshold or where confidence scores are extremely high for false positives. It categorizes these outliers into four modes: False Positives, Missed Detections (False Negatives), Bounding Box Regression errors, and Class Confusion.
+### B. OutlierFailureAnalyzer
+We designed a heuristic `OutlierFailureAnalyzer` to bin predictions into failure modes. Without explicit IoU-vs-GT matching in this pass, counts are derived from confidence thresholds and re-scaled: extreme confidences ($> 0.9$) without matching semantics act as a proxy for False Positives, very low confidences ($< 0.3$) indicate Missed Detections (FN), and intermediate scores represent Bounding Box Regression errors ($> 0.5$) or Class Confusion ($< 0.5$).
 
 ## IV. Experimental Setup
 All experiments were conducted on the COCO128 dataset ($N=128$ validation images) using a batch size of 16 and an input resolution (`imgsz`) of 640. Profiling and inference operations were executed on an NVIDIA RTX 3090 GPU (CUDA 12.1). The evaluation pipeline was fully automated using `benchmark_statistical.py`.
@@ -47,7 +46,7 @@ We evaluated three YOLO variants (YOLO-n, YOLO-s, YOLO-m) against a standard YOL
 | YOLO-m | 0.6508 | [0.5783, 0.7206] | <0.0001 |
 
 ### B. Failure Mode Categorization
-The `OutlierFailureAnalyzer` parsed the validation set to isolate systematic errors. As shown in Table II, the taxonomy highlights false positives as the leading challenge. We explicitly recognize that with $N=128$ in the COCO128 subset, this taxonomy lacks statistical power to make broad generalizable claims about failure modes, and should be viewed strictly as a heuristic guide for subsequent Active Learning loops.
+The `OutlierFailureAnalyzer` parsed the validation set using confidence binning heuristics to isolate systematic errors. As shown in Table II, the taxonomy highlights false positives as a challenge. We explicitly recognize that with $N=128$ in the COCO128 subset, this heuristic taxonomy lacks statistical power to make broad generalizable claims about true IoU-vs-GT failure modes, and should be viewed strictly as a heuristic proxy guide for subsequent Active Learning loops.
 
 **Table II: Heuristic Taxonomy (COCO128, $N=128$)**
 

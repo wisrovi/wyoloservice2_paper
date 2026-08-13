@@ -4,8 +4,7 @@
 *AI Leader & Solutions Architect*  
 *wisrovi-suit*  
 Badajoz, España  
-wisrovi.rodriguez@gmail.com  
-ORCID: 0000-0002-4740-9734
+wisrovi.rodriguez@gmail.com
 
 **Resumen**— En visión por computadora, las arquitecturas de detección de objetos se evalúan rutinariamente utilizando estimaciones de un solo punto de mean Average Precision (mAP). Esta práctica oculta la incertidumbre epistémica y puede llevar al despliegue de modelos cuyas ganancias empíricas son indistinguibles del ruido estadístico. Este artículo presenta una tubería automatizada de post-entrenamiento para modelos YOLO que desplaza la evaluación desde estimaciones puntuales hacia métricas de distribución. Implementamos un evaluador Bootstrap no paramétrico que genera Intervalos de Confianza del 95% para mAP, junto con una prueba de permutación para autorizar rigurosamente los despliegues basados en significancia estadística ($p < 0.05$). Además, integramos un Analizador Automático de Fallos que aísla y categoriza errores sistémicos de predicción. Al ejecutar nuestra tubería en el conjunto de datos COCO128, demostramos que un mAP superficialmente más alto no siempre equivale a un modelo desplegable, mientras que el escalado arquitectónico validado estadísticamente (de YOLO-n a YOLO-m) produce mejoras robustas y accionables.
 
@@ -22,12 +21,12 @@ La necesidad de pruebas de significancia estadística en Machine Learning fue de
 ## III. Metodología
 
 ### A. BootstrapEvaluator: Intervalos de Confianza
-Para cuantificar la varianza en la métrica mAP, empleamos Bootstrapping No Paramétrico. Dado un conjunto de validación $D$ de tamaño $N$, extraemos $N$ muestras con reemplazo para crear una muestra bootstrap $D^*$. Este proceso se repite $B = 1000$ veces. Calculamos el mAP para cada $D^*_i$, obteniendo una distribución a partir de la cual derivamos el Intervalo de Confianza del 95% $[\text{mAP}_{2.5\%}, \text{mAP}_{97.5\%}]$. La significancia estadística se determina mediante una prueba de permutación (usando la diferencia en las medias con 10,000 permutaciones) arrojando un valor $p$.
+Para cuantificar la varianza en la métrica mAP sin requerir un conjunto de prueba separado, empleamos Bootstrapping No Paramétrico. Dado un conjunto de validación $D$ de tamaño $N$, extraemos $N$ muestras con reemplazo para crear una muestra bootstrap $D^*$. Este proceso se repite $B = 1000$ veces. En lugar de calcular el mAP completo por cada muestra directamente, calculamos un proxy de confianza por imagen (escalado para coincidir con el mAP50 global) para cada $D^*_i$, obteniendo una distribución de puntajes subrogados a partir de la cual derivamos el Intervalo de Confianza del 95% $[\text{mAP}_{2.5\%}, \text{mAP}_{97.5\%}]$. La significancia estadística se determina mediante una prueba de permutación pareada arrojando un valor $p$.
 
 ![Pipeline Automático Bootstrap para Evaluación de Modelos YOLO.](pipeline.jpg)
 
-### B. OutlierFailureAnalyzer: Depuración Centrada en Datos
-El analizador de fallos aísla predicciones donde el Intersection over Union (IoU) con la verdad base está por debajo de un umbral crítico. Categoriza estos valores atípicos en cuatro modos: Falsos Positivos, Detecciones Perdidas (Falsos Negativos), Errores de Regresión de Caja y Confusión de Clase.
+### B. OutlierFailureAnalyzer
+Diseñamos un heurístico `OutlierFailureAnalyzer` para agrupar las predicciones en modos de fallo. Sin utilizar un emparejamiento explícito IoU-vs-GT, los conteos se derivan de umbrales de confianza y se reescalan: confianzas extremas ($> 0.9$) actúan como proxy para Falsos Positivos, confianzas muy bajas ($< 0.3$) indican Detecciones Perdidas (FN), y puntajes intermedios representan errores de Regresión de Cajas ($> 0.5$) o Confusión de Clase ($< 0.5$).
 
 ## IV. Configuración Experimental
 Todos los experimentos se realizaron en COCO128 ($N=128$ imágenes) usando un tamaño de lote de 16 y una resolución (`imgsz`) de 640. El perfilado e inferencia se ejecutaron en una GPU NVIDIA RTX 3090 (CUDA 12.1). Todo el pipeline fue automatizado con `benchmark_statistical.py`.
@@ -47,7 +46,7 @@ Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baselin
 | YOLO-m | 0.6508 | [0.5783, 0.7206] | <0.0001 |
 
 ### B. Categorización de Modos de Fallo
-El `OutlierFailureAnalyzer` analizó el conjunto de validación para aislar errores sistemáticos. Como se muestra en la Tabla II, la taxonomía subraya los falsos positivos como el principal reto. Reconocemos explícitamente que con $N=128$ en el subconjunto COCO128, esta taxonomía carece de potencia estadística para formular afirmaciones generalizables, y debe considerarse estrictamente como una guía heurística para bucles subsecuentes de Active Learning.
+El `OutlierFailureAnalyzer` analizó el conjunto de validación usando heurísticas de umbrales de confianza para aislar errores sistemáticos. Como se muestra en la Tabla II, la taxonomía subraya los falsos positivos como un reto. Reconocemos explícitamente que con $N=128$ en el subconjunto COCO128, esta taxonomía heurística carece de potencia estadística para formular afirmaciones generalizables sobre modos de fallo verdaderos IoU-vs-GT, y debe considerarse estrictamente como una guía subrogada para bucles subsecuentes de Active Learning.
 
 **Tabla II: Taxonomía Heurística (COCO128, $N=128$)**
 
