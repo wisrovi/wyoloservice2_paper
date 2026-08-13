@@ -34,5 +34,5 @@ echo "=================================================="
 echo " Ejecutando Revisor IEEE para: $PAPER_NAME"
 echo "=================================================="
 
-opencode run --auto "$(cat "$tmp")"
+opencode run -m google/gemini-3.5-flash --auto "$(cat "$tmp")"
 rm -f "$tmp"
