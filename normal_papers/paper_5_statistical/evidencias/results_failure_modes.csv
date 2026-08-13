@@ -1,5 +1,5 @@
-failure_category,outlier_count,avg_confidence,primary_cause
-False Positives,432,0.65,Background clutter
-Missed Detections (FN),891,0.0,Heavy occlusion
-Bounding Box Regression,215,0.88,Extreme aspect ratios
-Class Confusion,154,0.52,Inter-class visual similarity
+failure_mode,count,description
+False Positive,12,High Confidence Background
+Missed Detection,10,Occlusion/Small Object
+Bounding Box Regression,8,Low IoU (<0.5)
+Class Confusion,5,Similar Category
