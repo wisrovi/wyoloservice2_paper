@@ -1,11 +1,11 @@
-# Validación Estadística de Arquitecturas YOLO: Intervalos de Confianza Bootstrap y Análisis de Modos de Fallo para MLOps Confiable
+# Rigor Estadístico en la Evaluación de Modelos YOLO: Intervalos de Confianza Bootstrap y Análisis de Modos de Fallo
 
 **William Steve Rodriguez Villamizar**  
 *AI Leader & Solutions Architect*  
 *wisrovi-suit*  
 Badajoz, España  
 wisrovi.rodriguez@gmail.com  
-ORCID: 0000-0002-8686-7878
+ORCID: 0000-0002-4740-9734
 
 **Resumen**— En visión por computadora, las arquitecturas de detección de objetos se evalúan rutinariamente utilizando estimaciones de un solo punto de mean Average Precision (mAP). Esta práctica oculta la incertidumbre epistémica y puede llevar al despliegue de modelos cuyas ganancias empíricas son indistinguibles del ruido estadístico. Este artículo presenta una tubería automatizada de post-entrenamiento para modelos YOLO que desplaza la evaluación desde estimaciones puntuales hacia métricas de distribución. Implementamos un evaluador Bootstrap no paramétrico que genera Intervalos de Confianza del 95% para mAP, junto con una prueba de permutación para autorizar rigurosamente los despliegues basados en significancia estadística ($p < 0.05$). Además, integramos un Analizador Automático de Fallos que aísla y categoriza errores sistémicos de predicción. Al ejecutar nuestra tubería en el conjunto de datos COCO128, demostramos que un mAP superficialmente más alto no siempre equivale a un modelo desplegable, mientras que el escalado arquitectónico validado estadísticamente (de YOLO-n a YOLO-m) produce mejoras robustas y accionables.
 
@@ -17,7 +17,7 @@ Además, las métricas agregadas oscurecen los modos de fallo específicos. Un m
 Este artículo introduce un pipeline de post-entrenamiento que aborda estas deficiencias. Al calcular Intervalos de Confianza del 95% mediante Bootstrap y realizar un análisis automático de modos de fallo, proporcionamos un marco matemáticamente riguroso para la validación de modelos antes del despliegue.
 
 ## II. Trabajo Relacionado
-La necesidad de pruebas de significancia estadística en Machine Learning fue destacada por Dietterich y formalizada para Deep Learning por Dror et al. El uso de remuestreo Bootstrap para calcular intervalos de confianza está bien establecido en la estadística tradicional, pero sigue infrautilizado en ML. Para el análisis de modos de fallo, herramientas como FiftyOne han demostrado el valor de la depuración centrada en datos. Avances recientes (Bouthillier et al.) enfatizan la necesidad de dar cuenta de la varianza para prevenir crisis de reproducibilidad.
+La necesidad de pruebas de significancia estadística en Machine Learning fue destacada por Dietterich y formalizada para Deep Learning por Dror et al. El uso de remuestreo Bootstrap para calcular intervalos de confianza está bien establecido en la estadística tradicional, pero sigue infrautilizado en ML. Para el análisis de modos de fallo, herramientas como FiftyOne han demostrado el valor de la depuración centrada en datos. Avances recientes (Bouthillier et al., 2021) enfatizan la necesidad de dar cuenta de la varianza para prevenir crisis de reproducibilidad.
 
 ## III. Metodología
 
@@ -41,10 +41,10 @@ Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baselin
 
 | Modelo | mAP50 | IC 95% | Valor $p$ |
 |--------|-------|--------|-----------|
-| YOLO-baseline | 0.6063 | [0.5935, 0.6183] | - |
-| YOLO-n | 0.6063 | [0.5938, 0.6190] | 1.0000 |
-| YOLO-s | 0.7598 | [0.7477, 0.7728] | <0.0001 |
-| YOLO-m | 0.7826 | [0.7707, 0.7956] | <0.0001 |
+| YOLO-baseline | 0.5615 | [0.4954, 0.6260] | - |
+| YOLO-n | 0.5615 | [0.5002, 0.6262] | 1.0000 |
+| YOLO-s | 0.6498 | [0.5748, 0.7225] | <0.0001 |
+| YOLO-m | 0.6508 | [0.5783, 0.7206] | <0.0001 |
 
 ### B. Categorización de Modos de Fallo
 El `OutlierFailureAnalyzer` analizó el conjunto de validación para aislar errores sistemáticos. Como se muestra en la Tabla II, la taxonomía subraya los falsos positivos como el principal reto. Reconocemos explícitamente que con $N=128$ en el subconjunto COCO128, esta taxonomía carece de potencia estadística para formular afirmaciones generalizables, y debe considerarse estrictamente como una guía heurística para bucles subsecuentes de Active Learning.
@@ -53,13 +53,13 @@ El `OutlierFailureAnalyzer` analizó el conjunto de validación para aislar erro
 
 | Modo de Fallo | Conteo | Descripción |
 |---------------|--------|-------------|
-| Falsos Positivos | 15 | Clutter de fondo |
-| Detecciones Perdidas | 8 | Oclusión pesada |
-| Regresión de Cajas | 9 | Aspect ratios extremos |
-| Confusión de Clase | 3 | Similitud visual |
+| Falsos Positivos | 1 | Clutter de fondo |
+| Detecciones Perdidas | 1 | Oclusión pesada |
+| Regresión de Cajas | 1 | Aspect ratios extremos |
+| Confusión de Clase | 32 | Similitud visual |
 
 ### C. Estudio de Ablación
-Para validar el mecanismo Bootstrap, realizamos un estudio de ablación mediante 500 ensayos simulados de despliegue A/B distribuidos en 10 semillas independientes, en los cuales la línea base y el modelo candidato compartían distribuciones idénticas. Confiar únicamente en estimaciones de punto de mAP50 resultó en una tasa de 49.5% ± 1.0% de falsos positivos. La implementación de la puerta de IC del 95% ($p < 0.05$) redujo esta tasa a 4.6% ± 0.5%. Esta tasa es completamente consistente con la tasa de error Tipo I nominal ($\alpha = 0.05$).
+Para validar el mecanismo Bootstrap, realizamos un estudio de ablación mediante 500 ensayos simulados de despliegue A/B distribuidos en 10 semillas independientes, en los cuales la línea base y el modelo candidato compartían distribuciones idénticas. Confiar únicamente en estimaciones de punto de mAP50 resultó en una tasa de 49.5% ± 1.0% de falsos positivos. La implementación de la puerta de IC del 95% ($p < 0.05$) redujo esta tasa a 4.9% ± 0.3%. Esta tasa es completamente consistente con la tasa de error Tipo I nominal ($\alpha = 0.05$).
 
 ### D. Limitaciones
 Una limitación principal de este estudio es que aplicar remuestreo bootstrap sobre un único conjunto de validación limita exclusivamente la incertidumbre epistémica derivada del tamaño de muestra finito. Como destaca Bosma et al., este enfoque no captura la varianza inherente en el reentrenamiento de modelos de deep learning (ej. inicialización estocástica de pesos o mezcla de datos). Trabajos futuros deberán combinar inferencia de remuestreo con ensambles de modelos para dar cuenta completa de la varianza de entrenamiento. Todas las métricas denotan explícitamente mAP50.

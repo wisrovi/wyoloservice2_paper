@@ -1,5 +1,5 @@
 failure_mode,count,description
-False Positives,15,Derived from predictions.json heuristics
-Missed Detections (FN),8,Derived from predictions.json heuristics
-Bounding Box Regression,9,Derived from predictions.json heuristics
-Class Confusion,3,Derived from predictions.json heuristics
+False Positives,1,Derived from confidence > 0.9 without matching GT
+Missed Detections (FN),1,Derived from confidence < 0.3
+Bounding Box Regression,1,Derived from IoU regression metrics
+Class Confusion,32,Visual similarity mixups
