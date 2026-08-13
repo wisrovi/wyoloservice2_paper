@@ -553,3 +553,52 @@
 
 ### 4. Plan de Acción y Notas de Mejora para el Autor
 El artículo cumple y excede los requisitos para su publicación inmediata.
+
+---
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-13 13:45:00
+**Artículo evaluado:** paper_8_hardware_complexity
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+- **Veredicto:** REVISIÓN MENOR
+- **Nivel de Innovación:** Moderado/Alto
+- **Evaluación de Generación por IA / Autenticidad:** Redacción profesional, sin embargo, se detectan inconsistencias menores en la terminología (micro vs medium).
+
+### 2. Análisis por Subagentes Especializados
+- **Agente A (Originalidad y Detección de IA):** El texto es coherente y técnico. No hay redundancias significativas. 
+- **Agente B (Estado del Arte y Bibliografía):** La cita a Dollár et al. es correcta, pero la sección experimental omite integrar explícitamente los resultados del archivo `results_hardware_complexity.csv`.
+- **Agente C (Rigor Técnico y Metodología):** En el Abstract se menciona YOLOv8 micro, nano y small. Sin embargo, en la Sección IV se evalúan YOLOv8n, YOLOv8s y YOLOv8m (medium). Esta discrepancia debe corregirse. Además, se debe incluir una referencia directa a los datos generados para latencia y VRAM.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+- **Fortalezas:** Integración directa de métricas empíricas en el pipeline MLOps.
+- **Puntos Débiles / Falencias:** Inconsistencias en las versiones de YOLOv8 mencionadas.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+- [ ] **Modificación 1:** Corregir "micro" por "medium" en el Abstract de ambas versiones (inglés y español).
+- [ ] **Modificación 2:** Añadir una breve oración en la Sección V mencionando que los datos empíricos detallados se encuentran extraídos y disponibles en el repositorio para su escrutinio.
+
+---
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-13 13:46:00
+**Artículo evaluado:** paper_8_hardware_complexity
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+- **Veredicto:** ACEPTADO
+- **Nivel de Innovación:** Moderado/Alto
+- **Evaluación de Generación por IA / Autenticidad:** Redacción profesional. Todas las inconsistencias menores han sido resueltas adecuadamente.
+
+### 2. Análisis por Subagentes Especializados
+- **Agente A (Originalidad y Detección de IA):** El texto es coherente y técnico.
+- **Agente B (Estado del Arte y Bibliografía):** La integración de los resultados empíricos ahora está documentada explícitamente y referenciada en la sección V.
+- **Agente C (Rigor Técnico y Metodología):** La discrepancia sobre las arquitecturas de YOLO ha sido resuelta (nano, small, medium). La metodología de perfilado de hardware es ahora transparente y rigurosa.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+- **Fortalezas:** Integración directa de métricas empíricas de GFLOPs y VRAM en el pipeline de MLOps de borde.
+- **Puntos Débiles / Falencias:** Ninguna relevante para publicación.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+- [x] **Modificación 1:** Terminología arquitectónica corregida.
+- [x] **Modificación 2:** Mención de datos empíricos completada.
+- **Conclusión:** El manuscrito cumple con todos los estándares y es apto para publicación.
