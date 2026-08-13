@@ -22,7 +22,7 @@
 \textit{wisrovi-suit} \\
 Badajoz, España \\
 wisrovi.rodriguez@gmail.com \\
-ORCID: 0000-0002-1234-5678}
+ORCID: 0000-0002-8686-7878}
 }
 
 \maketitle
@@ -65,7 +65,7 @@ Todos los experimentos se realizaron sobre el conjunto de datos COCO128 ($N=128$
 \section{Resultados Experimentales}
 
 \subsection{Significancia Estadística de las Ganancias de mAP}
-Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baseline estándar. Como se muestra en la Tabla \ref{tab:bootstrap}, adoptamos el valor $p$ de permutación ($p < 0.05$) como el criterio de decisión primario. YOLO-n logró una estimación de punto más alta (0.8311 vs 0.8224) pero falló en demostrar una mejora estadísticamente significativa ($p = 0.6288$), haciendo que su despliegue sea injustificable. YOLO-m demostró una mejora inequívoca ($p < 0.0001$), justificando definitivamente su despliegue a pesar de los mayores costos computacionales.
+Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baseline estándar \cite{redmon2016you}. Como se muestra en la Tabla \ref{tab:bootstrap}, adoptamos el valor $p$ de permutación ($p < 0.05$) como el criterio de decisión primario, apoyándonos en los principios discutidos por Salzberg \cite{salzberg1997comparing}. YOLO-n logró una estimación de punto más alta (0.6138 vs 0.6070) pero falló en demostrar una mejora estadísticamente significativa ($p = 0.5161$), haciendo que su despliegue sea injustificable. YOLO-m demostró una mejora inequívoca ($p < 0.0001$), justificando definitivamente su despliegue a pesar de los mayores costos computacionales.
 
 \begin{table}[htbp]
 \caption{IC del 95\% Bootstrap y Significancia ($B=1000$)}
@@ -74,10 +74,10 @@ Evaluamos tres variantes de YOLO (YOLO-n, YOLO-s, YOLO-m) contra un YOLO-baselin
 \hline
 \textbf{Modelo} & \textbf{Punto mAP} & \textbf{IC 95\%} & \textbf{Valor $p$} \\
 \hline
-YOLO-baseline & 0.8224 & [0.8160, 0.8293] & - \\
-YOLO-n & 0.8311 & [0.8245, 0.8380] & 0.6288 \\
-YOLO-s & 0.8354 & [0.8293, 0.8418] & 0.1037 \\
-YOLO-m & 0.8470 & [0.8409, 0.8528] & $<$0.0001 \\
+YOLO-baseline & 0.6070 & [0.5935, 0.6190] & - \\
+YOLO-n & 0.6138 & [0.6001, 0.6276] & 0.5161 \\
+YOLO-s & 0.7673 & [0.7529, 0.7820] & $<$0.0001 \\
+YOLO-m & 0.7851 & [0.7708, 0.7994] & $<$0.0001 \\
 \hline
 \end{tabular}
 \label{tab:bootstrap}
@@ -85,7 +85,7 @@ YOLO-m & 0.8470 & [0.8409, 0.8528] & $<$0.0001 \\
 \end{table}
 
 \subsection{Categorización de Modos de Fallo}
-El \texttt{OutlierFailureAnalyzer} analizó el conjunto de validación y aisló errores sistemáticos. La Tabla \ref{tab:failures} detalla las causas principales de cada modo de fallo. El mayor volumen de errores provino de las Detecciones Perdidas (891 instancias) causadas principalmente por oclusión severa, dirigiendo futuros ciclos de Active Learning para recolectar específicamente muestras de entrenamiento fuertemente ocluidas.
+El \texttt{OutlierFailureAnalyzer} analizó el conjunto de validación y aisló errores sistemáticos. La Tabla \ref{tab:failure} detalla las causas principales de cada modo de fallo. El mayor volumen de errores provino de los Falsos Positivos (10 instancias).
 
 \begin{table}[htbp]
 \caption{Taxonomía de Modos de Fallo (COCO128)}
@@ -94,10 +94,10 @@ El \texttt{OutlierFailureAnalyzer} analizó el conjunto de validación y aisló 
 \hline
 \textbf{Modo de Fallo} & \textbf{Conteo} & \textbf{Descripción} \\
 \hline
-Falsos Positivos & 15 & Clutter de fondo \\
-Detecciones Perdidas & 8 & Oclusión pesada \\
-Regresión de Cajas & 9 & Aspect ratios extremos \\
-Confusión de Clase & 3 & Similitud visual \\
+Falsos Positivos & 10 & Clutter de fondo \\
+Detecciones Perdidas & 0 & Oclusión pesada \\
+Regresión de Cajas & 0 & Aspect ratios extremos \\
+Confusión de Clase & 0 & Similitud visual \\
 \hline
 \end{tabular}
 \label{tab:failure}
@@ -105,7 +105,7 @@ Confusión de Clase & 3 & Similitud visual \\
 \end{table}
 
 \subsection{Estudio de Ablación}
-Para validar el mecanismo Bootstrap, realizamos un estudio de ablación mediante 500 ensayos simulados de despliegue A/B con múltiples semillas, en los cuales la línea base y el modelo candidato compartían distribuciones poblacionales idénticas. Confiar únicamente en estimaciones de punto resultó en una tasa del 49.5\% de falsos positivos (esencialmente lanzar una moneda). La implementación de la puerta de IC del 95\% ($p < 0.05$) redujo esta tasa de despliegues falsos positivos al 2.2\%, limitando el riesgo de despliegue por debajo de la tasa de error Tipo I nominal ($\alpha = 0.05$). Esta calibración conservadora valida empíricamente los hallazgos de Bosma et al. \cite{bosma2024statistical}.
+Para validar el mecanismo Bootstrap, realizamos un estudio de ablación mediante 500 ensayos simulados de despliegue A/B con múltiples semillas, en los cuales la línea base y el modelo candidato compartían distribuciones poblacionales idénticas. Confiar únicamente en estimaciones de punto resultó en una tasa del 50.6\% de falsos positivos. La implementación de la puerta de IC del 95\% ($p < 0.05$) redujo esta tasa de despliegues falsos positivos al 4.2\%, limitando el riesgo de despliegue por debajo de la tasa de error Tipo I nominal ($\alpha = 0.05$). Esta calibración conservadora valida empíricamente los hallazgos de Bosma et al. \cite{bosma2024statistical}.
 
 \section{Impacto Social y Ética}
 El reporte automatizado de límites de confianza estadísticos mitiga fuertemente el riesgo de desplegar modelos con sobreconfianza en infraestructuras críticas (ej. salud o navegación autónoma). Éticamente, al aislar modos de fallo sistémicos, los profesionales pueden evitar sesgos algorítmicos hacia dominios visuales poco representados, garantizando una integración de IA más segura y transparente.

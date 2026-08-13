@@ -1,5 +1,5 @@
 model_architecture,mAP_point_estimate,bootstrap_iterations,mAP_ci_lower_95,mAP_ci_upper_95,p_value_vs_baseline
-YOLO-baseline,0.8139,1000,0.7987,0.8277,-
-YOLO-n,0.8178,1000,0.804,0.8336,0.6288
-YOLO-s,0.8388,1000,0.8287,0.8497,0.0006
-YOLO-m,0.8392,1000,0.8221,0.8549,0.0002
+YOLO-baseline,0.607,1000,0.5935,0.619,-
+YOLO-n,0.6138,1000,0.6001,0.6276,0.5161
+YOLO-s,0.7673,1000,0.7529,0.782,0.0
+YOLO-m,0.7851,1000,0.7708,0.7994,0.0

@@ -1,5 +1,5 @@
 failure_mode,count,description
-False Positive,12,High Confidence Background
-Missed Detection,10,Occlusion/Small Object
-Bounding Box Regression,8,Low IoU (<0.5)
-Class Confusion,5,Similar Category
+False Positives,10,Background clutter causing low confidence FP
+Missed Detections (FN),0,Heavy occlusion of small objects
+Bounding Box Regression,0,Extreme aspect ratios
+Class Confusion,0,Inter-class visual similarity (e.g. dog vs cat)
