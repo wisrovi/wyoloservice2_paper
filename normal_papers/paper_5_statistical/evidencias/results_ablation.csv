@@ -1,3 +1,3 @@
-gating_mechanism,theoretical_type_I_error,measured_false_positive_deployment_rate,status
-Single-Point mAP,-,0.25,Unreliable
-95% CI (p < 0.05),0.05,0.05,Aligned with theory
+gating_mechanism,trials,theoretical_type_I_error,measured_false_positive_deployment_rate,status
+Single-Point mAP,500,-,0.495,Unreliable (Coin flip)
+95% CI (p < 0.05),500,0.05,0.02,Aligned with theory
