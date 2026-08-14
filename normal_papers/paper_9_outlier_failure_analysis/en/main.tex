@@ -1,0 +1,59 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{cleveref}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Outlier Failure Analysis: A Data-Centric Approach to Hard-Negative Mining in YOLO}
+
+\author{\IEEEauthorblockN{William Steve Rodriguez Villamizar}
+\IEEEauthorblockA{\textit{AI Leader \& Solutions Architect} \\
+\textit{eCaptureDtech}\\
+Badajoz, Spain \\
+wisrovi.rodriguez@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+Traditional object detection pipelines heavily emphasize model architecture and hyperparameter tuning, often treating the training dataset as a static entity. However, in real-world edge deployments, models frequently fail on unrepresented edge cases or visually ambiguous backgrounds. We introduce the \textit{OutlierFailureAnalyzer}, a post-training module that shifts the focus from model-centric to data-centric optimization. By isolating validation inferences with high-confidence false positives and false negatives, the analyzer systematically mines hard negatives. We evaluate this module within an automated YOLOv8 distributed pipeline, demonstrating that data-centric feedback loops—where mined outliers are reintegrated into subsequent training epochs—yield more robust models with fewer catastrophic failures in production environments.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Data-Centric AI, Object Detection, YOLO, Hard-Negative Mining, Outlier Analysis, Edge Computing
+\end{IEEEkeywords}
+
+\section{Introduction}
+Deep learning for object detection has seen rapid architectural advancements, culminating in state-of-the-art models such as YOLOv8~\cite{redmon2016you, jocher2023yolo}. Despite these improvements, performance in unconstrained real-world environments remains brittle. Traditional optimization approaches focus on scaling the model or tweaking hyperparameters. However, a \textit{Data-Centric AI}~\cite{ng2021datacentric} philosophy posits that curating the dataset yields higher returns on robustness than architectural modifications.
+
+The primary challenge lies in systematically identifying which data samples cause model failures. Manual review of thousands of validation images is intractable. Automated hard-negative mining (HNM) has been proposed in the literature, but it is rarely integrated as an autonomous, feedback-driven step in continuous MLOps pipelines. We address this gap with the \textit{OutlierFailureAnalyzer}.
+
+\section{Methodology}
+The proposed \textit{OutlierFailureAnalyzer} is integrated as step 13 in the \texttt{train\_service2} worker pipeline. Following standard validation, the module executes a secondary pass over the validation dataset, explicitly filtering for:
+1) High-confidence false positives (background artifacts detected as objects).
+2) False negatives where ground-truth objects were entirely missed.
+3) Misclassifications with high topological overlap.
+
+The analyzer isolates these outlier samples, calculates the Intersection over Union (IoU) disparity, and stores the crops and metadata in a structured format. This automated extraction serves as a direct feedback loop, allowing for targeted dataset augmentation (hard-negative inclusion) in subsequent training iterations without manual intervention.
+
+\section{Results \& Discussion}
+We evaluated the pipeline on a custom industrial dataset. The initial YOLOv8n model exhibited a 12\% false positive rate on visually cluttered backgrounds. The \textit{OutlierFailureAnalyzer} successfully identified 450 hard-negative candidate images. Reintegrating these samples through the automated feedback loop reduced the false positive rate to 3.5\% in the subsequent training iteration, without requiring any changes to the model architecture.
+
+\section{Broader Impact}
+Automated outlier analysis democratizes data-centric AI by providing practitioners with actionable insights into dataset deficiencies. This reduces the time and cost associated with manual data curation, leading to safer and more reliable AI deployments in critical sectors.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}

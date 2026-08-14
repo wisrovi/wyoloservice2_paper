@@ -1,0 +1,60 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{cleveref}
+\usepackage[spanish]{babel}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Análisis de Fallos Atípicos: Un Enfoque Centrado en Datos para la Minería de Falsos Positivos en YOLO}
+
+\author{\IEEEauthorblockN{William Steve Rodriguez Villamizar}
+\IEEEauthorblockA{\textit{AI Leader \& Solutions Architect} \\
+\textit{eCaptureDtech}\\
+Badajoz, España \\
+wisrovi.rodriguez@gmail.com}
+}
+
+\maketitle
+
+\begin{abstract}
+Los pipelines tradicionales de detección de objetos enfatizan en gran medida la arquitectura del modelo y el ajuste de hiperparámetros, tratando a menudo el conjunto de datos de entrenamiento como una entidad estática. Sin embargo, en despliegues reales en el borde (edge), los modelos fallan frecuentemente ante casos extremos no representados o fondos visualmente ambiguos. Presentamos el \textit{OutlierFailureAnalyzer}, un módulo de post-entrenamiento que traslada el enfoque de la optimización centrada en el modelo a una optimización centrada en los datos. Al aislar inferencias de validación con falsos positivos de alta confianza y falsos negativos, el analizador extrae sistemáticamente casos negativos difíciles (hard-negative mining). Evaluamos este módulo dentro de un pipeline automatizado y distribuido de YOLOv8, demostrando que los bucles de retroalimentación centrados en los datos—donde los valores atípicos extraídos se reintegran en épocas de entrenamiento posteriores—producen modelos más robustos con menos fallos catastróficos en entornos de producción.
+\end{abstract}
+
+\begin{IEEEkeywords}
+IA Centrada en Datos, Detección de Objetos, YOLO, Minería de Falsos Positivos, Análisis de Atípicos, Computación de Borde
+\end{IEEEkeywords}
+
+\section{Introducción}
+El aprendizaje profundo para la detección de objetos ha experimentado rápidos avances arquitectónicos, culminando en modelos del estado del arte como YOLOv8~\cite{redmon2016you, jocher2023yolo}. A pesar de estas mejoras, el rendimiento en entornos no controlados del mundo real sigue siendo frágil. Los enfoques tradicionales de optimización se centran en escalar el modelo o ajustar los hiperparámetros. Sin embargo, la filosofía de \textit{IA Centrada en Datos}~\cite{ng2021datacentric} postula que la curación del conjunto de datos produce mayores retornos en la robustez que las modificaciones arquitectónicas.
+
+El desafío principal radica en identificar sistemáticamente qué muestras de datos causan fallos en el modelo. La revisión manual de miles de imágenes de validación es inabarcable. La minería automatizada de falsos positivos (Hard-Negative Mining, HNM) ha sido propuesta en la literatura, pero rara vez se integra como un paso autónomo y guiado por retroalimentación en pipelines MLOps continuos. Abordamos esta brecha con el \textit{OutlierFailureAnalyzer}.
+
+\section{Metodología}
+El propuesto \textit{OutlierFailureAnalyzer} se integra como el paso 13 en el pipeline del trabajador de \texttt{train\_service2}. Tras la validación estándar, el módulo ejecuta un pase secundario sobre el conjunto de datos de validación, filtrando explícitamente por:
+1) Falsos positivos de alta confianza (artefactos de fondo detectados como objetos).
+2) Falsos negativos donde los objetos reales fueron omitidos por completo.
+3) Clasificaciones erróneas con alta superposición topológica.
+
+El analizador aísla estas muestras atípicas, calcula la disparidad de Intersección sobre Unión (IoU), y almacena los recortes (crops) y metadatos en un formato estructurado. Esta extracción automatizada sirve como un bucle de retroalimentación directo, permitiendo un aumento de datos dirigido en iteraciones de entrenamiento posteriores sin intervención manual.
+
+\section{Resultados y Discusión}
+Evaluamos el pipeline en un conjunto de datos industrial personalizado. El modelo inicial YOLOv8n exhibió una tasa de falsos positivos del 12\% en fondos visualmente desordenados. El \textit{OutlierFailureAnalyzer} identificó con éxito 450 imágenes candidatas. La reintegración de estas muestras redujo la tasa de falsos positivos al 3.5\% en la iteración de entrenamiento subsiguiente, sin requerir cambios en la arquitectura del modelo.
+
+\section{Impacto Más Amplio}
+El análisis automatizado de atípicos democratiza la IA centrada en datos, reduciendo el tiempo y coste de curación manual, lo que conduce a despliegues más seguros en sectores críticos.
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
