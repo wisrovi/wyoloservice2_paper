@@ -35,11 +35,19 @@ We categorize our papers into two main branches: **Research & Development (R&D)*
 | Paper ID | Title | Research Focus | Links |
 |:---:|:---|:---|:---|
 | **1** | **NeuralForge: A Distributed MLOps Framework** | Invoker-Executor pattern with ephemeral Docker isolated tasks that prevents catastrophic cluster failures via dynamic task orchestration. | [EN](./normal_papers/paper_1_mlops/en/main.md) - [ES](./normal_papers/paper_1_mlops/es/main.md) |
-| **2** | **Automated Explainable AI Pipeline for YOLO Models** | Methodological framework for quantitative fidelity validation of visual explanations using Deletion/Insertion AUC and t-SNE latent space mappings. | [EN](./normal_papers/paper_2_xai/en/main.md) - [ES](./normal_papers/paper_2_xai/es/main.md) |
-| **3** | **Quantifying YOLO Model Robustness** | Automated robustness auditing pipeline evaluating adversarial vulnerability (FGSM), noise resilience, and uncertainty decomposition (MC Dropout). | [EN](./normal_papers/paper_3_robustness/en/main.md) - [ES](./normal_papers/paper_3_robustness/es/main.md) |
-| **4** | **Cross-Domain Generalization Assessment** | Automated post-training pipeline using Fréchet Inception Distance (FID) to predict domain shift mAP degradation, paired with hardware complexity profiling. | [EN](./normal_papers/paper_4_crossdomain/en/main.md) - [ES](./normal_papers/paper_4_crossdomain/es/main.md) |
-| **6** | **LLM-Powered Automated Research Reporting** | Local LLMs (OpenCode) generate verifiable, deterministic post-training scientific narratives, avoiding hallucinations via strict fallback mechanisms. | [EN](./normal_papers/paper_6_llm_reporting/en/main.md) - [ES](./normal_papers/paper_6_llm_reporting/es/main.md) |
-| **7** | **WPipe: A Declarative Pipeline Framework with Forensic Tracking** | SQLite-based forensic tracking, strict Pydantic type validation, and checkpointing for rapid failure recovery in ML workflows. | [EN](./normal_papers/paper_7_wpipe/en/main.md) - [ES](./normal_papers/paper_7_wpipe/es/main.md) |
+| **3** | **Automated Explainable AI Pipeline for YOLO Models** | Methodological framework for quantitative fidelity validation of visual explanations using Deletion/Insertion AUC and t-SNE latent space mappings. | [EN](./normal_papers/paper_3_xai/en/main.md) - [ES](./normal_papers/paper_3_xai/es/main.md) |
+| **4** | **Quantifying YOLO Model Robustness** | Automated robustness auditing pipeline evaluating adversarial vulnerability (FGSM), noise resilience, and uncertainty decomposition (MC Dropout). | [EN](./normal_papers/paper_4_robustness/en/main.md) - [ES](./normal_papers/paper_4_robustness/es/main.md) |
+| **5** | **Cross-Domain Generalization Assessment** | Automated post-training pipeline using Fréchet Inception Distance (FID) to predict domain shift mAP degradation, paired with hardware complexity profiling. | [EN](./normal_papers/paper_5_crossdomain/en/main.md) - [ES](./normal_papers/paper_5_crossdomain/es/main.md) |
+| **7** | **LLM-Powered Automated Research Reporting** | Local LLMs (OpenCode) generate verifiable, deterministic post-training scientific narratives, avoiding hallucinations via strict fallback mechanisms. | [EN](./normal_papers/paper_7_llm_reporting/en/main.md) - [ES](./normal_papers/paper_7_llm_reporting/es/main.md) |
+| **8** | **WPipe: A Declarative Pipeline Framework with Forensic Tracking** | SQLite-based forensic tracking, strict Pydantic type validation, and checkpointing for rapid failure recovery in ML workflows. | [EN](./normal_papers/paper_8_wpipe/en/main.md) - [ES](./normal_papers/paper_8_wpipe/es/main.md) |
+
+### 🔬 R&D Papers (Consolidated Frontier Research)
+*Experimental frontier technologies absorbing the forensic I+D modules into high-density contributions.*
+
+| Paper ID | Title | Research Focus | Links |
+|:---:|:---|:---|:---|
+| **8** | **Predicting Downstream Performance Degradation Under Representation-Level Domain Shift** | Calibrated FID-based predictor of mAP degradation with bootstrap 95% CIs, shift-left gatekeeping, and scene-complexity refinement. | [EN](./rnd_papers/paper_8_domain_shift_prediction/en/main.md) - [ES](./rnd_papers/paper_8_domain_shift_prediction/es/main.md) |
+| **9** | **Autonomous Evaluation Framework: Robustness, Faithful Explainability & Failure-Mode Auditing** | Unified quantitative audit of adversarial robustness (FGSM), XAI fidelity (Deletion/Insertion AUC), uncertainty, and failure-mode taxonomies. | [EN](./rnd_papers/paper_9_autonomous_evaluation/en/main.md) - [ES](./rnd_papers/paper_9_autonomous_evaluation/es/main.md) |
 
 ---
 
@@ -69,12 +77,14 @@ These papers document an ecosystem that operates under a **Dual Licensing Model*
 
 ## 🔄 Changelog
 
-- **v1.7.0 (2026-08-12)**: Paper 4 (Cross-Domain Generalization Assessment for Object Detection Models) has been officially ACCEPTED by the IEEE.
-- **v1.5.0 (2026-08-12)**: Paper 3 (Quantifying YOLO Model Robustness) has been officially ACCEPTED by the IEEE.
-- **v1.4.0 (2026-08-12)**: Paper 7 (WPipe: A Declarative Pipeline Framework with Forensic Tracking for ML Workflows) has been officially ACCEPTED by the IEEE.
-- **v1.3.0 (2026-08-12)**: Paper 2 (Automated Explainable AI Pipeline for YOLO Models) has been officially ACCEPTED by the IEEE.
+- **v1.8.0 (2026-08-14)**: Added Paper 8 (Predicting Downstream Performance Degradation Under Representation-Level Domain Shift) and Paper 9 (Autonomous Evaluation Framework for Quantitative Robustness, Faithful Explainability, and Failure-Mode Auditing) as consolidated R&D papers in `rnd_papers/`, each in dual EN/ES format (LaTeX + Markdown + PDF + vector figures). Ready for local reviewer flow (`revisor.md`).
+
+- **v1.7.0 (2026-08-12)**: Paper 5 (Cross-Domain Generalization Assessment for Object Detection Models) has been officially ACCEPTED by the IEEE.
+- **v1.5.0 (2026-08-12)**: Paper 5 (Quantifying YOLO Model Robustness) has been officially ACCEPTED by the IEEE.
+- **v1.4.0 (2026-08-12)**: Paper 8 (WPipe: A Declarative Pipeline Framework with Forensic Tracking for ML Workflows) has been officially ACCEPTED by the IEEE.
+- **v1.3.0 (2026-08-12)**: Paper 5 (Automated Explainable AI Pipeline for YOLO Models) has been officially ACCEPTED by the IEEE.
 - **v1.2.0 (2026-08-12)**: Paper 1 (NeuralForge: A Distributed MLOps Framework) has been officially ACCEPTED by the IEEE.
-- **v1.1.0 (2026-08-12)**: Paper 6 (LLM-Powered Automated Research Reporting) has been officially ACCEPTED by the IEEE.
+- **v1.1.0 (2026-08-12)**: Paper 8 (LLM-Powered Automated Research Reporting) has been officially ACCEPTED by the IEEE.
 - **v1.0.3 (2026-08-12)**: Updated directory to only list strictly approved papers.
 - **v1.0.2 (2026-08-07)**: Added new timestamped IEEE expert panel review verdicts for all 5 papers.
 - **v1.0.1 (2026-08-07)**: Added official IEEE expert panel review verdicts for all papers.
@@ -82,4 +92,4 @@ These papers document an ecosystem that operates under a **Dual Licensing Model*
 ---
 *Developed with ❤️ in Badajoz, Extremadura, Spain.*
 
-- **Paper 5:** Statistical Rigor in YOLO Model Evaluation (ACEPTADO - v1.7.0)
+- **Paper 6:** Statistical Rigor in YOLO Model Evaluation (ACEPTADO - v1.7.0)

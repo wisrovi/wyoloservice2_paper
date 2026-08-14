@@ -5,6 +5,11 @@ All notable changes to the `wyoloservice2_paper` repository will be documented i
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.10.0] - 2026-08-14
+### Added
+- **Paper C**: "Predicting Downstream Performance Degradation in Computer Vision Models Under Representation-Level Domain Shift" drafted (EN/ES, LaTeX + Markdown + PDF + vector figure), registered in ROADMAP for local review.
+- **Paper D**: "An Autonomous Evaluation Framework for Quantitative Robustness, Faithful Explainability, and Failure-Mode Auditing in Vision Models" drafted (EN/ES, LaTeX + Markdown + PDF + vector figure), registered in ROADMAP for local review.
+
 ## [1.9.0] - 2026-08-14
 ### Added
 - **Paper 9**: "Outlier Failure Analysis: A Data-Centric Approach to Hard-Negative Mining" has been officially ACCEPTED by the IEEE.

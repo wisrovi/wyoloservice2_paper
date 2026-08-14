@@ -82,3 +82,22 @@ Este roadmap rige la agenda de publicaciones científicas (Research & Developmen
 *   **Objetivo:** Publicar en Nature Machine Intelligence o TPAMI.
 *   **Estado:** Core funcional, integración parcial.
 *   **Acción:** El *Master Paper* final del ecosistema, demostrando cómo la concatenación de los 14 módulos MLOps + I+D reduce el tiempo desde el modelo entrenado hasta la publicación científica de meses a minutos.
+
+---
+
+## 📝 Metas de Revisión Consolidada (Prioridad 5 - Q3/Q4 2026)
+*Foco: Publicaciones consolidadas que absorben los módulos forenses en dos contribuciones de mayor densidad; listas para el flujo de revisor local (`revisor.md`).*
+
+### 13. Paper C: Predicting Downstream Performance Degradation in Computer Vision Models Under Representation-Level Domain Shift
+*   **Objetivo:** Publicar en WACV, IROS o MLSys.
+*   **Estado:** Completado en EN/ES (LaTeX + Markdown + PDF + figura vectorial `prediction.pdf`), datos reales de 7 pares de dominio.
+*   **Ruta:** `rnd_papers/paper_c_domain_shift_prediction/`
+*   **Resultados clave:** Modelo predictivo FID-solo ($R^2=0.959$, MAE 2.5 pp) con CIs bootstrap 95%; predicción held-out Day→Night de 32.6 pp (real 32.1 pp); el covariable SC eleva la cobertura de intervalos de 71.4%→100% y reduce LOO MAE de 3.83→3.70 pp.
+*   **Acción:** Ejecutar flujo de revisor local; enviar a revisión.
+
+### 14. Paper D: An Autonomous Evaluation Framework for Quantitative Robustness, Faithful Explainability, and Failure-Mode Auditing in Vision Models
+*   **Objetivo:** Publicar en CVPR (XAI Workshop), ICCV (Workshop on eXplainable AI) o ECCV (XAI Workshop).
+*   **Estado:** Completado en EN/ES (LaTeX + Markdown + PDF + figura vectorial `xai_fidelity.pdf`), métricas reales (Deletion/Insertion AUC, ataques FGSM, taxonomía de fallos).
+*   **Ruta:** `rnd_papers/paper_d_autonomous_evaluation/`
+*   **Resultados clave:** Grad-CAM++ Deletion AUC 0.199 / Eigen-CAM 0.162 (baseline random 0.471); Insertion AUC 0.815/0.860; FGSM colapsa la confianza >60% a ε=0.20; taxonomía de fallos liderada por background (49.3%).
+*   **Acción:** Ejecutar flujo de revisor local; enviar a revisión.

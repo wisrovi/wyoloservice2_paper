@@ -648,3 +648,296 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 
 ### 4. Plan de Acción y Notas de Mejora para el Autor
 - **Conclusión:** El manuscrito cumple con todos los estándares y es apto para publicación inmediata.
+
+---
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-14 08:17:30
+**Artículo evaluado:** `normal_papers/paper_1_mlops` ("NeuralForge: A Distributed MLOps Framework for Automated YOLO Hyperparameter Optimization")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO
+- **Nivel de Innovación:** Moderado (integración aplicada del patrón Invoker-Executor + Celery + contenedores Docker efímeros para aislar trials de Optuna frente a OOM; no es una novedad conceptual disruptiva frente a Ray Tune/Kubeflow/Optuna distribuida)
+- **Evaluación de Generación por IA / Autenticidad:** 6/10 - La prosa es densa, técnica y sin superlativos vacíos, y los 3 CSV de evidencia SÍ concuerdan con las tablas del manuscrito (fortaleza destacable). Sin embargo, la integridad académica se ve comprometida por **dos referencias bibliográficas fabricadas** (G-RANK y TDWR, verificadas como inexistentes en la literatura real) y por un bloque completo de métricas de fault-tolerance/bottlenecks sin CSV de evidencia pese a afirmar "strictly executed empirical CSV results".
+
+**Notas de mejora críticas (resumen):**
+1. Sustituir las referencias fantasma `grank2022` ("Smith, J. and Doe, A.", IPDPS 2022) y `tdwr2023` ("Johnson, M. and Lee, K.", IEEE TCC 2023) por trabajos verificables reales del estado del arte en GPU scheduling post-2021.
+2. Corregir la cita errónea de PostgreSQL en la Introducción (cita `akiba2019optuna` cuando debe citar `momjian2001postgresql`, que ya está en el .bib sin usarse).
+3. Restaurar la sincronización estricta: `en/main.md` conserva fragmentos LaTeX sin tablas ni figura, y la versión `es/` NO es una traducción real al español (solo el título cambió).
+
+### 2. Análisis por Subagentes Especializados
+- **Agente A (Originalidad y Detección de IA):** Puntuación 7/10. Sintaxis sobria y fragmentada, sin el arco narrativo "delve/tapestry" típico de LLMs; las frases son cortas y las métricas se citan con datos crudos. No se detectan redundancias ni párrafos de relleno. El patrón más LLM-like es el encuadre genérico de la Introducción ("critical industry bottleneck", "bridges this gap") y afirmaciones redondas sin evidencia adjunta ("100% graceful requeuing", "0% data loss"). El desajuste crítico está en la capa de documentos: los `main.md` son conversiones rotas (citas vacías, tablas/figura ausentes, comandos LaTeX residuales) y el `es/main.tex` es una copia en inglés con solo el título traducido, violando el requisito de doble idioma.
+
+- **Agente B (Estado del Arte y Bibliografía):** Puntuación 4/10. **FALLOS CRÍTICOS:** Verificación en línea confirma que "G-RANK: Topology-Aware GPU Scheduling" (IPDPS 2022, autores "Smith, J. and Doe, A.") y "TDWR: Dynamic Workload Redistribution for GPU Clusters" (IEEE TCC 2023, autores "Johnson, M. and Lee, K.") NO EXISTEN. Autores genéricos tipo placeholder son marcadores inequívocos de bibliografía alucinada por LLM. Además: `akiba2019optuna` se cita para PostgreSQL (debe ser `momjian2001postgresql`); 7 entradas del .bib (`li2020heterogeneous`, `patterson2021carbon`, `shokri2015privacy`, `momjian2001postgresql`, `moritz2018ray`, `hansen2016cma`, `falkner2018bohb`) quedan sin citar, lo que denota falta de curación. El núcleo de citas válidas (Optuna, Docker, Celery, Tiresias, Optimus, Themis, MLflow, Hyperband, HPO-B, FLAML, BOHB) es pertinente pero desactualizado en los frentes clave: no hay trabajos 2023-2026 sobre aislamiento efímero en HPO, y las únicas "avanzadas post-2021" que se citan son las dos referencias inexistentes. Entradas informales sin datos bibliográficos completos (jocher2020yolov5 solo "GitHub", liaw2018tune solo "arXiv").
+
+- **Agente C (Rigor Técnico y Metodología):** Puntuación 5/10. A favor: los 3 CSV de `evidencias/` son internamente consistentes y coinciden con las tablas (latencia 0.8/12.4/450 ms con wilcoxon_p≈0.00012 por seed; 40% de reducción de idle GPU con IC bootstrap [38.5,41.2]; supervivencia 4.2h vs 72h). En contra:
+  - **Afirmaciones sin evidencia:** Todo el bloque "Bottleneck Analysis & Fault Tolerance" (412 MB/s CIFS, P99 18ms, PostgreSQL ask/tell 14ms, Redis 5,200 tasks/s, MTTR 2.1s, 100% requeuing, 100% fallback Docker, 0% pérdida de datos) no tiene NINGÚN CSV de respaldo a pesar de la afirmación de resultados "strictly executed".
+  - **Reproducibilidad imposible:** los comandos citados (`python benchmarks/benchmark_latency.py --trials 1000`, `docker-compose -f docker-compose.yml up -d`, script `ablation_memory_limits.py`) NO existen en el directorio del paper ni en el repo. Falta además el enlace al repositorio de producción `wyoloservice2_production` y la declaración de licencia dual (PolyForm/AGPLv3) que exige la política del repositorio.
+  - **Ambigüedad estadística:** "Median task dispatch latency of 0.8ms" para dispatch distribuido Celery+Redis es implausiblemente bajo (típico de medir solo el enqueue al broker, no el dispatch end-to-end); no se define qué se mide. El p-valor de Wilcoxon (≈0.00012/seed) carece de aclaración del tamaño muestral usado (¿N=1000 intra-seed según caption "N=1000"? ¿o N=5 seeds, lo cual haría p<0.001 matemáticamente imposible?). No se indica el tamaño del modelo YOLO (n/s/m), el batch size ni el presupuesto de trials para el mAP.
+  - **Diseño experimental débil en HPO:** comparar "trial de convergencia" (45 vs 55 vs 60) entre plataformas que ejecutan el MISMO search TPE de Optuna es comparar ruido; el propio texto admite que Optuna-Native alcanza el mismo mAP 0.82, lo que resta fuerza al título "Automated YOLO HPO".
+  - **Documento de 2 páginas** (mínimo IEEE 3-6), sin sección Broader Impact/Ethics, sin Acknowledgments, y autoría sin ORCID ni enlace a wisrovi-suit.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+- **Fortalezas:**
+  - Problema industrial real y bien acotado: el aislamiento de estado y los OOM del host en HPO distribuido.
+  - Coherencia dato-relato en lo verificado: las tablas del manuscrito coinciden con los CSV de evidencia publicados.
+  - Arquitectura clara (API Gateway / Manager / Invoker-Executor) con diagrama Mermaid renderizado y hardware/software documentados con precisión (versiones exactas).
+  - Franqueza estadística poco común: la escalabilidad a 30 nodos se declara explícitamente como proyección teórica M/M/c, no empírica.
+  - Uso correcto de booktabs, microtype, cleveref y BibTeX (references.bib), con ablación empírica OOM-limits.
+
+- **Puntos Débiles / Falencias:**
+  - **CRÍTICO:** Dos referencias fabricadas (G-RANK, TDWR) no verificables en la literatura.
+  - **CRÍTICO:** Bloque completo de resultados (bottlenecks + fault tolerance) sin evidencia CSV y afirmaciones de reproducibilidad que apuntan a archivos inexistentes.
+  - Falta enlace a `wyoloservice2_production` y aclaración de licencia dual; sección Data & Code Availability incompleta.
+  - `main.md` desincronizado con restos LaTeX y sin tablas/figuras; versión española no traducida.
+  - 2 páginas (por debajo del mínimo de 3), sin Broader Impact/Ethics, sin Acknowledgments, sin ORCID.
+  - "Task dispatch latency de 0.8ms" sin definición operativa; detalles estadísticos del test y del mAP sin especificar.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+- [ ] **Modificación 1 (Crítica):** Eliminar `grank2022` y `tdwr2023` del `references.bib` y sustituirlas por referencias reales y verificables del estado del arte 2021-2026 en GPU cluster scheduling y aislamiento de cargas HPO (p.ej., trabajos de Astrera (Ye et al., TPDS 2022), Sia, Kronos, o surveys de scheduling GPU 2023-2024). Mantener 8-20 referencias sólidas.
+- [ ] **Modificación 2 (Crítica):** Corregir la cita de PostgreSQL: en la Introducción usar `\cite{momjian2001postgresql}` en lugar de `\cite{akiba2019optuna}`. Purgar del .bib las 7 entradas sin citar o citarlas donde corresponda (p.ej., `patterson2021carbon` en Broader Impact, `moritz2018ray` en Related Work).
+- [ ] **Modificación 3 (Crítica):** Proveer evidencia empírica (CSV) para las métricas de Bottleneck Analysis y Fault Tolerance (throughput CIFS, latencias P99, MTTR, rate de requeue, fallback de pull, NVMe vs SMB, Redis vs PostgreSQL), o retirarlas del manuscrito y etiquetarlas como micro-benchmarks dirigidos. Reconciliar "strictly executed empirical CSV results" con la evidencia real disponible.
+- [ ] **Modificación 4 (Crítica):** Restaurar la sincronización del repositorio: regenerar `en/main.md` limpio (sin comandos LaTeX, con tablas y figura embebidas) y traducir íntegramente al español la versión `es/` (main.tex y main.md) manteniendo contenido idéntico.
+- [ ] **Modificación 5:** Definir operativamente "task dispatch latency" (¿enqueue-to-broker, enqueue-to-container-start, end-to-end?) y aclarar el tamaño muestral del Wilcoxon (N=1000 intra-seed vs N=5 seeds). Si el test es sobre 5 seeds, el p<0.001 reportado es matemáticamente inviable y debe corregirse.
+- [ ] **Modificación 6:** Especificar en Experimental Setup: tamaño del modelo YOLO (yolov8n/s/m), imgsz, batch size, presupuesto de trials, semillas del mAP y dataset completo (¿COCO128? N=128 imágenes); añadir CI real del best mAP con su CSV.
+- [ ] **Modificación 7:** Ampliar a 3-6 páginas: añadir sección Broader Impact / Ethics (eficiencia energética, reducción de carbono citando `patterson2021carbon`, Shift-Left de seguridad, usos duales), Acknowledgments, filiación completa (AI Leader & Solutions Architect, ORCID, enlace wisrovi-suit https://github.com/wisrovi/w-cli) y enlace a `wyoloservice2_production` con licencia dual (PolyForm/AGPLv3) y comando reproducible real (docker-compose up -d).
+- [ ] **Modificación 8:** Reescribir la sección de HPO quality para no comparar trials de convergencia entre plataformas con el mismo buscador; reportar en su lugar la métrica honesta (infraestructura: latencia, aislamiento, tolerancia a fallos) o usar configuraciones de search distintas por plataforma.
+
+---
+
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-14 08:20:30
+**Artículo evaluado:** `normal_papers/paper_2_xai` ("Automated Explainable AI Pipeline for YOLO Models: From Grad-CAM to Quantitative Fidelity Validation")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (al borde del rechazo por integridad de datos)
+- **Nivel de Innovación:** Bajo-Moderado. Orquestación automatizada de técnicas XAI existentes (Eigen-CAM, Grad-CAM++, Deletion/Insertion AUC, t-SNE) sin una contribución algorítmica, matemática o arquitectónica propia. El único elemento novedoso declarado (LlmAnalyzer/OpenCode) es un diseño no integrado y sin evaluación.
+- **Evaluación de Generación por IA / Autenticidad:** 5/10. La prosa es sobria y sin buzzwords de LLM, y el autor declara honestamente que el módulo LLM es prototipo y que el pipeline no está en producción. Sin embargo, la autenticidad queda comprometida de raíz por la naturaleza de la evidencia: los CSV de `evidencias/` y el claim "strictly executed empirical CSV results" son **datos sintéticos generados con `random.uniform()`** (verificado en `wyoloservice2_production/benchmarks/benchmark_xai_fidelity.py`), no mediciones reales de inferencia YOLO.
+
+### 2. Análisis por Subagentes Especializados
+- **Agente A (Originalidad y Detección de IA):** Puntuación 5/10. Estilo contenido, frases cortas, sin arco narrativo LLM ("delve/tapestry") y con franqueza inusual al declarar el estado prototípico del LLM. No se detecta padding ni parafraseo evidente. **Falencias de integridad:** (1) La totalidad de los resultados cuantitativos (Deletion AUC, Insertion AUC, Silhouette) son sintéticos: `benchmark_xai_fidelity.py` llena los CSV con `random.uniform(0.15,0.25)` etc., lo que explica las medias "perfectas" (grad deletion mean 0.1993 vs rango 0.15-0.25; silhouette mean 0.6898 vs rango 0.65-0.75). El "92%" del resumen es el borde superior del `random.uniform(0.80,0.92)` de Eigen-CAM, no un resultado de protocolo de borrado. (2) La afirmación de ablación ("35% de mejora") no tiene ningún CSV de respaldo (`results_ablation.csv` no existe) ni descripción metodológica de cómo se calculó. (3) Errores de sincronización: `en/main.md` y `es/main.md` conservan comandos LaTeX residuales (`\IEEEoverridecommandlockouts`, `\textit`, llaves sueltas) generados por un `fix.py` incompleto. (4) Typo "penultimante layer" en `en/main.tex` línea 42.
+
+- **Agente B (Estado del Arte y Bibliografía):** Puntuación 3/10. **Fallos críticos de citación:**
+  - Del `.bib` con 15 entradas, **solo 4 se citan en el texto** (Selvaraju 2017, Chattopadhay 2018, Petsiuk 2018, van der Maaten 2008). Las otras 11 (Ribeiro, Lundberg, Zheng, Touvron, Akiba, Jocher, Redmon, Arya, Guidotti, Papernot, Wang) quedan muertas y NO aparecen en la bibliografía compilada del PDF (`main.bbl` contiene 4 `\bibitem`). Se viola el rango 8-20 referencias y la lista efectiva es de 4.
+  - **Eigen-CAM no tiene cita alguna** pese a ser central en la metodología y en el título de la contribución. **YOLO (Redmon 2016 / Jocher 2023) tampoco se cita en el cuerpo**.
+  - El estado del arte de XAI es insuficiente para 2026: no hay trabajos sobre XAI en YOLO/detección post-2021, no se citan D-RISE, XGrad-CAM, o benchmarks de fidelidad recientes; la única referencia de métricas de fidelidad es RISE 2018.
+  - No hay cita del dataset COCO ni del protocolo exacto de Deletion/Insertion (original de Petsiuk/Kindermans) más allá de la mención genérica.
+
+- **Agente C (Rigor Técnico y Metodología):** Puntuación 2/10. **Hallazgo devastador: los datos no son reales.** El script de reproducción citado (`python benchmark_xai_fidelity.py`) existe en el repo de producción pero genera los tres CSV con números aleatorios uniformes, sin invocar YOLO, sin Grad-CAM/Eigen-CAM, sin t-SNE ni métricas de fidelidad. Por tanto: (1) los claims del resumen y resultados ("92%", "0.18/0.85", "0.70 silhouette") son irreproducibles como medición y no corresponden a inferencia real; (2) la estadística reportada es además inexacta: el IQR "0.14-0.22" no coincide con ningún método individual (grad IQR 0.173-0.225; eigen 0.143-0.180; pooled 0.156-0.200), y "0.85" de Insertion es un blend de grad (0.815) y eigen (0.860); (3) la sección de ablación declara una mejora del 35% sin evidencia; (4) el estudio t-SNE tiene solo 5 filas (una por seed), sin etiquetas de clase ni clusters definidos — el "clustering" no se describe; (5) sin pruebas estadísticas (sin CI, sin p-valor, sin bootstrap); (6) Experimental Setup de 3 frases: sin hardware (GPU), sin variante de YOLO (n/s/m), sin imgsz, sin batch size, sin versiones; dataset de 1 sola clase ("person") sobre 128 imágenes. (7) El PDF tiene **2 páginas**, por debajo del mínimo IEEE de 3-6.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+- **Fortalezas:**
+  - Honestidad estructural poco común: declara explícitamente que el LLM es un prototipo documentado y que el pipeline no está en producción.
+  - Prosa sobria y directa, sin florituras, con datos crudos (que, aunque sintéticos, están internamente autoconsistentes).
+  - El script de benchmark existe en el repositorio de producción y los CSVs se copian a `evidencias/`, lo que denota una intención de reproducibilidad.
+  - Existe una versión ES real (traducción genuina, no solo título) con doble `main.tex`/`main.md`, cumpliendo parcialmente la política de doble idioma.
+  - Conceptualmente, la integración automatizada de fidelidad cuantitativa + t-SNE + reporte LLM es una dirección válida y demandada (deployment del XAI).
+
+- **Puntos Débiles / Falencias:**
+  - **CRÍTICO — Integridad de datos:** toda la evidencia es sintética (`random.uniform`), no derivada de ejecuciones reales; presentarla como "strictly executed empirical CSV results" constituye un riesgo de malversación científica.
+  - **CRÍTICO — Ablación sin evidencia:** "35% de mejora" sin CSV, sin protocolo, sin métrica de "fiabilidad de validación" definida.
+  - **CRÍTICO — Bibliografía:** solo 4 referencias compiladas; Eigen-CAM sin citar; estado del arte desactualizado.
+  - Estadística imprecisa (IQRs no trazables, medias blend, sin CI).
+  - 2 páginas (por debajo del mínimo), sin figuras, sin hardware especificado, 1 sola clase.
+  - `main.md` con residuos LaTeX; autoría sin ORCID ni enlace wisrovi-suit; falta sección Acknowledgments; Data & Code apunta a `https://github.com/wisrovi/` genérico en vez del repo de producción específico.
+  - Afirmación "92% de confianza cuando se elimina el 80% del fondo" no corresponde al protocolo de los CSVs (confluye Insertion AUC con borrado de fondo).
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+- [ ] **Modificación 1 (Crítica — integridad):** Reescribir `benchmark_xai_fidelity.py` para ejecutar inferencia real con YOLO (cargar modelo `.pt`, seleccionar capas penúltimas para Grad-CAM++/Eigen-CAM, generar heatmaps, aplicar protocolo Deletion/Insertion real por pasos de máscara, y fit de t-SNE sobre embeddings reales). Regenerar los CSV y recomprobar todas las cifras del paper contra los datos reales.
+- [ ] **Modificación 2 (Crítica):** Publicar `results_ablation.csv` con el estudio de ablación (con/sin métrica AUC, con/sin t-SNE, con/sin Grad-CAM) con protocolo y métrica de fiabilidad definida, o retirar el claim del 35%.
+- [ ] **Modificación 3 (Crítica — bibliografía):** Citar en el cuerpo las 11 entradas muertas del `.bib` o eliminarlas; añadir cita de Eigen-CAM (Muhammad & Yeasin 2020), YOLO (Redmon 2016) y referencias 2021-2026 de XAI para detección de objetos (p.ej., trabajos recientes sobre CAM en YOLO, D-RISE). Alcanzar 8-20 referencias efectivamente citadas.
+- [ ] **Modificación 4:** Corregir la estadística: reportar mediana/IQR por método por separado (grad vs eigen vs random), añadir intervalos de confianza bootstrap y test estadístico (p.ej., Wilcoxon) entre XAI y baseline aleatorio, indicando N.
+- [ ] **Modificación 5:** Especificar Experimental Setup completo: GPU, CPU, RAM, variante YOLO (n/s/m), imgsz, batch size, versiones de dependencias, dataset completo (número de clases/imágenes), seeds. Ampliar a 3-6 páginas añadiendo figuras (heatmaps, curvas Deletion/Insertion, proyección t-SNE) generadas con matplotlib/vectoriales.
+- [ ] **Modificación 6:** Ampliar el dataset más allá de COCO128 con 1 clase; usar un dataset de validación de detección (p.ej., COCO val subset multi-clase) y reportar fidelidad por clase.
+- [ ] **Modificación 7:** Añadir filiación completa (AI Leader & Solutions Architect, ORCID, enlace https://github.com/wisrovi/w-cli), sección Acknowledgments, y enlace directo al repositorio de producción `wyoloservice2_production` con comando reproducible real y licencia dual (PolyForm/AGPLv3).
+- [ ] **Modificación 8:** Corregir `fix.py` para que `en/main.md` y `es/main.md` no conserven comandos LaTeX; corregir el typo "penultimante". Verificar que `es/main.tex` y `en/main.tex` sigan sincronizados tras los cambios.
+
+---
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-14 08:25:00
+**Artículo evaluado:** `normal_papers/paper_3_robustness` ("Quantifying YOLO Model Robustness: Adversarial Attacks, Noise Resilience, and Uncertainty Estimation in Real-World Deployment")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (al borde del rechazo por integridad de datos)
+- **Nivel de Innovación:** Bajo. Orquestación automatizada de tres técnicas consolidadas (FGSM, corrupciones tipo Hendrycks, MC Dropout) sin contribución algorítmica, matemática ni arquitectónica propia. Ningún método nuevo ni análisis novedoso: es una integración de evaluadores existentes sobre YOLO.
+- **Evaluación de Generación por IA / Autenticidad:** 5/10. Prosa sobria y sin el arco narrativo "delve/tapestry" de LLMs, con frases cortas y métricas crudas. Sin embargo, la autenticidad queda comprometida de raíz: los CSV de `evidencias/` y el claim "strictly executed empirical CSV results" proceden de datos **sintéticos generados por fórmula y `random.uniform()`** (verificado en `wyoloservice2_production/benchmarks/benchmark_robustness.py`), no de inferencia real con YOLO. El `main.md` (EN y ES) conserva comandos LaTeX residuales y **todas las citas se perdieron en la conversión** ("Goodfellow et al. ," con marcador vacío).
+
+### 2. Análisis por Subagentes Especializados
+- **Agente A (Originalidad y Detección de IA):** Puntuación 5/10. Estilo contenido, sin relleno, sin parafraseo evidente. Puntos en contra de autenticidad sintáctica: (1) uso de "paramount" en el abstract y "Furthermore", palabras incluidas en la lista de buzzwords prohibidas por la política del repositorio (`AGENTS.md`); (2) los `main.md` de EN y ES son conversiones rotas: cabecera con residuos LaTeX (`\IEEEoverridecommandlockouts`, `\kern-.08em`, llave suelta `}`) y **cero citas presentes** pese a que el `.tex` sí las tiene; (3) la versión `es/main.tex` SÍ es una traducción genuina al español (punto a favor, a diferencia de `paper_1`), pero comparte el mismo residuo de Markdown. No hay figuras ni tablas en ningún idioma. El patrón más LLM-like es la terminología redonda ("critical vulnerability space", "holistic view of model dependability") sin datos de respaldo por imagen.
+
+- **Agente B (Estado del Arte y Bibliografía):** Puntuación 4/10. El `.bib` tiene 12 entradas pero **solo 7 se compilan en el PDF** (`main.bbl`): madry2018, carlini2017, goodfellow2015, hendrycks2019, gal2016, kendall2017, lakshminarayanan2017. **5 entradas quedan muertas** sin citar: `szegedy2014intriguing`, `kurakin2017adversarial`, `papernot2016distillation`, `guo2017calibration`, `ovadia2019can`. 7 referencias efectivas está **por debajo del mínimo de 8** exigido. Fallos críticos de pertinencia:
+  - **YOLO no tiene ninguna cita** (ni Redmon 2016 ni Jocher/ultralytics) pese a ser el objeto central del estudio.
+  - **Albumentations no tiene cita** (Buslaev et al. 2020) pese a ser el motor de las corrupciones.
+  - **COCO no tiene cita** (Lin et al. 2014) pese a usar COCO128.
+  - **Estado del arte desactualizado para 2026:** sin AutoAttack ni RobustBench (Croce & Hein 2020/2021), sin referencias de incertidumbre en detección de objetos post-2019, sin benchmarks de corrupciones extendidos. `ovadia2019can` (la referencia clave para evaluación de incertidumbre bajo shift, ya en el `.bib`) ni siquiera se cita.
+
+- **Agente C (Rigor Técnico y Metodología):** Puntuación 2/10. **Hallazgo crítico: los datos no son reales.** El script citado para reproducir (`python benchmark_robustness.py`) existe en `wyoloservice2_production/benchmarks/` pero **no ejecuta YOLO, ni FGSM, ni Albumentations, ni forward passes**: genera los 3 CSV con fórmulas y números aleatorios.
+  - FGSM: `adv_map = clean_map * max(0.1, (1.0 - eps*3.5))`. La "attack success rate" resulta perfectamente **lineal en ε** (3.5, 10.5, 17.5, 35.0, 70.0 = 3.5×{1,3,5,10,20}), lo que el paper describe como "climbed exponentially" — incorrecto y no característico de un ataque real.
+  - Noise: `map_val = 0.82 - (severity * 0.08 * random.uniform(0.8,1.2))` — sin Albumentations.
+  - MC Dropout: `mean_conf = random.uniform(0.6,0.95)`; `epistemic = (1-conf)*random.uniform(0.01,0.05)`; `aleatoric = random.uniform(0.02,0.06)` — sin forward passes.
+  - Los CSV son internamente autoconsistentes con `clean_mAP=0.82`, pero la afirmación "strictly executed empirical CSV results" es **falsa** (patrón idéntico al `paper_2_xai`).
+  - **Contradicción claim-vs-datos:** "high-confidence predictions strictly correlated with low Epistemic variance" se refuta con el propio CSV: `img_0002` (conf 0.612, epi 0.0068) e `img_0041` (conf 0.602, epi 0.0072) tienen baja confianza con varianza epistémica baja. La correlación es débil, no "estricta". Igual con "Aleatoric variance remained relatively constant": el CSV muestra aleatoric entre 0.0207 y 0.0597 (rango ×3).
+  - **Terminología:** "confidence_drop_pct" en realidad es la caída de **mAP**, no de confianza; el texto "confidence drops exceeded 40%" mide mAP drop.
+  - **Sin rigor experimental:** COCO128 (128 imágenes) como único dataset; sin variante YOLO (n/s/m), sin imgsz, sin batch size, sin hardware, sin semillas, sin versiones de dependencias; **sin ningún test estadístico** (sin CI, sin p-valor, sin bootstrap, sin N). Sin estudio de ablación. Sin figura ni tabla alguna. **PDF de 2 páginas** (mínimo IEEE 3-6). Sin sección Broader Impact/Ethics. Autoría incompleta (sin "AI Leader & Solutions Architect", sin ORCID, sin enlace `https://github.com/wisrovi/w-cli`). Data & Code apunta al repositorio genérico `https://github.com/wisrovi/` en vez del repo de producción específico, y el comando `docker-compose -f docker-compose.yml up -d` no se verifica como comando real del repo.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+- **Fortalezas:**
+  - La versión `es/main.tex` es una **traducción genuina al español** (no solo el título), cumpliendo parcialmente la política de doble idioma.
+  - Prosa sobria, directa y sin florituras; identifica correctamente los tres ejes técnicos (adversarial, corrupciones, incertidumbre) y sus fundamentos (FGSM, Hendrycks, Gal & Ghahramani).
+  - La licencia dual (PolyForm Noncommercial / AGPLv3) está correctamente declarada.
+  - El script de benchmark existe en el repo de producción y los CSV se copian a `evidencias/`, lo que denota intención de reproducibilidad (aunque el contenido sea sintético).
+  - Los CSV son internamente consistentes (fórmulas coherentes con clean_mAP=0.82) y el nombre de columnas está definido.
+- **Puntos Débiles / Falencias:**
+  - **CRÍTICO — Integridad de datos:** los 3 CSV proceden de fórmulas/`random.uniform()`, no de ejecuciones reales; presentarlos como "strictly executed empirical CSV results" constituye un riesgo de malversación científica.
+  - **CRÍTICO — Sin visuales:** 0 figuras, 0 tablas, 0 diagramas; PDF de 2 páginas (mínimo 3-6).
+  - **CRÍTICO — Bibliografía:** 7 referencias compiladas (por debajo de 8), 5 entradas muertas en el `.bib`, sin citar YOLO/Albumentations/COCO y sin SOTA 2020-2026.
+  - Claims sobre-declarados frente a los datos ("strictly correlated", "relatively constant", "climbed exponentially") y terminología confusa (mAP drop como "confidence drop").
+  - `main.md` (EN y ES) rotos: residuos LaTeX y todas las citas perdidas.
+  - Sin ablación, sin estadística, sin experimental setup completo, sin Broader Impact/Ethics, autoría incompleta, Data & Code apuntando al repo genérico.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+- [ ] **Modificación 1 (Crítica — integridad):** Reescribir `benchmark_robustness.py` para ejecutar inferencia real con YOLO (cargar modelo `.pt` sobre COCO128): (a) FGSM real con gradientes de torch sobre la pérdida de detección, (b) corrupciones reales con Albumentations (GaussianBlur, GaussianNoise, ImageCompression, Rain) con mapeo de severidad explícito, (c) MC Dropout real habilitando dropout en inferencia con T=20 forward passes y descomposición varianza total = epistémica + aleatoriedad. Regenerar los CSV y recomprobar TODAS las cifras del paper contra los datos reales.
+- [ ] **Modificación 2 (Crítica — honestidad):** Si por limitación de cómputo se mantienen datos sintéticos, etiquetarlos explícitamente como "micro-benchmark / simulación dirigida" en el cuerpo y ELIMINAR la frase "strictly executed empirical CSV results". Nunca presentar datos generados como mediciones empíricas.
+- [ ] **Modificación 3 (Crítica — visuales y extensión):** Añadir (a) una tabla `booktabs` con los resultados FGSM por ε, (b) una tabla de corrupciones por severidad, (c) una figura vectorial matplotlib con scatter de confianza vs varianza epistémica/aleatoria (MC Dropout) con ejes y unidades rotulados, y (d) un diagrama Mermaid del pipeline de los 3 evaluadores. Ampliar a 3-6 páginas.
+- [ ] **Modificación 4 (Crítica — bibliografía):** Citar en el cuerpo YOLO (Redmon et al. 2016 o ultralytics), Albumentations (Buslaev et al. 2020) y COCO (Lin et al. 2014); citar o purgar las 5 entradas muertas (`szegedy2014`, `kurakin2017`, `papernot2016`, `guo2017`, `ovadia2019` — usar `ovadia2019can` en Related Work); añadir SOTA 2020-2026 (AutoAttack, RobustBench, trabajos recientes de incertidumbre en detección). Alcanzar 8-20 referencias efectivamente compiladas.
+- [ ] **Modificación 5:** Reconciliar las afirmaciones con los datos reales: reemplazar "strictly correlated", "relatively constant" y "climbed exponentially" por estadísticas verificadas (correlación de Spearman confianza–varianza epistémica, rangos reales de aleatoriedad, no-linealidad real del ASR) y reportar caída de **mAP** (no "confidence") con CI bootstrap y test estadístico (p.ej., Wilcoxon) indicando N.
+- [ ] **Modificación 6:** Especificar Experimental Setup completo: variante YOLO (n/s/m), imgsz, batch size, hardware (GPU/CPU/RAM), semillas, versiones de dependencias, y descripción del dataset (COCO128, N=128, clases). Añadir sección de Ablation Study (p.ej., efecto de T en MC Dropout, efecto de la severidad por corrupción).
+- [ ] **Modificación 7:** Restaurar la sincronización: regenerar `en/main.md` y `es/main.md` limpios (sin comandos LaTeX, con citas y tablas embebidas); corregir `fix.py`; verificar que `en/main.tex` y `es/main.tex` sigan sincronizados y ambos compilen con la secuencia pdflatex→bibtex→pdflatex→pdflatex.
+- [ ] **Modificación 8:** Completar la filiación (William Steve Rodriguez Villamizar — AI Leader & Solutions Architect, ORCID, enlace `https://github.com/wisrovi/w-cli`), añadir sección Broader Impact/Ethics (eficiencia energética/carbono, Shift-Left de seguridad, usos duales) y apuntar Data & Code directamente a `wyoloservice2_production` con comando reproducible verificado y licencia dual.
+
+---
+
+---
+
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-14 08:27:59
+**Artículo evaluado:** `normal_papers/paper_4_crossdomain` ("Cross-Domain Generalization Assessment for Object Detection Models: FID-Based Domain Shift Detection")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (al borde del rechazo por integridad de datos)
+- **Nivel de Innovación:** Bajo-Moderado. La idea (usar FID como proxy sin anotación de degradación mAP por domain shift, combinada con profiling de hardware) es pragmática y tiene mérito aplicado, pero NO es nueva: el uso de FID para medir distancia de dominios y su correlación con degradación de rendimiento ya está explorado en la literatura de domain shift / OOD (p.ej., FID como proxy de transferibilidad, análisis de robustness de domos). El "CrossDomainGeneralizer" es una aplicación directa de FID sobre InceptionV3 sin contribución algorítmética, matemática ni arquitectónica propia; el "ModelComplexityProfiler" reproduce valores teóricos de GFLOPs/latencia/VRAM sin medición real.
+- **Evaluación de Generación por IA / Autenticidad:** 4/10. Prosa sobria y sin buzzwords de LLM en su mayoría, pero con dos fallos de autenticidad críticos: (1) la evidencia "strictly executed empirical CSV results" es **sintética** (verificado en `wyoloservice2_production/benchmarks/benchmark_crossdomain.py`: FID = `random.uniform(30,150)`, mAP drop = fórmula, GFLOPs/VRAM/latencia = fórmulas `(res/640)^2*mult*8.5` etc.; NO se ejecuta YOLO, InceptionV3, NVML ni imágenes); (2) tres referencias del `.bib` (`wang2023domain`, `zhang2024robust`, `chen2023hardware`) son **fabricadas** (verificación web: no existen en TPAMI/WACV/ACM Computing Surveys con esos títulos/autores/páginas).
+
+### 2. Análisis por Subagentes Especializados
+- **Agente A (Originalidad y Detección de IA):** Puntuación 4/10. Sintaxis sobria, frases cortas, sin arco "delve/tapestry"; se detecta una sola palabra de la lista negra del repositorio ("Furthermore" en la Introducción, línea 37 del `main.tex`). Sin embargo, la autenticidad se derrumba por integridad: el claim "strictly executed empirical CSV results" es falso (datos generados por `random.uniform()` y fórmulas). Además, la Tabla 1 del manuscrito **no coincide con el CSV de evidencia**: el paper reporta "Synthetic→Night 142.93 / 35.4%" pero `results_fid_domains.csv` indica `synthetic→real_night = 116.2 / 27.4` (el par 142.93/35.4 corresponde a `real_day→real_night`); y reporta "Real Day→Rain 149.86 / 43.4%" pero el CSV dice `real_day→rain_heavy = 53.85 / 9.3` (el par 149.86/43.4 es `rain_heavy→real_day`). La matriz FID (12 pares) existe, pero el manuscrito selecciona 3 pares y los **etiqueta con dominios incorrectos**. El `generate_plot.py` grafica solo 3 puntos hardcodeados [90.74, 142.93, 149.86], no la correlación de los 12 pares. El `main.md` (EN y ES) está roto: conserva cabecera LaTeX residual (`\IEEEoverridecommandlockouts`, `\kern-.08em`, `T\kern...`), una llave `}` suelta tras el título, y **todas las citas se perdieron** ("Ben-David et al. .").
+
+- **Agente B (Estado del Arte y Bibliografía):** Puntuación 2/10. Fallos críticos:
+  - **3 de 8 referencias compiladas son fabricadas** (verificación en línea): `wang2023domain` (Wang, Li; "Domain adaptation for real-time object detection: A survey...", IEEE TPAMI 45(8) pp.10123-10138, 2023) NO EXISTE con esos autores/título/páginas; `zhang2024robust` (Zhang, Liu; "Robust Edge AI...", WACV 2024 pp.203-212) NO EXISTE en proceedings de WACV 2024; `chen2023hardware` (Chen, Wu; "Hardware-aware NAS for Edge Devices", ACM Computing Surveys 55(10) pp.1-35) NO EXISTE — el survey real de HW-NAS es Benmeziane et al. (IJCAI 2021 / arXiv 2101.09336). Patrón idéntico a `paper_5_statistical`.
+  - **YOLO NO está citado**: `redmon2016you` está en el `.bib` pero **nunca se cita en el cuerpo**, pese a ser el objeto central del estudio. Igual patrón que papers 2 y 3.
+  - **FID mal citado**: se cita Heusel et al. 2017 (correcto para GANs), pero NO se cita la implementación usada ni InceptionV3 (Szegedy et al. 2016) ni las limitaciones del FID (Clean-FID, elección de capa de pooling). No se cita el dataset (COCO) ni la métrica mAP original.
+  - **Estado del arte desactualizado para 2026**: sin trabajos 2021-2026 de domain shift/OOD para detección (p.ej., benchmarks de robustness COCO-O, ObjectNet, trabajos recientes de FID como proxy de transferibilidad), sin referencias de monitoreo de drift en MLOps. De las 13 entradas del `.bib`, **5 quedan muertas sin citar** (`wang2018deep`, `hoffman2018cycada`, `redmon2016you`, `zou2019confidence`, `sun2016deep`).
+
+- **Agente C (Rigor Técnico y Metodología):** Puntuación 2/10. Hallazgos críticos:
+  - **Datos 100% sintéticos:** `benchmark_crossdomain.py` no ejecuta YOLO, InceptionV3, NVML ni procesa ninguna imagen. FID = `random.uniform(30,150)`; mAP drop = `(fid/150)*random.uniform(15,45)`; GFLOPs = `(res/640)**2*mult*8.5`; VRAM = `(res/640)**2*mult*150+200`; latencia = `gflops*0.8+2.0`. Todo derivado de fórmulas. El claim "All hardware measurements were conducted on an NVIDIA RTX 3090" y "using NVML" es **falso**.
+  - **La afirmación clave es contradicha por los propios datos:** "FID exceeding 120 accurately predicts severe mAP drops of over 35%" — pero el CSV contiene `real_night→real_day: FID 126.4, mAP drop 19.5%` (FID>120 con drop <35%), y `real_day→synthetic: FID 108.36, drop 31.9%` (FID<120 con drop cercano a 35%). No hay correlación reportada (sin r, sin R², sin CI, sin p-valor).
+  - **Tabla 1 ≠ CSV** (ver Agente A): pares mal etiquetados.
+  - **Ablación sin evidencia:** el estudio de ablación (100%→42% fallos sin umbral; umbral ≤100 rechaza 38%, fallos <5%) **no tiene CSV de respaldo** (`results_ablation.csv` no existe en `evidencias/`). Cifras sin protocolo ni datos.
+  - **"5,000 randomly selected images per domain" sin sustento:** ningún script procesa imágenes; no se describe el dataset (¿COCO128? ¿qué dominios? sin nombres, sin URLs, sin N real).
+  - Sin Experimental Setup (sin GPU real, variante YOLO n/s/m, imgsz, batch —la batch 32 mencionada no se usa en ningún script—, semillas, versiones).
+  - **PDF de 2 páginas** (mínimo IEEE 3-6). Sin sección Broader Impact/Ethics. Sin figura vectorial (solo `fid_correlation.png` con 3 puntos). Tablas con `\hline` y `\begin{center}` en vez de `booktabs` (aunque el paquete está cargado). `\includegraphics` sin restricción de altura (`height`/`keepaspectratio`). Autoría incompleta (sin "AI Leader & Solutions Architect", sin ORCID, sin enlace `https://github.com/wisrovi/w-cli`). Data & Code apunta al repositorio genérico `https://github.com/wisrovi/` en vez de `wyoloservice2_production` y el comando `docker-compose -f docker-compose.yml up -d` no se verifica. La Conclusión EN no incluye la frase de trabajo futuro con LLM que sí aparece en la versión ES ("El trabajo futuro explorará el uso de generadores LLM"), rompiendo la sincronización EN↔ES.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+- **Fortalezas:**
+  - El problema es real y relevante para MLOps: anticipar degradación de mAP por domain shift sin anotación manual es una necesidad práctica documentada.
+  - La combinación FID + profiling de hardware como "early-warning system" es un flujo aplicado coherente y fácil de comunicar.
+  - `es/main.tex` es una **traducción genuina al español** (no solo el título), cumpliendo parcialmente la política de doble idioma.
+  - La licencia dual (PolyForm / AGPLv3) está declarada y el paquete `booktabs` está cargado (aunque no usado).
+  - La fórmula FID en la Ecuación (1) está correctamente escrita.
+- **Puntos Débiles / Falencias:**
+  - **CRÍTICO — Integridad de datos:** evidencia 100% sintética presentada como "strictly executed empirical CSV results"; Tabla 1 con pares dominio mal etiquetados vs CSV.
+  - **CRÍTICO — Referencias fabricadas:** 3 de 8 compiladas (`wang2023domain`, `zhang2024robust`, `chen2023hardware`) no existen; YOLO sin citar; 5 entradas muertas en el `.bib`.
+  - **CRÍTICO — Ablación sin evidencia:** cifras de fallo (42%, 38%, <5%) sin CSV ni protocolo.
+  - Claim "FID>120 → drop>35%" contradicho por el propio CSV (126.4→19.5%); sin correlación cuantificada.
+  - 2 páginas (mínimo 3-6), sin Broader Impact/Ethics, sin figure folder, sin figura vectorial, tablas no-booktabs.
+  - `main.md` EN/ES rotos (residuos LaTeX, citas perdidas); desincronización EN↔ES en la Conclusión.
+  - Experimental setup inexistente; "5,000 imágenes" sin respaldo; sin estadística (sin CI, sin r).
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+- [ ] **Modificación 1 (Crítica — integridad):** Reescribir `benchmark_crossdomain.py` para: (a) computar FID REAL con InceptionV3 (vía torchmetrics/pytorch-fid) sobre imágenes reales de dominios concretos (p.ej., sintético tipo simulado vs day/night/rain de un benchmark público como Cityscapes→FoggyCityscapes, BDD100K, o COCO-O), (b) medir mAP real con YOLO (cargar `.pt`, variante n/s/m, imgsz fijo), (c) medir VRAM con NVML real y latencia con GPU real (RTX 3090 declarada). Regenerar los CSV y recomprobar TODAS las cifras del paper contra los datos reales. Eliminar el claim "strictly executed" si se mantienen datos sintéticos y etiquetarlos como micro-benchmark dirigido.
+- [ ] **Modificación 2 (Crítica — honestidad de la Tabla 1):** Reconciliar la Tabla 1 con `results_fid_domains.csv`: corregir los pares fuente→objetivo (Synthetic→Night debe ser 116.2/27.4; Real Day→Rain 53.85/9.3, etc.) o regenerar los datos desde cero. Reportar la matriz FID completa (12 pares) o una submatriz claramente etiquetada, nunca pares mal atribuidos.
+- [ ] **Modificación 3 (Crítica — bibliografía):** Eliminar las 3 referencias fabricadas (`wang2023domain`, `zhang2024robust`, `chen2023hardware`) y sustituirlas por fuentes reales: Benmeziane et al. (IJCAI 2021, HW-NAS survey), Szegedy et al. 2016 (InceptionV3), Redmon et al. 2016 (YOLO), Lin et al. 2014 (COCO), y trabajos 2021-2026 reales de domain shift/FID como proxy (verificados en arXiv/IEEE Xplore). Citar o purgar las 5 entradas muertas. Alcanzar 8-20 referencias sólidas efectivamente citadas.
+- [ ] **Modificación 4 (Crítica — evidencia de ablación):** Generar `results_ablation.csv` con el estudio de ablación real (deploy con/sin umbral FID sobre los dominios evaluados), con protocolo (número de despliegues, definición de "failure rate") y cifras trazables; o retirar el claim del 42%/38%/<5%.
+- [ ] **Modificación 5 (Crítica — claims):** Reemplazar "FID exceeding 120 accurately predicts >35%" por una correlación cuantificada (Pearson/Spearman sobre los 12 pares, con CI bootstrap y N explícito) y reportar los contraejemplos del propio CSV (126.4→19.5%). Justificar el umbral 120 empíricamente (p.ej., ROC sobre los pares).
+- [ ] **Modificación 6:** Añadir Experimental Setup completo: variante YOLO (n/s/m), imgsz, batch size, GPU/CUDA, semillas, versiones de dependencias, dataset con nombre y N real por dominio (y de dónde vienen las imágenes). Eliminar o justificar la afirmación de "5,000 imágenes".
+- [ ] **Modificación 7:** Ampliar a 3-6 páginas: añadir sección Broader Impact/Ethics (eficiencia energética/carbono al evitar deployments fallidos, Shift-Left de seguridad, usos duales), una figura vectorial matplotlib/pdf de la matriz FID completa con ejes/leyendas rotuladas, tablas `booktabs`, diagrama Mermaid del pipeline, filiación completa (AI Leader & Solutions Architect, ORCID, enlace wisrovi-suit), y enlace directo a `wyoloservice2_production` con comando reproducible verificado y licencia dual.
+- [ ] **Modificación 8:** Restaurar la sincronización: regenerar `en/main.md` y `es/main.md` limpios (sin residuos LaTeX, con tablas/figuras/citas embebidas), corregir `fix.py` (que elimina tablas, figuras y citas), y re-sincronizar EN↔ES (alinear la frase de trabajo futuro con LLM entre ambas versiones). Verificar compilación con pdflatex→bibtex→pdflatex→pdflatex.
+
+---
+
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-14 08:42:02
+**Artículo evaluado:** `normal_papers/paper_5_statistical` ("Statistical Rigor in YOLO Model Evaluation: Bootstrap Confidence Intervals and Failure Mode Analysis") — Re-evaluación (Round 14, ciclo freebuff)
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Inicial
+
+**Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (regresión de reproducibilidad sobre la ronda 13)
+**Nivel de Innovación:** Bajo-Moderado (integración MLOps de bootstrap + permutación pareada + taxonomía de fallos; sin novedad conceptual)
+**Evaluación de Generación por IA / Autenticidad:** 6/10 - La prosa es sobria, activa y sin buzzwords de LLM, la bibliografía (9 citas) es real y verificada, y la ablación 4.9% valida el α nominal. Sin embargo, una **verificación empírica por ejecución en esta sesión detecta una regresión crítica**: al ejecutar `benchmark_statistical.py` (el script citado en Data & Code) con el venv declarado, los 3 CSV regenerados **NO coinciden** con los CSV comprometidos en `evidencias/` ni con las tablas del manuscrito: la tabla de bootstrap sale mAP50 0.605/0.7585/0.7813 (no 0.5615/0.6498/0.6508), con CI degenerados [0.0,0.0] y p=1.0 para YOLO-s/m; la tabla de failure modes sale 4235/1/1/1 (no 1/1/1/32); y la ablación sale 0.0%/0.0% (no 49.5%/4.9%). El manuscrito y los CSV comprometidos **siguen internamente coherentes entre sí**, pero el script no los reproduce, y la Sección Data & Code afirma "strictly executed empirical CSV results" y "To reproduce the metrics exactly, execute python benchmark_statistical.py locally" — promesa que no se cumple en el entorno verificado.
+
+**Notas de mejora críticas:**
+1. El script `benchmark_statistical.py` no regenera los CSV comprometidos; sus tres tablas derivan de un fallback degenerado (CI [0,0], p=1.0, FP=4235) cuando no encuentra GT; hay que arreglar la extracción de scores por imagen y confirmar que los CSV son OUTPUT del script.
+2. Eliminar la frase "strictly executed empirical CSV results" si no se garantiza que el script reproduzca exactamente los CSV comprometidos.
+3. Reconciliar los abstracts `.tex`↔`.md` (aún divergentes en ambos idiomas) y el año de Bouthillier (2023 en texto vs 2021 en bib).
+
+---
+
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-14 08:50:30
+**Artículo evaluado:** `normal_papers/paper_5_statistical` ("Statistical Rigor in YOLO Model Evaluation: Bootstrap Confidence Intervals and Failure Mode Analysis") — Re-evaluación (Round 15, ciclo freebuff)
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Inicial
+
+**Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (al borde del rechazo por integridad metodológica)
+**Nivel de Innovación:** Bajo-Moderado (integración MLOps de bootstrap + permutación pareada + taxonomía de fallos; sin novedad conceptual frente a Efron/Dietterich/Dror/Bouthillier)
+**Evaluación de Generación por IA / Autenticidad:** 5/10 - La prosa es sobria y sin buzzwords de LLM, la estructura IEEE es completa (3 páginas, autor con rol, Ethics, Limitations), y la coincidencia CSV↔tablas quedó restaurada. Sin embargo, **la "reparación" de la regresión de la ronda 14 se hizo eliminando todo el cómputo**: `benchmark_statistical.py` ya no ejecuta bootstrap (B=1000), permutación, ni inferencia YOLO; es un script que **escribe los 3 CSV con literales hardcodeados** (CIs, p-valores, 0.495±0.010/0.049±0.003 y 1/1/1/32). La Sección IV aún afirma "experiments were conducted on COCO128... NVIDIA RTX 3090... fully automated using benchmark_statistical.py", que el script no realiza. Además, el año de Bouthillier se cambió en el `.bib` de 2021 a **2023** para cuadrar con el texto, pero el artículo real es de MLSys **2021**: la cita ahora es factualmente incorrecta. Y los `main.md` (EN/ES) quedaron desincronizados de los `.tex` en las mismas dos frases ("strictly executed empirical" vs "controlled micro-benchmark simulation"; Bouthillier 2021 vs 2023).
+
+**Notas de mejora críticas:**
+1. El script no computa NADA: implementar bootstrap/permutación/failure-analysis reales sobre predicciones YOLO de COCO128, o reformular TODO el manuscrito como propuesta metodológica con simulación declarada y eliminar las afirmaciones empíricas ("COCO128", "RTX 3090", "empirically demonstrating").
+2. Corregir Bouthillier a 2021 en texto, `.bib` y `.md` (MLSys 2021, Proc. of ML Systems, vol. 3).
+3. Re-sincronizar `.md`↔`.tex` en ambos idiomas (Data & Code Availability y año Bouthillier).
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 5/10. La prosa sigue siendo sobria, activa y sin el arco narrativo "delve/tapestry"; no hay buzzwords de la lista negra del repositorio y la estructura es completa (abstract, keywords, Introducción, Related Work, Metodología, Setup, Resultados, Ablación, Limitations, Ethics, Conclusiones, Data & Code, Acknowledgments). La novedad sigue siendo de integración aplicada, no conceptual (Efron, Dietterich, Dror y Bouthillier ya establecen bootstrap/permutación/varianza; el propio texto lo admite en Limitations). El marcador de autenticidad decisivo es de **integridad metodológica, no de sintaxis**: el manuscrito afirma experimentos reales ("YOLO-n ... empirically demonstrating the method's robustness", "experiments were conducted on the COCO128 dataset", "NVIDIA RTX 3090 GPU (CUDA 12.1)", "500 simulated A/B deployment trials across 10 independent seeds") que el script de reproducción no ejecuta en absoluto. Las promesas redondas persisten ("mathematically rigorous framework", "guarantee reliable deployments", "definitively justifying its deployment") y la narrativa no contiene ninguna imperfección de ingeniería real (sin semillas inestables, sin OOM, sin fricción de integración), pese a la política anti-IA del repositorio.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 5/10. **REGresión detectada:** en esta ronda el `.bib` (EN y ES) cambió `bouthillier2023accounting` de `year={2021}` a `year={2023}` para que coincidiera con el texto "Recent advances in 2023". Verificación en línea: el artículo real es "Accounting for Variance in Machine Learning Benchmarks" (Xavier Bouthillier et al.), **MLSys 2021**, Proceedings of Machine Learning and Systems, vol. 3, pp. 747–763 (arXiv:2103.03098, proceedings.mlsys.org/paper_files/paper/2021/...). El año correcto es 2021; el cambio hizo la cita **factualmente falsa**. La corrección debía ser inversa (texto "2023" → "2021"), no alterar el bib. Las otras 8 citas son reales y verificables (Redmon 2016, Salzberg 1997, Dietterich 1998, Dror 2018, Efron & Tibshirani 1993, Moore/FiftyOne, Shrivastava 2016, Bosma MIDL/PMLR 227:1269-1287 2024); 9 entradas compiladas, sin `[??]`, sin warnings BibTeX, dentro del rango IEEE 8-20. Detalles menores: clave `efron1994introduction` con año 1993; `moore2021fiftyone` como `@misc` informal; falta una referencia del dataset COCO128/COCO (Lin et al. 2014) y de Ultralytics/YOLOv8 para las variantes n/s/m.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 3/10. **Hallazgo crítico — el script ya no computa resultados:**
+- `benchmark_statistical.py` (working tree, 08:49) es un script de 45 líneas que construye tres `pd.DataFrame` con **literales hardcodeados** y los escribe a `evidencias/`. No carga YOLO, no ejecuta `model.val()`, no calcula bootstrap (B=1000), no ejecuta permutación pareada, no corre los "500 A/B trials × 10 seeds" de la ablación, ni deriva los conteos de fallo por IoU. Su propio `print` lo admite: "DONE. Simulated micro-benchmark evidence generated successfully."
+- Comparación con la ronda 14: el script previo (commit HEAD) SÍ ejecutaba `YOLO(...).val(coco128.yaml)` y extraía `metrics.box.map50` real, pero con un fallback degenerado que producía CI=[0,0], p=1.0 y FP=4235 cuando no hallaba `predictions.json`. La "solución" de esta ronda eliminó por completo la parte real: ahora los CSV "reproducen" las tablas porque **todo es literal**.
+- **Contradicción interna del manuscrito:** la Sección IV afirma experimentos sobre COCO128 con batch 16, imgsz 640 y RTX 3090 automatizados con `benchmark_statistical.py`, y la Sección V-A habla de resultados "empíricos", mientras la Sección Data & Code fue suavizada a "controlled micro-benchmark simulation CSV results" (y el print del script dice "Simulated"). Un revisor que ejecute el script verá que no hay GPU, ni COCO128, ni inferencia: la reproducibilidad es tautológica (vuelve a escribir los literales).
+- **CSV↔tablas (consistencia interna) SÍ restaurada:** `results_bootstrap_mAP.csv` (0.5615/0.5615/0.6498/0.6508, CIs y p=1.0/0.0/0.0) coincide con la Tabla I; `results_ablation.csv` (0.495±0.010 / 0.049±0.003) coincide con la ablación; `results_failure_modes.csv` (1/1/1/32) coincide con la Tabla II. Pero esta coincidencia es trivial: los valores no provienen de ningún cómputo. La ablación 4.9% es teóricamente coherente con α=0.05, y el argumento de permutación pareada (mejor que el paired-bootstrap sobre-afirmante de Bosma) sigue siendo metodológicamente correcto — pero solo como propuesta, no como resultado medido.
+- **Persistente — Metodología↔código:** la Sección III sigue describiendo el bootstrap sobre un "per-image confidence proxy" y la permutación pareada; nada de eso existe en el script.
+- **Persistente — Failure Modes:** los conteos 1/1/1/32 son literales; el propio CSV dice "Derived from confidence > 0.9 without matching GT" mientras la Tabla II los describe como "Background clutter / Heavy occlusion / Extreme aspect ratios / Visual similarity" — descripciones que no corresponden al mecanismo declarado.
+- **Positivo:** PDF IEEE de 3 páginas en ambos idiomas (dentro del rango 3-6), `pipeline.jpg` real (1376×768) con dimensiones acotadas, Ethics y Limitations honestas, sin ORCID fabricado, compilación limpia.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Estructura IEEE completa y dentro del rango de páginas (3, ambos idiomas): abstract, keywords, autor con rol ("AI Leader & Solutions Architect"), figura, tablas, Ethics, Limitations, Data & Code con licencia dual y comando de reproducción.
+- 8 de 9 referencias verificadas y reales; compilación BibTeX limpia sin entradas muertas ni `[??]`.
+- Consistencia interna CSV↔tablas restaurada (Tabla I, Tabla II y ablación coinciden con los 3 CSV).
+- La hipótesis estadística de fondo es correcta y honesta (permutación pareada vs paired-bootstrap sobre-afirmante de Bosma; ablación 4.9% coherente con α=0.05), aunque hoy solo esté formulada como propuesta.
+- Sin ORCID fabricado; sincronización abstract `.tex`↔`.md` corregida; licencia dual declarada.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Integridad metodológica:** `benchmark_statistical.py` escribe literales hardcodeados; NO ejecuta bootstrap, permutación, inferencia YOLO ni la simulación A/B. Los resultados cuantitativos del paper no tienen base computacional.
+- **CRÍTICO — Contradicción interna:** la Sección IV/V presentan los números como experimentos reales (COCO128, RTX 3090, "empirically demonstrating"), mientras Data & Code los etiqueta como "controlled micro-benchmark simulation". Las dos afirmaciones no pueden coexistir en una versión camera-ready.
+- **CRÍTICO — Bouthillier ahora incorrecto:** año 2023 en `.bib`/texto; el artículo real es MLSys 2021. Se "cuadró" la cita al texto erróneo en lugar de corregir el texto.
+- **CRÍTICO menor — Desincronización `.md`↔`.tex`:** `en/main.md` y `es/main.md` conservan "strictly executed empirical CSV results" y "Bouthillier 2021" mientras los `.tex` dicen "controlled micro-benchmark simulation" y "2023". Ambas lenguas violan la sincronización estricta en las mismas dos frases.
+- Tablas con `\hline`/`\begin{center}` en vez del estilo `booktabs` exigido por la política del repositorio; falta cita de COCO (Lin 2014) y de Ultralytics/YOLOv8.
+- Descripciones de la Tabla II no coinciden con las del CSV de failure modes.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — integridad, disyuntiva de diseño):** Reconstruir `benchmark_statistical.py` para que compute realmente: (a) bootstrap no paramétrico B=1000 sobre el AP50 por imagen (o el proxy declarado) de la validación YOLO real sobre COCO128, (b) permutación pareada con estadístico y número de permutaciones explícitos, (c) simulación A/B real (500 trials × 10 seeds con `np.random.seed` fija documentada) que produzca el 49.5%±1.0% y 4.9%±0.3%, y (d) derivación de failure modes desde IoU-vs-GT real. Si el coste computacional lo impide, reformular TODO el manuscrito como propuesta metodológica + micro-benchmark simulado declarado: eliminar "COCO128"/"RTX 3090"/"empirically demonstrating"/"fully automated using benchmark_statistical.py" y reemplazarlos por "simulation study". Nunca mezclar ambas narrativas.
+- [ ] **Modificación 2 (Crítica — cita):** Revertir `bouthillier2023accounting` a `year={2021}` y cambiar el texto (EN/ES) de "Recent advances in 2023" / "Avances recientes en 2023" a 2021, con venue completo (Proc. of Machine Learning and Systems, vol. 3, MLSys 2021).
+- [ ] **Modificación 3 (Crítica — sincronización):** Regenerar `en/main.md` y `es/main.md` a partir de los `.tex` vigentes para que Data & Code Availability y el año de Bouthillier sean idénticos en ambos idiomas y formatos. Recompilar pdflatex→bibtex→pdflatex→pdflatex y verificar que los PDF reflejan el texto final.
+- [ ] **Modificación 4:** Alinear la Tabla II con el CSV de failure modes (descripciones idénticas o mecanismo declarado coherente), o regenerar ambos con un análisis IoU-vs-GT real.
+- [ ] **Modificación 5 (estilo):** Sustituir las tablas `\hline` por el estilo `booktabs` (ya cargado), y añadir citas de COCO (Lin et al. 2014) y Ultralytics/YOLOv8 (Jocher 2023) al dataset/arquitectura.
+- [ ] **Modificación 6 (prosa anti-IA):** Reemplazar "mathematically rigorous framework", "guarantee reliable deployments" y "definitively justifying its deployment" por enunciados medidos, y añadir una imperfección de ingeniería real (p.ej. variabilidad de CI entre semillas, coste de las 10,000 permutaciones, o el reto de alinear `predictions.json` con `image_id`) para reforzar la autenticidad narrativa.
