@@ -46,7 +46,7 @@ El propuesto \textit{OutlierFailureAnalyzer} se integra como el paso 13 en el pi
 2) Falsos negativos donde los objetos reales fueron omitidos por completo.
 3) Clasificaciones erróneas con alta superposición topológica.
 
-El analizador aísla estas muestras atípicas, calcula la disparidad de Intersección sobre Unión (IoU), y almacena los recortes (crops) y metadatos en un formato estructurado. Esta extracción automatizada sirve como un bucle de retroalimentación directo, permitiendo un aumento de datos dirigido en iteraciones de entrenamiento posteriores sin intervención manual.
+El analizador aísla estas muestras atípicas, calcula la disparidad de Intersección sobre Unión (IoU) utilizando un umbral estricto de $0.5$ (donde las predicciones con $\text{IoU} < 0.5$ se procesan como falsos positivos de fondo o de localización), y almacena los recortes (crops) y metadatos en un formato estructurado. Esta extracción automatizada sirve como un bucle de retroalimentación directo, permitiendo un aumento de datos dirigido en iteraciones de entrenamiento posteriores sin intervención manual.
 
 \section{Resultados y Discusión}
 Evaluamos el pipeline en un conjunto de datos industrial personalizado. El modelo inicial YOLOv8n exhibió una tasa de falsos positivos del 12\% en fondos visualmente desordenados. El \textit{OutlierFailureAnalyzer} identificó con éxito 450 imágenes candidatas. La reintegración de estas muestras redujo la tasa de falsos positivos al 3.5\% en la iteración de entrenamiento subsiguiente, sin requerir cambios en la arquitectura del modelo.

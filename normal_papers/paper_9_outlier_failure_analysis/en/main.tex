@@ -45,7 +45,7 @@ The proposed \textit{OutlierFailureAnalyzer} is integrated as step 13 in the \te
 2) False negatives where ground-truth objects were entirely missed.
 3) Misclassifications with high topological overlap.
 
-The analyzer isolates these outlier samples, calculates the Intersection over Union (IoU) disparity, and stores the crops and metadata in a structured format. This automated extraction serves as a direct feedback loop, allowing for targeted dataset augmentation (hard-negative inclusion) in subsequent training iterations without manual intervention.
+The analyzer isolates these outlier samples, calculates the Intersection over Union (IoU) disparity using a strict threshold of $0.5$ (where predictions with $\text{IoU} < 0.5$ are processed as background or localization false positives), and stores the crops and metadata in a structured format. This automated extraction serves as a direct feedback loop, allowing for targeted dataset augmentation (hard-negative inclusion) in subsequent training iterations without manual intervention.
 
 \section{Results \& Discussion}
 We evaluated the pipeline on a custom industrial dataset. The initial YOLOv8n model exhibited a 12\% false positive rate on visually cluttered backgrounds. The \textit{OutlierFailureAnalyzer} successfully identified 450 hard-negative candidate images. Reintegrating these samples through the automated feedback loop reduced the false positive rate to 3.5\% in the subsequent training iteration, without requiring any changes to the model architecture.

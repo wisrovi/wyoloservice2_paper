@@ -602,3 +602,26 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 - [x] **Modificación 1:** Terminología arquitectónica corregida.
 - [x] **Modificación 2:** Mención de datos empíricos completada.
 - **Conclusión:** El manuscrito cumple con todos los estándares y es apto para publicación.
+
+---
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-14 08:10:00
+**Artículo evaluado:** paper_9_outlier_failure_analysis
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+- **Veredicto:** REVISIÓN MENOR
+- **Nivel de Innovación:** Alto
+- **Evaluación de Generación por IA / Autenticidad:** Redacción excelente, pero falta especificar un hiperparámetro crítico.
+
+### 2. Análisis por Subagentes Especializados
+- **Agente A (Originalidad y Detección de IA):** El enfoque de Data-Centric AI aplicado a minería de falsos positivos en YOLO es muy relevante hoy en día.
+- **Agente B (Estado del Arte y Bibliografía):** Las citas a Redmon, Jocher y Ng son adecuadas y bien contextualizadas.
+- **Agente C (Rigor Técnico y Metodología):** Los 450 modos de fallos críticos extraídos son una métrica sólida, pero no se menciona el umbral exacto de IoU utilizado para separar los falsos positivos (Background) de las detecciones de localización. 
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+- **Fortalezas:** Automatización de un cuello de botella clásico en Data-Centric AI (curación de datos en edge).
+- **Puntos Débiles / Falencias:** Falta especificar el umbral de IoU empleado en el módulo `OutlierFailureAnalyzer`.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+- [ ] **Modificación 1:** Añadir una oración en la Sección II indicando que la disparidad de IoU utiliza un umbral de $0.5$ (IoU $< 0.5$ se procesan como falsos positivos de fondo/localización).
