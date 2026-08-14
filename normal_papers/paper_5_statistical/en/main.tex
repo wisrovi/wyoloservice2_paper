@@ -37,10 +37,10 @@ Object detection architectures, notably the YOLO family, are typically evaluated
 
 Furthermore, aggregate metrics obscure the specific failure modes of a model. A model might achieve an 85\% mAP while systematically failing to detect heavily occluded objects, a vulnerability that could be catastrophic in autonomous driving or medical imaging. 
 
-This paper introduces a fully automated post-training pipeline that addresses these deficiencies. By calculating 95\% Bootstrap Confidence Intervals and conducting an automated failure mode analysis, we provide a mathematically rigorous framework for model validation prior to deployment.
+This paper introduces a fully automated post-training pipeline that addresses these deficiencies. By calculating 95\% Bootstrap Confidence Intervals and conducting an automated failure mode analysis, we provide a measured framework for model validation prior to deployment.
 
 \section{Related Work}
-The necessity of statistical significance testing in machine learning was highlighted by Dietterich \cite{dietterich1998approximate} and further formalized for deep learning by Dror et al. \cite{dror2018hitchhiker}. The use of Bootstrap resampling \cite{efron1994introduction} for computing confidence intervals is well-established in traditional statistics but remains underutilized in deep learning benchmarks. For failure mode analysis, tools like FiftyOne \cite{moore2021fiftyone} and methodologies for hard-negative mining \cite{shrivastava2016training} have demonstrated the value of data-centric debugging over pure algorithmic tuning. Recent advances in 2023 \cite{bouthillier2023accounting} emphasize the critical need to account for variance in deep learning evaluations to prevent reproducibility crises.
+The necessity of statistical significance testing in machine learning was highlighted by Dietterich \cite{dietterich1998approximate} and further formalized for deep learning by Dror et al. \cite{dror2018hitchhiker}. The use of Bootstrap resampling \cite{efron1994introduction} for computing confidence intervals is well-established in traditional statistics but remains underutilized in deep learning benchmarks. For failure mode analysis, tools like FiftyOne \cite{moore2021fiftyone} and methodologies for hard-negative mining \cite{shrivastava2016training} have demonstrated the value of data-centric debugging over pure algorithmic tuning. Recent advances in 2021 \cite{bouthillier2021accounting} emphasize the critical need to account for variance in deep learning evaluations to prevent reproducibility crises.
 
 \section{Methodology}
 
@@ -57,25 +57,25 @@ To quantify the variance in the mAP metric without requiring a separate test set
 We designed a heuristic \texttt{OutlierFailureAnalyzer} to bin predictions into failure modes. Without explicit IoU-vs-GT matching in this pass, counts are derived from confidence thresholds and re-scaled: extreme confidences ($> 0.9$) without matching semantics act as a proxy for False Positives, very low confidences ($< 0.3$) indicate Missed Detections (FN), and intermediate scores represent Bounding Box Regression errors ($> 0.5$) or Class Confusion ($< 0.5$).
 
 \section{Experimental Setup}
-All experiments were conducted on the COCO128 dataset ($N=128$ validation images) using a batch size of 16 and an input resolution (\texttt{imgsz}) of 640. Profiling and inference operations were executed on an NVIDIA RTX 3090 GPU (CUDA 12.1). The evaluation pipeline was fully automated using \texttt{benchmark\_statistical.py}.
+All experiments were conducted on the COCO128 dataset \cite{lin2014microsoft} ($N=128$ validation images) using a batch size of 16 and an input resolution (\texttt{imgsz}) of 640. Profiling and inference operations were executed on an NVIDIA RTX 3090 GPU (CUDA 12.1). The evaluation pipeline was fully automated using \texttt{benchmark\_statistical.py}.
 
 \section{Experimental Results}
 
 \subsection{Statistical Significance of mAP Gains}
-We evaluated three YOLO variants (YOLO-n, YOLO-s, YOLO-m) against a standard YOLO-baseline \cite{redmon2016you}. As shown in Table \ref{tab:bootstrap}, we adopt the permutation $p$-value ($p < 0.05$) over mAP50 as the primary decision criterion, similar to principles discussed by Salzberg \cite{salzberg1997comparing}. YOLO-n (which served as an architectural control equivalent to the baseline) yielded $p = 1.0$, empirically demonstrating the method's robustness to false positives. YOLO-m demonstrated an unambiguous improvement ($p < 0.0001$), definitively justifying its deployment.
+We evaluated three YOLO variants (YOLO-n, YOLO-s, YOLO-m) against a standard YOLO-baseline \cite{redmon2016you, jocher2023ultralytics}. As shown in Table \ref{tab:bootstrap}, we adopt the permutation $p$-value ($p < 0.05$) over mAP50 as the primary decision criterion, similar to principles discussed by Salzberg \cite{salzberg1997comparing}. YOLO-n (which served as an architectural control equivalent to the baseline) yielded $p = 1.0$, empirically demonstrating the method's robustness to false positives. YOLO-m demonstrated an unambiguous improvement ($p < 0.0001$), providing evidence for its deployment.
 
 \begin{table}[htbp]
 \caption{Bootstrap 95\% CI and Significance on mAP50 ($B=1000$)}
 \begin{center}
-\begin{tabular}{|c|c|c|c|}
-\hline
+\begin{tabular}{lccc}
+\toprule
 \textbf{Model} & \textbf{mAP50} & \textbf{95\% CI} & \textbf{$p$-value} \\
-\hline
-YOLO-baseline & 0.5615 & [0.4954, 0.6260] & - \\
-YOLO-n & 0.5615 & [0.5002, 0.6262] & 1.0000 \\
-YOLO-s & 0.6498 & [0.5748, 0.7225] & $<$0.0001 \\
-YOLO-m & 0.6508 & [0.5783, 0.7206] & $<$0.0001 \\
-\hline
+\midrule
+YOLO-baseline & 0.6050 & [0.5791, 0.6303] & - \\
+YOLO-n & 0.6050 & [0.5791, 0.6303] & 1.0000 \\
+YOLO-s & 0.7585 & [0.7329, 0.7833] & $<$0.0001 \\
+YOLO-m & 0.7813 & [0.7595, 0.8045] & $<$0.0001 \\
+\bottomrule
 \end{tabular}
 \label{tab:bootstrap}
 \end{center}
@@ -87,31 +87,31 @@ The \texttt{OutlierFailureAnalyzer} parsed the validation set using confidence b
 \begin{table}[htbp]
 \caption{Heuristic Taxonomy (COCO128, $N=128$)}
 \begin{center}
-\begin{tabular}{|c|c|c|}
-\hline
+\begin{tabular}{lcl}
+\toprule
 \textbf{Failure Mode} & \textbf{Count} & \textbf{Description} \\
-\hline
-False Positives & 1 & Background clutter \\
-Missed Detections & 1 & Heavy occlusion \\
-Box Regression & 1 & Extreme aspect ratios \\
-Class Confusion & 32 & Visual similarity \\
-\hline
+\midrule
+False Positives & 22 & Derived from confidence $>$ 0.85 \\
+Missed Detections & 4240 & Derived from confidence $<$ 0.3 \\
+Box Regression & 32 & Derived from mid confidence 0.5-0.8 \\
+Class Confusion & 45 & Residual cases \\
+\bottomrule
 \end{tabular}
 \label{tab:failure}
 \end{center}
 \end{table}
 
 \subsection{Ablation Study}
-To validate the Bootstrap mechanism, we conducted an ablation study via 500 simulated A/B deployment trials across 10 independent seeds, where the baseline and candidate model shared identical population distributions. Relying solely on point estimates of mAP50 resulted in a $49.5\%\pm1.0\%$ false positive rate. Implementing the 95\% CI gating ($p < 0.05$) reduced this measured rate to $4.9\%\pm0.3\%$. This rate is fully consistent with the nominal Type I error rate ($\alpha = 0.05$).
+To validate the Bootstrap mechanism, we conducted an ablation study via 500 simulated A/B deployment trials across 10 independent seeds, where the baseline and candidate model shared identical population distributions. Relying solely on point estimates of mAP50 resulted in a $49.8\%$ false positive rate. Implementing the 95\% CI gating ($p < 0.05$) reduced this measured rate to $5.0\%$. This rate is fully consistent with the nominal Type I error rate ($\alpha = 0.05$).
 
 \subsection{Limitations}
-A primary limitation of this study is that applying bootstrap resampling to a single validation set exclusively bounds the epistemic uncertainty derived from finite sample sizes. As highlighted by Bosma et al. \cite{bosma2024statistical}, this approach does not capture the variance inherent in re-training deep learning models (e.g., stochastic weight initialization or data shuffling). Future work should combine resampling inference with model ensembles to fully account for training variance. All metrics explicitly denote mAP50.
+A primary limitation of this study is that applying bootstrap resampling to a single validation set exclusively bounds the epistemic uncertainty derived from finite sample sizes. As highlighted by Bosma et al. \cite{bosma2024statistical}, this approach does not capture the variance inherent in re-training deep learning models (e.g., stochastic weight initialization or data shuffling). Future work should combine resampling inference with model ensembles to fully account for training variance. All metrics explicitly denote mAP50. A notable engineering challenge encountered during implementation was aligning the absolute coordinates from \texttt{predictions.json} with the normalized COCO labels during metric extraction, which required falling back to confidence-based heuristics for failure mode categorization.
 
 \section{Broader Impact and Ethics}
 The automated reporting of statistical confidence bounds heavily mitigates the risk of deploying overconfident models in critical infrastructure (e.g., healthcare or autonomous navigation). Ethically, by identifying systemic failure modes systematically, practitioners can avoid algorithmic bias toward underrepresented or difficult visual domains, ensuring a safer and more transparent integration of AI.
 
 \section{Conclusion}
-This paper establishes a rigorous statistical framework for YOLO model evaluation. By shifting the paradigm from single-point mAP estimates to Bootstrap Confidence Intervals and systematic failure categorization, we provide MLOps teams with mathematically sound tools to guarantee reliable deployments and targeted dataset refinement.
+This paper establishes a rigorous statistical framework for YOLO model evaluation. By shifting the paradigm from single-point mAP estimates to Bootstrap Confidence Intervals and systematic failure categorization, we provide MLOps teams with mathematically sound tools to support reliable deployments and targeted dataset refinement.
 
 \section*{Data and Code Availability}
 Scripts and their strictly executed empirical CSV results are published in the \texttt{evidencias/} folder of this paper. This ecosystem operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). The source code is available on GitHub at \url{https://github.com/wisrovi/wyoloservice2_production}. To reproduce the metrics exactly, execute \texttt{python benchmark\_statistical.py} locally.
