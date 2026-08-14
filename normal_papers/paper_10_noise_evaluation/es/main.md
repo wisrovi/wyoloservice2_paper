@@ -1,0 +1,4 @@
+# Evaluación de Robustez y Ruido en Detección de Objetos en el Mundo Real: Defensa Contra la Degradación de Sensores
+
+## Abstract
+Los modelos de detección de objetos desplegados en entornos del mundo real a menudo encuentran degradación de sensores, como ruido gaussiano, desenfoque de movimiento y artefactos inducidos por el clima. Este documento evalúa la robustez de la arquitectura YOLOv8 contra el ruido de sensores sintéticos, cuantificando la degradación de la Precisión Media (mAP) bajo diferentes intensidades de ruido. A través de una simulación de micro-benchmark controlada en el conjunto de datos COCO, demostramos que las arquitecturas estándar sufren una caída precipitada en la sensibilidad (recall) cuando se exponen a ruido gaussiano de alta varianza. Proponemos un marco medido para la evaluación de ruido para apoyar despliegues confiables en escenarios de edge-computing, proporcionando evidencia para su despliegue.

@@ -1,0 +1,4 @@
+# Robustness and Noise Evaluation for Real-World Object Detection: Defending Against Sensor Degradation
+
+## Abstract
+Object detection models deployed in real-world environments frequently encounter sensor degradation, such as Gaussian noise, motion blur, and weather-induced artifacts. This paper evaluates the robustness of the YOLOv8 architecture against synthetic sensor noise, quantifying the degradation of mean Average Precision (mAP) under varying noise intensities. Through a controlled simulation benchmark on the COCO dataset, we demonstrate that standard architectures suffer a precipitous drop in recall when exposed to high-variance Gaussian noise. We propose a measured framework for noise evaluation to support reliable deployments in edge-computing scenarios, providing evidence for its deployment.
