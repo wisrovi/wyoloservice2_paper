@@ -1,3 +1,0 @@
-gating_mechanism,trials,theoretical_type_I_error,measured_false_positive_rate,status
-Single-Point mAP50,500,-,52.0%,Unreliable (Coin flip)
-95% CI (p < 0.05),500,0.05,5.2%,Consistent with nominal alpha

@@ -1,5 +1,0 @@
-failure_mode,count,description
-False Positives,22,Derived from confidence > 0.85
-Missed Detections (FN),4240,Derived from confidence < 0.3
-Bounding Box Regression,32,Derived from mid confidence 0.5-0.8
-Class Confusion,45,Residual cases
