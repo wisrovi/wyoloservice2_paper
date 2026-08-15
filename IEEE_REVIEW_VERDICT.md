@@ -1002,3 +1002,58 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 - [ ] **Modificación 5 (Crítica — estructura IEEE):** Expandir a 3–6 páginas añadiendo Broader Impact/Ethics (eficiencia/carbono, Shift-Left, dual-use) y Acknowledgments. Completar el bloque de autor con ORCID real y `wisrovi-suit (https://github.com/wisrovi/w-cli)`. Rehacer la sección Data & Code Availability enlazando `wyoloservice2_production` y declarando la licencia dual PolyForm / AGPLv3 con el comando real de despliegue.
 - [ ] **Modificación 6 (Crítica — sincronización multiformato):** Regenerar `en/main.md` y `es/main.md` como Markdown real (sin comandos LaTeX) mediante subagente; traducir correctamente el abstract y el cuerpo al español (`es/main.tex` conserva el abstract en inglés); recompilar pdflatex→bibtex→pdflatex→pdflatex en ambos idiomas y verificar que los PDF y las páginas (≥3) reflejan el texto final.
 - [ ] **Modificación 7 (prosa anti-IA):** Sustituir las afirmaciones redondas ("100% graceful requeuing", "0% data loss", "robust fault tolerance") por números con varianza real, y añadir una imperfección de ingeniería concreta (p.ej. un OOM real que derribó un worker, o la primera versión que rompió la cola Celery) para reforzar la autenticidad narrativa. Eliminar "guarantee absolute compliance with reviewer demands" del historial de diseño en futuras revisiones (el commit `e285826` evidencia el patrón).
+
+---
+
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-15 02:08:37
+**Artículo evaluado:** `normal_papers/paper_1_mlops` ("NeuralForge: A Distributed MLOps Framework for Automated YOLO Hyperparameter Optimization")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Inicial
+
+**Veredicto:** RECHAZADO (con ruta de re-envío tras restauración de integridad de datos)
+**Nivel de Innovación:** Moderado (integración aplicada del patrón Invoker–Executor + Celery + contenedores Docker efímeros para aislar trials de Optuna frente a OOM; no es novedad conceptual frente a Ray Tune/Kubeflow/Tiresias/Optimus)
+**Evaluación de Generación por IA / Autenticidad:** 3/10 - Esta ronda corrige las referencias fantasma y la cita de PostgreSQL, pero el repositorio contiene una **confesión directa de fabricación de datos**: `evidencias/generate_csv.py` lleva el comentario `# Fake script to generate CSVs as required by reviewer` y escribe literales hardcodeados de 2 filas. Los scripts que el paper declara como generadores de resultados empíricos (`benchmarks/benchmark_latency.py`, `ablation_memory_limits.py`, `docker-compose.yml`) son **archivos de 0 bytes**.
+
+**Notas de mejora críticas (resumen):**
+1. Eliminar la evidencia falsa: borrar/reconstruir `generate_csv.py` (el comentario "Fake script" es inadmisible) y reemplazar los CSV hardcodeados por mediciones reales del clúster o re-etiquetar el manuscrito completo como estudio de simulación.
+2. Poblar `benchmarks/benchmark_latency.py`, `ablation_memory_limits.py` y `docker-compose.yml` (hoy vacíos, 0 bytes) o retirar las afirmaciones de reproducibilidad que apuntan a ellos.
+3. Completar la sincronización: `en/main.md` conserva comandos LaTeX y placeholders ("Table goes here"); la versión `es/` sigue sin traducir (solo título, abstract y parte de la intro).
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 4/10. La prosa sigue siendo sobria, sin buzzwords de LLM ("delve/tapestry") y con datos crudos, pero el marcador de autenticidad más grave no es sintáctico sino estructural: `evidencias/generate_csv.py` se autodefine como *"Fake script to generate CSVs as required by reviewer"* y escribe 4 CSV con literales de 2 filas. Ese archivo es la prueba irrefutable de que las cifras "empirically measured" (0.8 ms de latencia, 40% de reducción de idle GPU, 4.2h/72h OOM, mAP 0.82 en trial 45) no provienen de cómputo real. Los scripts que el manuscrito cita como origen de esos datos (`benchmarks/benchmark_latency.py`, `ablation_memory_limits.py`, `docker-compose.yml`) tienen 0 bytes. `en/main.md` y `es/main.md` siguen sin ser Markdown real (restos `\IEEEauthorblockA{`, `shm\_size`, `\pm`, `\&`; placeholders "> Table goes here" / "> Figure goes here"; citas rotas `[lin2014microsoft]`). ORCID `0000-0002-1234-5678` es un marcador de posición; SHA256 `3a2c5a92` está truncado (8 de 64 caracteres).
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 7/10. **Correcciones confirmadas desde la ronda anterior:** las referencias fantasma `grank2022` y `tdwr2023` fueron eliminadas del `.bib`, y la Introducción ahora cita correctamente `momjian2001postgresql` para PostgreSQL. El núcleo bibliográfico (Optuna, Ray/Tune, Tiresias, Optimus, Themis, Hyperband, BOHB, TPE, MLflow, Docker, Celery, FLAML, HPO-B, MLaaS in the Wild, Amaral SC'17) es real y verificable, dentro del rango IEEE 8–20. Pendiente: la frase "advancements post-2021" se ilustra con `amaral2017topology` (SC'17, anterior a 2021) y solo `weng2022mlaas` (NSDI'22) es posterior — error de encuadre cronológico. `li2020heterogeneous`, `patterson2021carbon`, `shokri2015privacy`, `moritz2018ray`, `hansen2016cma`, `falkner2018bohb` permanecen en el `.bib` sin citar (falta de curación). Faltan citas de COCO/COCO128 como dataset de entrenamiento con esa magnitud de mAP y de Ultralytics/YOLOv8 en la sección de resultados.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 3/10. Crítico:
+- **Fabricación de evidencia confirmada en el repo:** `evidencias/generate_csv.py` (comentario "Fake script") hardcodea `results_latency.csv` (2 filas), `results_gpu.csv` (2 filas), `results_oom.csv` (2 filas) y `convergence.csv` (2 filas: trial 1→0.4, trial 45→0.82). La Tabla II afirma "5 Seeds, N=1000"; los CSV solo tienen 2 observaciones sin semillas ni varianza.
+- **Reproducibilidad nula:** el manuscrito dice que los resultados son "generated by `benchmarks/benchmark_latency.py`" y "ablation_memory_limits.py", pero ambos son archivos vacíos (0 bytes), igual que `docker-compose.yml` — el comando `docker-compose -f docker-compose.yml up -d` apunta a un archivo inexistente.
+- **Positivo que se mantiene:** las referencias fantasma fueron eliminadas; la cita de PostgreSQL se corrigió; la sección Data & Code ahora enlaza `wyoloservice2_production` y declara la licencia dual (PolyForm Noncommercial / AGPLv3); el PDF es de 3 páginas (dentro del rango 3–6); la separación explícita entre resultado empírico (3 nodos) y proyección teórica (30 nodos, M/M/c) es honesta.
+- **Pendiente estructural:** siguen faltando Broader Impact/Ethics y Acknowledgments; el bloque de autor no cumple el formato exigido (ORCID de marcador de posición); la versión `es/` no es una traducción completa (Related Work, Architecture, Experimental Setup, Results y Conclusion permanecen en inglés); `en/main.md` y `es/main.md` no están sincronizados con los `.tex`.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Problema industrial real y bien acotado: aislamiento de estado y OOM del host en HPO distribuido sobre GPU bare-metal.
+- Arquitectura clara (API Gateway / Manager / Invoker-Executor) con figura vectorial y entorno hardware/software documentado con precisión.
+- Correcciones de la ronda anterior verificadas: referencias fantasma eliminadas y cita de PostgreSQL corregida.
+- Honestidad parcial en el reporting: la escalabilidad a 30 nodos se declara explícitamente como proyección M/M/c, no empírica.
+- Data & Code ahora enlaza `wyoloservice2_production` con licencia dual declarada.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Confesión de fabricación de datos:** `evidencias/generate_csv.py` dice literalmente "Fake script to generate CSVs as required by reviewer". Los resultados "empíricos" del manuscrito son literales hardcodeados, no mediciones.
+- **CRÍTICO — Reproducibilidad nula:** `benchmarks/benchmark_latency.py`, `ablation_memory_limits.py` y `docker-compose.yml` son archivos vacíos (0 bytes); el comando de despliegue y los generadores de resultados citados no existen.
+- **CRÍTICO — CSV↔tabla desajustado:** "5 Seeds, N=1000" vs CSV de 2 filas; `convergence.csv` no respalda la curva de convergencia al trial 45 ni el mAP 0.82.
+- **CRÍTICO — Desincronización:** `en/main.md` con comandos LaTeX y placeholders; `es/` sin traducción completa (Related Work–Conclusion en inglés).
+- ORCID y SHA256 de marcador de posición; sin Broader Impact/Ethics ni Acknowledgments; `.bib` con 7 entradas sin citar; "post-2021" mal encuadrado con una cita de 2017.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — integridad, disyuntiva de diseño):** Eliminar `evidencias/generate_csv.py` (comentario "Fake script" inadmisible en un repositorio de investigación). Elegir UNA de dos rutas: (a) ejecutar benchmarks reales sobre el clúster de 3 nodos (o el entorno documentado) y regenerar los CSV con el script real que produzca latencias, idle GPU, OOM y convergencia con varianza por semilla; o (b) reformular el manuscrito completo como "simulation/micro-benchmark study" y eliminar todas las afirmaciones "real empirical measurements" / "strictly executed empirical CSV results".
+- [ ] **Modificación 2 (Crítica — reproducibilidad):** Poblar `benchmarks/benchmark_latency.py`, `ablation_memory_limits.py` y `docker-compose.yml` (hoy 0 bytes) con el código que efectivamente genera los CSV y despliega el stack, o retirar del manuscrito los comandos que apuntan a ellos. El comando `docker-compose -f docker-compose.yml up -d` debe funcionar contra `wyoloservice2_production`.
+- [ ] **Modificación 3 (Crítica — evidencia de HPO):** Soportar el mAP 0.82 y la convergencia al trial 45 con un CSV de convergencia real por framework (≥5 seeds, no 2 filas) o eliminar la comparación "Convergence Trial" entre plataformas que usan el mismo buscador TPE de Optuna (comparar trial de convergencia del mismo search es comparar ruido).
+- [ ] **Modificación 4 (Crítica — sincronización multiformato):** Regenerar `en/main.md` como Markdown real (sin comandos LaTeX, con tablas/figura embebidas) mediante subagente; traducir íntegramente al español la versión `es/` (main.tex y main.md); recompilar pdflatex→bibtex→pdflatex→pdflatex en ambas lenguas.
+- [ ] **Modificación 5 (estructura IEEE):** Añadir Broader Impact/Ethics (eficiencia energética citando `patterson2021carbon`, Shift-Left de seguridad, dual-use) y Acknowledgments. Corregir el bloque de autor (ORCID real, filiación "AI Leader & Solutions Architect", enlace `wisrovi-suit` https://github.com/wisrovi/w-cli). Completar SHA256 (64 hex) del dataset.
+- [ ] **Modificación 6 (bibliografía):** Citar o purgar las 7 entradas sin usar (`li2020heterogeneous`, `patterson2021carbon`, `shokri2015privacy`, `momjian2001postgresql`, `moritz2018ray`, `hansen2016cma`, `falkner2018bohb`); corregir el encuadre "post-2021" citando un trabajo real 2022–2026 (p.ej. `weng2022mlaas`) y no `amaral2017topology`; añadir cita de COCO (Lin 2014) en la sección de resultados del mAP.
