@@ -54,6 +54,7 @@ Durante una ventana observacional de 14 días y 1,524 tareas, el patrón Invocad
 \begin{table}[htbp]
 \centering
 \caption{Comparación de Runtimes}
+\resizebox{\columnwidth}{!}{
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Runtime & Mediana Latencia (ms) & P95 (ms) & Método ($n\ge3$) & Desv. Estándar ($\sigma$) \\ \midrule
@@ -62,6 +63,7 @@ Kubernetes Jobs & 2100 & 2350 & Medición empírica ($n=10$) & 250 ms \\
 Kata / gVisor & 1800 & 1980 & Medición empírica ($n=10$) & 180 ms \\
 Docker (Nuestro) & 440 & 450 & Medición empírica ($n=100$) & 15 ms \\ \bottomrule
 \end{tabular}
+}
 \end{table}
 
 \section{Estudio de Ablación}

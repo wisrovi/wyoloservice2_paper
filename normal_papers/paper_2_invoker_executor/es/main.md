@@ -17,7 +17,7 @@ La arquitectura se representa en Figura 1. El demonio `wyoloservice2_invoker` co
 
  1. Deserializa payload YAML.
  1. Calcula cuotas (`mem_limit`, `shm_size`).
- 1. Ejecuta `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\\{nano_cpus\} --shm-size=\$\{shm_size\} wisrovi/train_service:worker_executor_v1.0.0}.
+ 1. Ejecuta `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\{nano_cpus} --shm-size=\${shm_size} wisrovi/train_service:worker_executor_v1.0.0}.
  1. Captura código de salida y escribe en Redis.
 
 
@@ -31,11 +31,11 @@ La arquitectura se representa en Figura 1. El demonio `wyoloservice2_invoker` co
 Clúster: tres nodos físicos, cada uno con una GPU NVIDIA RTX 4090 y 64 GB de RAM DDR5, conectados vía LAN 10 Gbps. El entorno de software incluye Driver NVIDIA 535.104, CUDA 12.2, PyTorch 2.1, Ultralytics YOLOv8 8.0 [ultralytics], Celery 5.3 [celery] y Docker 24.0 [docker]. La multiplexación usa NVIDIA MPS [nvidia_mps]. Los eventos OOM (Exit 137) se registraron explícitamente mediante `cgroups` (`memory.oom_control`). 
 
 ## Resultados y Discusión
-Durante una ventana observacional de 14 días y 1,524 tareas, el patrón Invocador-Ejecutor contuvo el 100% de los fallos de memoria. Los registros sintéticos generados para reproducibilidad (ver `data/production_oom_logs.csv`, *synthetic example*) muestran que 47 scripts YOLO (tasa de fallo 3.08%) filtraron memoria y dispararon `OOMKilled` (Exit 137). En la línea base (ejecución directa), esto causó 47 caídas del demonio y requirió 12 reinicios físicos. Con nuestro patrón, el Invocador mantuvo un overhead estable de ~200 MB, sobreviviendo las 47 caídas con 0 reinicios requeridos. La latencia de arranque del contenedor fue evaluada empíricamente (n=100 réplicas), mostrando una mediana de 440 ms (P95: 450 ms, \sigma=15 ms), mucho menor que microVMs KVM (~1200 ms) y Kubernetes (~2100 ms). Avances recientes como Pollux [qiao2021pollux] y SLoPe [zhang2024slope] optimizan el throughput pero asumen ejecución confiable, haciendo nuestra tolerancia a fallos [qiao2023fault] altamente complementaria.
+Durante una ventana observacional de 14 días y 1,524 tareas, el patrón Invocador-Ejecutor contuvo el 100% de los fallos de memoria. Los registros sintéticos generados para reproducibilidad (ver `data/production_oom_logs.csv`, *synthetic example*) muestran que 47 scripts YOLO (tasa de fallo 3.08%) filtraron memoria y dispararon `OOMKilled` (Exit 137). En la línea base (ejecución directa), esto causó 47 caídas del demonio y requirió 12 reinicios físicos. Con nuestro patrón, el Invocador mantuvo un overhead estable de ~200 MB, sobreviviendo las 47 caídas con 0 reinicios requeridos. La latencia de arranque del contenedor fue evaluada empíricamente (n=100 réplicas), mostrando una mediana de 440 ms (P95: 450 ms, σ=15 ms), mucho menor que microVMs KVM (~1200 ms) y Kubernetes (~2100 ms). Avances recientes como Pollux [qiao2021pollux] y SLoPe [zhang2024slope] optimizan el throughput pero asumen ejecución confiable, haciendo nuestra tolerancia a fallos [qiao2023fault] altamente complementaria.
 
 
 
-| lcccc@{}}
+
 
 Runtime | Mediana Latencia (ms) | P95 (ms) | Método (n\ge3) | Desv. Estándar (sigma) |
 |---|---|---|---|---|

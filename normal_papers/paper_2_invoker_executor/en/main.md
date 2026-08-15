@@ -21,7 +21,7 @@ The architecture is depicted in Figure 1. The `wyoloservice2_invoker` daemon run
 
  1. Deserialize payload (YAML config).
  1. Compute resource quotas: `mem_limit` scales with `imgsz`; `shm_size` scales with DataLoader workers.
- 1. Execute `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\\{nano_cpus\} --shm-size=\$\{shm_size\} wisrovi/train_service:worker_executor_v1.0.0}.
+ 1. Execute `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\{nano_cpus} --shm-size=\${shm_size} wisrovi/train_service:worker_executor_v1.0.0}.
  1. Block on completion; capture exit code.
  1. Write results to Redis.
 
@@ -36,11 +36,11 @@ The architecture is depicted in Figure 1. The `wyoloservice2_invoker` daemon run
 Cluster: three physical nodes, each with a single NVIDIA RTX 4090 GPU and 64 GB DDR5 RAM, connected via a 10 Gbps LAN topology. Software environment includes NVIDIA Driver 535.104, CUDA 12.2, PyTorch 2.1, Ultralytics YOLOv8 8.0 [ultralytics], Celery 5.3 [celery], and Docker 24.0 [docker]. GPU multiplexing is managed via NVIDIA MPS [nvidia_mps]. OOM kernel kills (Exit Code 137) were logged explicitly by tracking `cgroups` `memory.oom_control` events.
 
 ## Results & Discussion
-Over an observational window of 14 days and 1,524 tasks, the Invoker-Executor pattern contained 100% of memory failures. Synthetic logs generated for reproducibility (see `data/production_oom_logs.csv`, *synthetic example*) show that 47 YOLO scripts (3.08% failure rate) leaked memory and triggered `OOMKilled` (Exit 137). In the baseline (direct execution), this caused 47 daemon crashes and required 12 physical reboots. With our pattern, the Invoker maintained a stable overhead of ~200 MB, surviving all 47 crashes with 0 reboots required. The container boot latency was evaluated empirically (n=100 replicas), showing a median of 440 ms (P95: 450 ms, \sigma=15 ms), much lower than KVM microVMs (~1200 ms) and Kubernetes (~2100 ms). Recent advances like Pollux [qiao2021pollux] and SLoPe [zhang2024slope] optimize throughput but assume reliable execution, making our fault tolerance [qiao2023fault] highly complementary.
+Over an observational window of 14 days and 1,524 tasks, the Invoker-Executor pattern contained 100% of memory failures. Synthetic logs generated for reproducibility (see `data/production_oom_logs.csv`, *synthetic example*) show that 47 YOLO scripts (3.08% failure rate) leaked memory and triggered `OOMKilled` (Exit 137). In the baseline (direct execution), this caused 47 daemon crashes and required 12 physical reboots. With our pattern, the Invoker maintained a stable overhead of ~200 MB, surviving all 47 crashes with 0 reboots required. The container boot latency was evaluated empirically (n=100 replicas), showing a median of 440 ms (P95: 450 ms, σ=15 ms), much lower than KVM microVMs (~1200 ms) and Kubernetes (~2100 ms). Recent advances like Pollux [qiao2021pollux] and SLoPe [zhang2024slope] optimize throughput but assume reliable execution, making our fault tolerance [qiao2023fault] highly complementary.
 
 
 
-| lcccc@{}}
+
 
 Runtime | Median Latency (ms) | P95 (ms) | Method (n\ge3) | Std Dev (sigma) |
 |---|---|---|---|---|
@@ -52,7 +52,7 @@ Runtime | Median Latency (ms) | P95 (ms) | Method (n\ge3) | Std Dev (sigma) |
 
 
 ## Ablation Study
-To isolate the effect of `mem_limit`, we performed an ablation test with n=5 replicas of 10 malicious tasks. The protocol consisted of injecting controlled memory leaks and measuring the stability of the Invoker's RSS. Without limits, the tasks consumed 100% of the RAM (64 GB), causing the daemon to crash after an average of 40 minutes across all replicas. With a 30 GB limit, the container was terminated cleanly while the Invoker's memory remained stable at 200 MB (variance of \pm 5 MB), preventing host failure (see Figure 2).
+To isolate the effect of `mem_limit`, we performed an ablation test with n=5 replicas of 10 malicious tasks. The protocol consisted of injecting controlled memory leaks and measuring the stability of the Invoker's RSS. Without limits, the tasks consumed 100% of the RAM (64 GB), causing the daemon to crash after an average of 40 minutes across all replicas. With a 30 GB limit, the container was terminated cleanly while the Invoker's memory remained stable at 200 MB (variance of ± 5 MB), preventing host failure (see Figure 2).
 
 
 

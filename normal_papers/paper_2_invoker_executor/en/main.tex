@@ -58,6 +58,7 @@ Over an observational window of 14 days and 1,524 tasks, the Invoker-Executor pa
 \begin{table}[htbp]
 \centering
 \caption{Runtime Comparison}
+\resizebox{\columnwidth}{!}{
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Runtime & Median Latency (ms) & P95 (ms) & Method ($n\ge3$) & Std Dev ($\sigma$) \\ \midrule
@@ -66,6 +67,7 @@ Kubernetes Jobs & 2100 & 2350 & Empirical ($n=10$) & 250 ms \\
 Kata / gVisor & 1800 & 1980 & Empirical ($n=10$) & 180 ms \\
 Docker (Ours) & 440 & 450 & Empirical ($n=100$) & 15 ms \\ \bottomrule
 \end{tabular}
+}
 \end{table}
 
 \section{Ablation Study}
