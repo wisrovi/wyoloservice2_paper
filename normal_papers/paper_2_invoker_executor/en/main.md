@@ -38,12 +38,11 @@ Cluster: three physical nodes, each with a single NVIDIA RTX 4090 GPU and 64 GB 
 ## Results \& Discussion
 Over an observational window of 14 days and 1,524 tasks, the Invoker-Executor pattern contained 100% of memory failures. Empirical logs (see `data/production_oom_logs.csv`) show that 47 YOLO scripts (3.08% failure rate) leaked memory and triggered `OOMKilled` (Exit 137). In the baseline (direct execution), this caused 47 daemon crashes and required 12 physical reboots. With our pattern, the Invoker maintained a stable overhead of ~200 MB, surviving all 47 crashes with 0 reboots required. The container boot latency was evaluated empirically (n=100 replicas), showing a median of 440 ms (P95: 450 ms, σ=15 ms), much lower than KVM microVMs (~1200 ms) and Kubernetes (~2100 ms). Recent advances like Pollux [qiao2021pollux] and SLoPe [zhang2024slope] optimize throughput but assume reliable execution, making our fault tolerance [qiao2023fault] highly complementary.
 
-[htbp]
 
 
 
 
-Runtime | Median Latency (ms) | P95 (ms) | Method (n>=3) | Std Dev (sigma) |
+Runtime | Median Latency (ms) | P95 (ms) | Method (n>=3) | Std Dev (σ) |
 |---|---|---|---|---|
 | Direct Process | 120 | 130 | Empirical (n=10) | 15 ms |
 | Kubernetes Jobs | 2100 | 2350 | Empirical (n=10) | 250 ms |
@@ -52,7 +51,7 @@ Runtime | Median Latency (ms) | P95 (ms) | Method (n>=3) | Std Dev (sigma) |
 
 
 
-Protocol: Boot latency defined as time from  docker run} to process ready state. Evaluated on uniform hardware.
+Protocol: Boot latency defined as time from `docker run` to process ready state. Evaluated on uniform hardware.
 
 
 ## Ablation Study

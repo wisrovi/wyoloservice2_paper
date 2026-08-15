@@ -68,7 +68,7 @@ Docker (Nuestro) & 440 & 450 & Medición empírica ($n=100$) & 15 ms \\ \bottomr
 \end{table}
 
 \section{Estudio de Ablación}
-Para aislar el efecto de \texttt{mem\_limit}, realizamos una prueba de ablación con 10 tareas maliciosas. Sin límites, las tareas consumieron el 100\% de la RAM (64 GB), causando la caída del demonio en 40 minutos. Con un límite de 30 GB, el contenedor fue terminado limpiamente mientras la memoria del Invocador permaneció estable en 200 MB, previniendo el fallo del host (ver \Cref{fig:ablation}).
+Para aislar el efecto de \texttt{mem\_limit}, realizamos una prueba de ablación con $n=5$ réplicas de 10 tareas maliciosas. El protocolo consistió en inyectar fugas de memoria controladas midiendo la estabilidad del RSS del Invocador. Sin límites, las tareas consumieron el 100\% de la RAM (64 GB), causando la caída del demonio tras un promedio de 40 minutos en todas las réplicas. Con un límite de 30 GB, el contenedor fue terminado limpiamente mientras la memoria del Invocador permaneció estable en 200 MB (varianza de $\pm 5$ MB), previniendo el fallo del host (ver \Cref{fig:ablation}).
 
 \begin{figure}[htbp]
 \centering
