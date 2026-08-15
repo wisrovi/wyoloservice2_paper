@@ -56,7 +56,7 @@ Genera el informe final listo para ser insertado en `IEEE_REVIEW_VERDICT.md` (ra
 # INSTRUCTION (ORDEN CRÍTICO — ESCRIBIR PRIMERO)
 Sigue este orden EXACTO. El paso 1 es obligatorio y va ANTES del análisis profundo:
 1. **Crea o actualiza YA el archivo `IEEE_REVIEW_VERDICT.md`** (raíz del proyecto): añade al final una nueva sección dedicada a `__PAPER_NAME__` con el formato anterior y un **veredicto inicial conciso** (4-6 líneas: veredicto, detección IA, novedad, bibliografía, 2-3 notas de mejora). Conserva el historial previo. GUARDA el archivo.
-2. **Analiza en profundidad** el paper en `__PAPER_DIR__` y, si hace falta, el código real del ecosistema para verificar afirmaciones.
+2. **Analiza en profundidad** el paper en `__PAPER_DIR__`. NO intentes acceder a otros repositorios o directorios fuera de `__PAPER_DIR__` para evitar errores de permisos.
 3. **Refina el veredicto en el archivo**: amplía la sección del paso 1 con el análisis detallado (Agentes A/B/C) y el plan de acción. Vuelve a GUARDAR el archivo.
 4. **Actualiza `WORKFLOW_STATE.md`** según la sección WORKFLOW STATE.
 5. **Crea el marcador `.freebuff_done`** con el contenido `DONE`.
