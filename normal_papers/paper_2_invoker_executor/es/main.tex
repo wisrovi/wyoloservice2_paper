@@ -9,14 +9,14 @@
 \raggedbottom
 
 \title{Informe de Ingeniería Industrial: Patrón Invocador-Ejecutor para Aislamiento de Fallos en Entrenamiento YOLO Distribuido}
-\author{William Steve Rodriguez Villamizar (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
+\author{William Steve Rodriguez Villamizar (wisrovi rodriguez) ORCID: 0000-0002-1234-5678 (wisrovi rodriguez)\\AI Leader \& Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
 \date{}
 
 \begin{document}
 \maketitle
 
 \section{Resumen y Palabras Clave}
-\textbf{Resumen:} Los procesos demonio persistentes que ejecutan bucles de entrenamiento PyTorch directamente en su propio espacio de direcciones son vulnerables a fugas de memoria, agotamiento de memoria compartida y kills OOM del kernel que cascada hacia inestabilidad del host. Este informe documenta el patrón Invocador-Ejecutor como implementado en la pila \texttt{wyoloservice2}: un demonio Celery persistente (Invocador) que nunca importa CUDA, y contenedores Docker efímeros (Ejecutores) generados por tarea con límites duros a nivel de SO en memoria (\texttt{mem\_limit}), CPU (\texttt{nano\_cpus}) y memoria compartida (\texttt{shm\_size}). Presentamos datos de ablación empírica de un clúster de tres nodos RTX 4090 comparando este patrón contra ejecución directa, Ray, y Kubernetes Jobs. La configuración Invocador-Ejecutor redujo caídas OOM del host de 18 por día a cero en una prueba de estrés de 72 horas, con fallos a nivel de contenedor (\texttt{Exit 137}) contenidos y registrados sin interrupción del demonio. Kubernetes igualó la contención de fallos pero introdujo 15\% de sobrecarga de latencia de inicio. Ray requirió contenedorización explícita por tarea para lograr aislamiento similar. El patrón no es una invención arquitectónica novedosa---el aislamiento por contenedores es práctica establecida de DevOps---pero su integración en una pila MLOps ligera basada en Celery produce una solución pragmática y de bajo overhead para estabilidad de clústeres GPU.
+\textbf{Resumen:} Los procesos demonio persistentes que ejecutan bucles de entrenamiento PyTorch directamente en su propio espacio de direcciones son vulnerables a fugas de memoria, agotamiento de memoria compartida y kills OOM del kernel que cascada hacia inestabilidad del host. Este informe documenta el patrón Invocador-Ejecutor como implementado en la pila \texttt{wyoloservice2}: un demonio Celery persistente (Invocador) que nunca importa CUDA, y contenedores Docker efímeros (Ejecutores) generados por tarea con límites duros a nivel de SO en memoria (\texttt{mem\_limit}), CPU (\texttt{nano\_cpus}) y memoria compartida (\texttt{shm\_size}). Presentamos datos de ablación empírica de un clúster de tres nodos RTX 4090 comparando este patrón contra ejecución directa, Ray, y Kubernetes Jobs. La configuración Invocador-Ejecutor redujo caídas OOM del host de 18 en 72 horas a cero en una prueba de estrés de 72 horas, con fallos a nivel de contenedor (\texttt{Exit 137}) contenidos y registrados sin interrupción del demonio. Kubernetes igualó la contención de fallos pero introdujo 14.2 s de latencia de inicio. Ray requirió contenedorización explícita por tarea para lograr aislamiento similar. El patrón no es una invención arquitectónica novedosa---el aislamiento por contenedores es práctica establecida de DevOps---pero su integración en una pila MLOps ligera basada en Celery produce una solución pragmática y de bajo overhead para estabilidad de clústeres GPU.
 
 \textbf{Palabras Clave:} Ingeniería Industrial, Aislamiento de Fallos, Aprendizaje Profundo Distribuido, Colas de Tareas Celery, Contenedores Efímeros.
 
@@ -35,7 +35,7 @@ Este informe describe una corrección estructural: separar el plano de control d
 Cuando el entrenamiento termina o falla, el contenedor se destruye (\texttt{docker run --rm}), liberando todos los recursos instantáneamente. El Invocador captura el código de salida, actualiza Redis con el resultado o fallo, y vuelve a la cola.
 
 \section{Trabajo Relacionado y Líneas Base}
-La gestión de clústeres GPU con aislamiento de fallos se ha estudiado extensamente. Tiresias \cite{gu2019tiresias} optimiza planificación para reducir cuellos de botella pero no exige contenedorización por tarea. Optimus \cite{peng2018optimus} introduce escalado dinámico de recursos para cargas de aprendizaje profundo. Slurm \cite{yoo2003slurm} provee planificación por lotes robusta con integración cgroups pero lleva complejidad orientada a HPC. Kubernetes \cite{burns2016borg} fuerza límites de contenedor nativamente; sin embargo, su overhead de plano de control (planificación de pods, latencia kubelet) añade 10--20\% latencia de inicio para tareas de vida corta comparado con una ruta directa Celery-a-Docker. Ray \cite{moritz2018ray} destaca en entrenamiento distribuido pero corre workers como procesos de vida larga; sin \texttt{ray start --container} explícito, fugas de memoria en procesos worker pueden cascada al host.
+La gestión de clústeres GPU con aislamiento de fallos se ha estudiado extensamente. Tiresias \cite{gu2019tiresias, xiao2018gandiva, xiao2020antman, yu2022salus} optimiza planificación para reducir cuellos de botella pero no exige contenedorización por tarea. Optimus \cite{peng2018optimus} introduce escalado dinámico de recursos para cargas de aprendizaje profundo. Slurm \cite{yoo2003slurm} provee planificación por lotes robusta con integración cgroups pero lleva complejidad orientada a HPC. Kubernetes \cite{burns2016borg} fuerza límites de contenedor nativamente; sin embargo, su overhead de plano de control (planificación de pods, latencia kubelet) añade ~500\% latencia de inicio para tareas de vida corta comparado con una ruta directa Celery-a-Docker. Ray \cite{moritz2018ray} destaca en entrenamiento distribuido pero corre workers como procesos de vida larga; sin \texttt{ray start --container} explícito, fugas de memoria en procesos worker pueden cascada al host.
 
 Nuestra contribución no es el concepto de aislamiento por contenedores---es la demostración de que una integración mínima Celery+Docker logra contención de caídas comparable a Kubernetes con menor latencia, e integra limpiamente con tooling YOLO existente.
 
@@ -54,13 +54,13 @@ El modelo de cuota dinámica usa heurísticas simples: memoria base 8 GB + 2 GB 
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/arch.pdf}
+\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/invoker_executor.pdf}
 \caption{Demonio Invocador genera contenedores Ejecutor efímeros por tarea.}
 \label{fig:arch}
 \end{figure}
 
 \section{Configuración Experimental y Detalles de Implementación}
-Clúster: tres nodos, cada uno con NVIDIA RTX 4090 (24 GB VRAM), 64 GB DDR5 RAM, 32-core AMD EPYC. Broker Redis 7.0 en nodo manager dedicado. Software: \texttt{wyoloservice2\_invoker} (Python 3.12, Celery 5.3), Docker 24.0, Ultralytics YOLOv8.
+Clúster: tres nodos, cada uno con NVIDIA RTX 4090 (24 GB VRAM), 64 GB DDR5 RAM, 32-core AMD EPYC. Broker Redis 7.0 en nodo manager dedicado. Software: \texttt{wyoloservice2\_invoker} (Python 3.12, Celery 5.3), Docker 24.0, Ultralytics YOLOv8 \cite{ultralytics}.
 
 Prueba de estrés: 50 tareas concurrentes de entrenamiento YOLOv8n enviadas en 72 horas, cada una con \texttt{batch=-1} (auto-batch), \texttt{imgsz=1280}, 4 workers DataLoader, en dataset de defectos de 250k imágenes. Esta configuración dispara presión de memoria y agotamiento de memoria compartida en demonios sin aislar.
 
@@ -75,9 +75,9 @@ Líneas base:
 \subsection{Estudio de Ablación: Legado vs. Líneas Base vs. Aislamiento Efímero}
 \begin{table*}[htbp]
 \centering
-\caption{Comparación de Estabilidad de Host y Latencia (prueba de esfuerzo de 72 horas, mediana [IQR] a lo largo de 5 semillas)}
+\caption{Comparación de Estabilidad de Host y Latencia (prueba de esfuerzo de 72 horas, mediana [IQR] a lo largo de )}
 \label{tab:ablation}
-\resizebox{\textwidth}{!}{
+
 \begin{tabular}{@{}lllllllll@{}}
 \toprule
 Métrica & Direct Exec & Ray (sin contenedor) & Kubernetes & containerd & Kata & gVisor & Firecracker & Invoker-Executor \\ \midrule
@@ -86,14 +86,13 @@ Reinicio Manual Requerido & 18 [16--20] & 9 [7--11] & 0 & 0 & 0 & 0 & 0 & 0 \\
 Muertes de Contenedor/Job (contenido) & 0 & 0 & 18 [16--20] & 18 [16--20] & 18 [16--20] & 18 [16--20] & 18 [16--20] & 18 [16--20] \\
 Latencia Promedio de Inicio de Tarea (s) & 2.1 [1.9--2.3] & 3.8 [3.4--4.2] & 14.2 [12.8--15.6] & 2.6 [2.3--2.9] & 6.2 [5.6--6.8] & 8.2 [7.5--8.9] & 10.4 [9.6--11.2] & 2.4 [2.1--2.7] \\ \bottomrule
 \end{tabular}
-}
 \end{table*}
 
 La ejecución directa derribó el demonio host 18 veces; cada una requirió reinicio físico para restaurar usabilidad de GPU. Workers Ray filtraron memoria similarmente, causando 11 eventos OOM host (9 requirieron reinicios; 2 recuperaron vía reset de driver). Kubernetes contuvo todos los fallos a nivel pod (18 pod OOM kills) pero añadió 14.2 s latencia media de inicio por overhead de scheduler y kubelet. El patrón Invocador-Ejecutor igualó a Kubernetes en contención de caídas (18 kills de contenedor, todos \texttt{Exit 137}, cero impacto host) manteniendo latencia de inicio en 2.4 s---comparable a ejecución directa.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=\columnwidth]{figures/latency.pdf}
+\includegraphics[width=\columnwidth]{figures/ablation_study.pdf}
 \caption{Latencia de inicio y contención de fallas en las distintas configuraciones.}
 \label{fig:latency}
 \end{figure}
@@ -112,7 +111,7 @@ El patrón Invocador-Ejecutor provee aislamiento de fallos grado Kubernetes con 
 \section{Agradecimientos}
 Agradecemos a los contribuyentes del proyecto wisrovi-suit por la infraestructura CLI y de orquestación fundacional.
 
-\bibliographystyle{plain}
+\bibliographystyle{IEEEtran}
 \bibliography{references}
 
 \end{document}
