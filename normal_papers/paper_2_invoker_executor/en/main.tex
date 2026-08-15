@@ -37,7 +37,7 @@ The architecture is depicted in \Cref{fig:arch}. The \texttt{wyoloservice2\_invo
 \begin{enumerate}
     \item Deserialize payload (YAML config).
     \item Compute resource quotas: \texttt{mem\_limit} scales with \texttt{imgsz}; \texttt{shm\_size} scales with DataLoader workers.
-    \item Execute \texttt{docker run --rm --gpus=all --memory=\$\{mem\_limit\} --cpus=\$\{nano\_cpus\} --shm-size=\$\{shm\_size\} wisrovi/train\_service:worker\_executor\_v1.0.0}.
+    \item Execute \texttt{\footnotesize docker run --rm --gpus=all --memory=\$\{mem\_limit\} --cpus=\$\{nano\_cpus\} --shm-size=\$\{shm\_size\} wisrovi/train\_service:worker\_executor\_v1.0.0}.
     \item Block on completion; capture exit code.
     \item Write results to Redis.
 \end{enumerate}
@@ -68,6 +68,8 @@ Kata / gVisor & 1800 & 1980 & Empirical ($n=10$) & 180 ms \\
 Docker (Ours) & 440 & 450 & Empirical ($n=100$) & 15 ms \\ \bottomrule
 \end{tabular}
 }
+
+oindent Protocol: Boot latency defined as time from 	exttt{ootnotesize docker run} to process ready state. Evaluated on uniform hardware.
 \end{table}
 
 \section{Ablation Study}

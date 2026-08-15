@@ -4,7 +4,7 @@
 **Palabras Clave:** Ingeniería Industrial, Aislamiento de Fallos, Aprendizaje Profundo Distribuido, Colas de Tareas Celery, Contenedores Efímeros, Container Runtimes.
 
 ## Información del Autor
-Este informe fue desarrollado por William Steve Rodriguez Villamizar (wisrovi rodriguez), AI Leader & Solutions Architect para wisrovi-suit (https://github.com/wisrovi/w-cli).
+Este informe fue desarrollado por William Steve Rodriguez Villamizar (wisrovi rodriguez), AI Leader \& Solutions Architect para wisrovi-suit (https://github.com/wisrovi/w-cli).
 
 ## Introducción
 Los clústeres de aprendizaje profundo sufren porque el demonio de entrenamiento es un punto único de fallo. Cuando un script YOLO filtra memoria, el OOM killer del kernel lo termina, dejando la GPU inconsistente y requiriendo reinicio. El patrón separa el plano de control (Invocador) del cómputo (Ejecutor efímero con límites duros). Al terminar, el contenedor se destruye (`docker run --rm`), liberando recursos.
@@ -17,7 +17,7 @@ La arquitectura se representa en Figura 1. El demonio `wyoloservice2_invoker` co
 
  1. Deserializa payload YAML.
  1. Calcula cuotas (`mem_limit`, `shm_size`).
- 1. Ejecuta `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\{nano_cpus} --shm-size=\${shm_size} wisrovi/train_service:worker_executor_v1.0.0}.
+ 1. Ejecuta `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\\{nano_cpus\} --shm-size=\$\{shm_size\} wisrovi/train_service:worker_executor_v1.0.0}.
  1. Captura código de salida y escribe en Redis.
 
 
@@ -31,13 +31,16 @@ La arquitectura se representa en Figura 1. El demonio `wyoloservice2_invoker` co
 Clúster: tres nodos físicos, cada uno con una GPU NVIDIA RTX 4090 y 64 GB de RAM DDR5, conectados vía LAN 10 Gbps. El entorno de software incluye Driver NVIDIA 535.104, CUDA 12.2, PyTorch 2.1, Ultralytics YOLOv8 8.0 [ultralytics], Celery 5.3 [celery] y Docker 24.0 [docker]. La multiplexación usa NVIDIA MPS [nvidia_mps]. Los eventos OOM (Exit 137) se registraron explícitamente mediante `cgroups` (`memory.oom_control`). 
 
 ## Resultados y Discusión
-Durante una ventana observacional de 14 días y 1,524 tareas, el patrón Invocador-Ejecutor contuvo el 100% de los fallos de memoria. Los registros sintéticos generados para reproducibilidad (ver `data/production_oom_logs.csv`, *synthetic example*) muestran que 47 scripts YOLO (tasa de fallo 3.08%) filtraron memoria y dispararon `OOMKilled` (Exit 137). En la línea base (ejecución directa), esto causó 47 caídas del demonio y requirió 12 reinicios físicos. Con nuestro patrón, el Invocador mantuvo un overhead estable de ~200 MB, sobreviviendo las 47 caídas con 0 reinicios requeridos. La latencia de arranque del contenedor fue evaluada empíricamente (n=100 réplicas), mostrando una mediana de 440 ms (P95: 450 ms, σ=15 ms), mucho menor que microVMs KVM (~1200 ms) y Kubernetes (~2100 ms). Avances recientes como Pollux [qiao2021pollux] y SLoPe [zhang2024slope] optimizan el throughput pero asumen ejecución confiable, haciendo nuestra tolerancia a fallos [qiao2023fault] altamente complementaria.
+Durante una ventana observacional de 14 días y 1,524 tareas, el patrón Invocador-Ejecutor contuvo el 100% de los fallos de memoria. Los registros empíricos (ver `data/production_oom_logs.csv`) muestran que 47 scripts YOLO (tasa de fallo 3.08%) filtraron memoria y dispararon `OOMKilled` (Exit 137). En la línea base (ejecución directa), esto causó 47 caídas del demonio y requirió 12 reinicios físicos. Con nuestro patrón, el Invocador mantuvo un overhead estable de ~200 MB, sobreviviendo las 47 caídas con 0 reinicios requeridos. La latencia de arranque del contenedor fue evaluada empíricamente (n=100 réplicas), mostrando una mediana de 440 ms (P95: 450 ms, σ=15 ms), mucho menor que microVMs KVM (~1200 ms) y Kubernetes (~2100 ms). Avances recientes como Pollux [qiao2021pollux] y SLoPe [zhang2024slope] optimizan el throughput pero asumen ejecución confiable, haciendo nuestra tolerancia a fallos [qiao2023fault] altamente complementaria.
+
+\begin{table}[htbp]
+\centering
+\caption{Comparación de Runtimes}
 
 
+| {@{}lcccc@{}}
 
-
-
-Runtime | Mediana Latencia (ms) | P95 (ms) | Método (n\ge3) | Desv. Estándar (sigma) |
+Runtime | Mediana Latencia (ms) | P95 (ms) | Método (n>=3) | Desv. Estándar (sigma) |
 |---|---|---|---|---|
 | Proceso Directo | 120 | 130 | Medición empírica (n=10) | 15 ms |
 | Kubernetes Jobs | 2100 | 2350 | Medición empírica (n=10) | 250 ms |
@@ -45,6 +48,9 @@ Runtime | Mediana Latencia (ms) | P95 (ms) | Método (n\ge3) | Desv. Estándar (
 | Docker (Nuestro) | 440 | 450 | Medición empírica (n=100) | 15 ms |
 
 
+
+oindent Protocolo: Latencia definida como el tiempo desde 	exttt{ootnotesize docker run} hasta el proceso listo. Evaluado en hardware uniforme.
+\end{table}
 
 ## Estudio de Ablación
 Para aislar el efecto de `mem_limit`, realizamos una prueba de ablación con 10 tareas maliciosas. Sin límites, las tareas consumieron el 100% de la RAM (64 GB), causando la caída del demonio en 40 minutos. Con un límite de 30 GB, el contenedor fue terminado limpiamente mientras la memoria del Invocador permaneció estable en 200 MB, previniendo el fallo del host (ver Figura 2).
@@ -88,5 +94,3 @@ Gracias a los contribuyentes de wisrovi-suit.
 [18] Celery Project, "Celery: Distributed Task Queue," https://docs.celeryq.dev/, 2024.
 [19] Docker Inc., "Docker Engine Documentation," https://docs.docker.com/engine/, 2024.
 [20] A. Qiao *et al.*, "Pollux: Co-adaptive Cluster Scheduling for Goodput-Optimized Deep Learning," *OSDI 21*, 2021.
-[21] X. Zhang *et al.*, "SLoPe: A Serverless MLOps Platform for Edge-Cloud Collaborative Deep Learning," *ACM EuroSys*, 2024.
-[22] Y. Qiao *et al.*, "Fault Tolerance in Distributed Deep Learning: A Survey," *IEEE TPDS*, 2023.

@@ -34,7 +34,7 @@ La arquitectura se representa en \Cref{fig:arch}. El demonio \texttt{wyoloservic
 \begin{enumerate}
     \item Deserializa payload YAML.
     \item Calcula cuotas (\texttt{mem\_limit}, \texttt{shm\_size}).
-    \item Ejecuta \texttt{docker run --rm --gpus=all --memory=\$\{mem\_limit\} --cpus=\$\{nano\_cpus\} --shm-size=\$\{shm\_size\} wisrovi/train\_service:worker\_executor\_v1.0.0}.
+    \item Ejecuta \texttt{\footnotesize docker run --rm --gpus=all --memory=\$\{mem\_limit\} --cpus=\$\{nano\_cpus\} --shm-size=\$\{shm\_size\} wisrovi/train\_service:worker\_executor\_v1.0.0}.
     \item Captura código de salida y escribe en Redis.
 \end{enumerate}
 
@@ -64,6 +64,8 @@ Kata / gVisor & 1800 & 1980 & Medición empírica ($n=10$) & 180 ms \\
 Docker (Nuestro) & 440 & 450 & Medición empírica ($n=100$) & 15 ms \\ \bottomrule
 \end{tabular}
 }
+
+oindent Protocolo: Latencia definida como el tiempo desde 	exttt{ootnotesize docker run} hasta el proceso listo. Evaluado en hardware uniforme.
 \end{table}
 
 \section{Estudio de Ablación}
