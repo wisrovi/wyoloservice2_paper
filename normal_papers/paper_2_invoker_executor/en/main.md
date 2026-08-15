@@ -23,11 +23,11 @@ GPU cluster management with fault isolation has been studied extensively. Tiresi
 Container runtime alternatives provide varying isolation guarantees [young2019true]. Firecracker [agache2020firecracker] uses KVM microVMs for strong isolation. containerd [containerd] provides a CRI runtime. cgroups v2 [cgroups2017] enables fine-grained control. Kata Containers and gVisor [wang2022performance] offer secure isolation at the cost of boot latency. NVIDIA GPU Operator [nvidia2021gpuoperator] standardizes GPU access. 
 
 ## Proposed Architecture / Methodology
-The `wyoloservice2_invoker` daemon runs on each GPU node. On task receipt:
+The architecture is depicted in \Cref{fig:arch}. The `wyoloservice2_invoker` daemon runs on each GPU node. On task receipt:
 
     - Deserialize payload (YAML config).
     - Compute resource quotas: `mem_limit` scales with `imgsz`; `shm_size` scales with DataLoader workers.
-- Execute `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
+    - Execute `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
     - Block on completion; capture exit code.
     - Write results to Redis.
 
@@ -60,7 +60,7 @@ We thank the wisrovi-suit contributors for the orchestration infrastructure.
 
 ## References
 
-[1] V. Garousi, M. Felderer, and M. V. M"antyl"a, "The need for empirical evidence in software engineering," *IEEE Software*, vol. 33, no. 1, pp. 68-75, 2016.
+[1] V. Garousi, M. Felderer, and M. V. Mäntylä, "The need for empirical evidence in software engineering," *IEEE Software*, vol. 33, no. 1, pp. 68-75, 2016.
 
 [2] J. Gu *et al.*, "Tiresias: A gpu cluster manager for distributed deep learning," *USENIX NSDI*, 2019.
 
@@ -88,7 +88,7 @@ We thank the wisrovi-suit contributors for the orchestration infrastructure.
 
 [14] NVIDIA, "Nvidia gpu operator," https://github.com/NVIDIA/gpu-operator, 2021.
 
-[15]  G. Jocher *et al.*, "Ultralytics yolov8," 2023. [Online]. Available: https://github.com/ultralytics/ultralytics 
+[15] G. Jocher *et al.*, "Ultralytics yolov8," 2023. [Online]. Available: https://github.com/ultralytics/ultralytics 
 
 [16] NVIDIA, "Multi-process service (mps)," https://docs.nvidia.com/deploy/mps/index.html, 2023.
 

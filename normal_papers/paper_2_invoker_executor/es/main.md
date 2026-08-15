@@ -23,7 +23,7 @@ El demonio `wyoloservice2_invoker` corre en cada nodo. Al recibir tarea:
 
     - Deserializa payload YAML.
     - Calcula cuotas (`mem_limit`, `shm_size`).
-- Ejecuta `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
+    - Ejecuta `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
     - Captura código de salida y escribe en Redis.
 
 ![Invocador genera contenedores Ejecutor efímeros por tarea.](figures/invoker_executor.pdf)
@@ -51,7 +51,7 @@ Gracias a los contribuyentes de wisrovi-suit.
 
 ## References
 
-[1] V. Garousi, M. Felderer, and M. V. M"antyl"a, "The need for empirical evidence in software engineering," *IEEE Software*, vol. 33, no. 1, pp. 68-75, 2016.
+[1] V. Garousi, M. Felderer, and M. V. Mäntylä, "The need for empirical evidence in software engineering," *IEEE Software*, vol. 33, no. 1, pp. 68-75, 2016.
 
 [2] J. Gu *et al.*, "Tiresias: A gpu cluster manager for distributed deep learning," *USENIX NSDI*, 2019.
 
@@ -79,7 +79,7 @@ Gracias a los contribuyentes de wisrovi-suit.
 
 [14] NVIDIA, "Nvidia gpu operator," https://github.com/NVIDIA/gpu-operator, 2021.
 
-[15]  G. Jocher *et al.*, "Ultralytics yolov8," 2023. [Online]. Available: https://github.com/ultralytics/ultralytics 
+[15] G. Jocher *et al.*, "Ultralytics yolov8," 2023. [Online]. Available: https://github.com/ultralytics/ultralytics 
 
 [16] NVIDIA, "Multi-process service (mps)," https://docs.nvidia.com/deploy/mps/index.html, 2023.
 

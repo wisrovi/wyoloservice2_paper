@@ -33,7 +33,7 @@ GPU cluster management with fault isolation has been studied extensively. Tiresi
 Container runtime alternatives provide varying isolation guarantees \cite{young2019true}. Firecracker \cite{agache2020firecracker} uses KVM microVMs for strong isolation. containerd \cite{containerd} provides a CRI runtime. cgroups v2 \cite{cgroups2017} enables fine-grained control. Kata Containers and gVisor \cite{wang2022performance} offer secure isolation at the cost of boot latency. NVIDIA GPU Operator \cite{nvidia2021gpuoperator} standardizes GPU access. 
 
 \section{Proposed Architecture / Methodology}
-The \texttt{wyoloservice2\_invoker} daemon runs on each GPU node. On task receipt:
+The architecture is depicted in \Cref{fig:arch}. The \texttt{wyoloservice2\_invoker} daemon runs on each GPU node. On task receipt:
 \begin{enumerate}
     \item Deserialize payload (YAML config).
     \item Compute resource quotas: \texttt{mem\_limit} scales with \texttt{imgsz}; \texttt{shm\_size} scales with DataLoader workers.

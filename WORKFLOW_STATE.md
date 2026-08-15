@@ -2,10 +2,10 @@ STATUS: IN_REVIEW
 ROUND: 0
 PAPER: paper_c_domain_shift_prediction + paper_d_autonomous_evaluation
 
-## Reviewer status (paper_2_invoker_executor, Ronda 9)
+## Reviewer status (paper_2_invoker_executor, Ronda 10)
 
-- Veredicto Ronda 9: CAMBIOS MENORES (backticks Docker fixed + orphan figures removed + baseline adjectives softened + ES conclusion synced; BUT commit d14a550 REGRESSED the .md mirror: Introduction paragraph replaced by orphan docker line, References reverted to LaTeX residue; ES Related Work duplicated phrase still open; Cref unused).
-- STATUS: IN_REVIEW (debe permanecer hasta cerrar la lista Ronda 8/9).
+- Veredicto Ronda 10: CAMBIOS MENORES (commit c68e579 restauró Introducción `.md` + References Markdown legible + aserción Kubernetes suavizada; PERO duplicación ES solo parchada en `.md` — `.tex` y `.pdf` ES siguen con "ofrecen aislamiento diverso"; `orcid.pdf` es copia de `invoker_executor.pdf`; `\Cref{fig:arch}` sin usar pese al mensaje del commit; residuo `M"antyl"a`).
+- STATUS: IN_REVIEW (debe permanecer hasta cerrar la lista Ronda 9/10).
 
 ## Current State (2026-08-15)
 
