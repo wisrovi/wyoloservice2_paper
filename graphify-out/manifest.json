@@ -10,18 +10,18 @@
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1786690748.7510977,
-    "ast_hash": "e5dd84df29c81986df1a797ed38b44e2",
+    "mtime": 1786714382.333521,
+    "ast_hash": "a14b6c02465cd011bd16ba3cfb4602ed",
     "semantic_hash": ""
   },
   "normal_papers/README.md": {
-    "mtime": 1786440936.1602757,
+    "mtime": 1786714382.3337836,
     "ast_hash": "a87f91659d9ea8540eaf70a7d69b166c",
     "semantic_hash": ""
   },
   "rnd_papers/README.md": {
-    "mtime": 1786440926.9203148,
-    "ast_hash": "64f7fd4433fe1b19c2e56551feacac51",
+    "mtime": 1786714382.3339307,
+    "ast_hash": "0e737cfdf706e54b4153ecbe7fc90089",
     "semantic_hash": ""
   },
   "rnd_papers/paper_1_agentic_mlops/en/main.md": {
@@ -174,26 +174,6 @@
     "ast_hash": "081c70a424268204d6f46b20e769782e",
     "semantic_hash": ""
   },
-  "rnd_papers/paper_3_automated_xai/en/figures/chart.pdf": {
-    "mtime": 1786440800.774699,
-    "ast_hash": "8991d48cf6b283c54a815d51346e115c",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_3_automated_xai/en/figures/pipeline.pdf": {
-    "mtime": 1786440800.7748485,
-    "ast_hash": "33d85ff60a0e517355a04b3c4d97a370",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_3_automated_xai/es/figures/chart.pdf": {
-    "mtime": 1786440800.777681,
-    "ast_hash": "8991d48cf6b283c54a815d51346e115c",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_3_automated_xai/es/figures/pipeline.pdf": {
-    "mtime": 1786440800.777681,
-    "ast_hash": "33d85ff60a0e517355a04b3c4d97a370",
-    "semantic_hash": ""
-  },
   ".plotenv/bin/Activate.ps1": {
     "mtime": 1786689256.9587858,
     "ast_hash": "ffb074b8336789578f50a6c1a1632342",
@@ -224,54 +204,9 @@
     "ast_hash": "36ddfe5686ee9af87df0ac75fe656118",
     "semantic_hash": ""
   },
-  "normal_papers/paper_2_xai/fix.py": {
-    "mtime": 1786522106.6925771,
-    "ast_hash": "5e8a9b610c81dba5e0568258914b926a",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_3_robustness/fix.py": {
-    "mtime": 1786526560.4698913,
-    "ast_hash": "033cb3a910e1ac095869959af154701c",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_4_crossdomain/fix.py": {
-    "mtime": 1786531373.3278644,
-    "ast_hash": "87492b56dbc2600c72e0d8ae8ae752e4",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_4_crossdomain/generate_plot.py": {
-    "mtime": 1786602176.6347213,
-    "ast_hash": "ad8c7c4e995e9a05c71a28cd80c475f5",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_statistical/fix.py": {
-    "mtime": 1786612135.5003216,
-    "ast_hash": "86ddbe7a71c20ab461a8f6bfbc2aebd7",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_statistical/generate_pipeline_plot.py": {
-    "mtime": 1786610904.9196734,
-    "ast_hash": "4535c70918949e0b4089cdded7866bab",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_6_llm_reporting/en/figures/pp-config.json": {
-    "mtime": 1786495026.947806,
-    "ast_hash": "26ac8e94aece6f7043cfab909929c89a",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_7_wpipe/fix.py": {
-    "mtime": 1786524790.384125,
-    "ast_hash": "eb4f5fba0bdc4344dc7ca6e0593351ff",
-    "semantic_hash": ""
-  },
   "patch_paper5.py": {
     "mtime": 1786696147.242196,
     "ast_hash": "6e1158d6e82693941db036265936b8c3",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_3_automated_xai/fix.py": {
-    "mtime": 1786440800.7798483,
-    "ast_hash": "f8aefce3be0333670017615e03ab8bf4",
     "semantic_hash": ""
   },
   "rnd_papers/paper_c_domain_shift_prediction/en/benchmark_prediction.py": {
@@ -290,7 +225,7 @@
     "semantic_hash": ""
   },
   "run_revisor.sh": {
-    "mtime": 1786689875.3934789,
+    "mtime": 1786752035.3889978,
     "ast_hash": "ee3be7d3e0f23b182a75bb9814df6e44",
     "semantic_hash": ""
   },
@@ -395,8 +330,8 @@
     "semantic_hash": ""
   },
   ".agy_prompts/revisor.md": {
-    "mtime": 1786443393.9443648,
-    "ast_hash": "1091cbaed2edf6643b6d37fa0664d0e7",
+    "mtime": 1786752917.7595563,
+    "ast_hash": "b60c379a07879af468655db0c6d151c6",
     "semantic_hash": ""
   },
   "CHANGELOG.md": {
@@ -410,188 +345,18 @@
     "semantic_hash": ""
   },
   "WORKFLOW_STATE.md": {
-    "mtime": 1786690757.3831234,
-    "ast_hash": "d495b8e9d1c2237dec0f9f0baf01a9fe",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_10_wpipe_framework/en/DRAFT.md": {
-    "mtime": 1786440918.4973505,
-    "ast_hash": "804650254d8d7cf63aaaa612ad83c0fd",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_10_wpipe_framework/en/main.md": {
-    "mtime": 1786454587.1417098,
-    "ast_hash": "e20d2d715a5f2d9d035507a3bde4f48f",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_10_wpipe_framework/es/main.md": {
-    "mtime": 1786454634.7916603,
-    "ast_hash": "faf8cb469cba6bce003875bfd7779513",
+    "mtime": 1786752293.5727465,
+    "ast_hash": "785b55ffe6018b0580a6013c90af245c",
     "semantic_hash": ""
   },
   "normal_papers/paper_1_mlops/en/main.md": {
-    "mtime": 1786521903.821542,
-    "ast_hash": "a98460f19665595afd587aeb9b39f710",
+    "mtime": 1786752604.6977124,
+    "ast_hash": "470ab9cb580b9a0e910e95228391fd7e",
     "semantic_hash": ""
   },
   "normal_papers/paper_1_mlops/es/main.md": {
-    "mtime": 1786521903.8218818,
-    "ast_hash": "7583d2455b5bcffdd80aaf3355c22412",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_2_xai/en/main.md": {
-    "mtime": 1786522884.039781,
-    "ast_hash": "f0ad47e82e3a2c76b8ea4b9083b6ba72",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_2_xai/es/main.md": {
-    "mtime": 1786522886.313776,
-    "ast_hash": "280630cbbc453b8c06e1765e102d6712",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_3_robustness/en/main.md": {
-    "mtime": 1786527660.524809,
-    "ast_hash": "f65d095e5e6dad5dad614b7fa9ea98e9",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_3_robustness/es/main.md": {
-    "mtime": 1786527662.5412934,
-    "ast_hash": "ae3f76129571553a75144c061f288014",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_4_crossdomain/en/main.md": {
-    "mtime": 1786602212.1065938,
-    "ast_hash": "27a859eee4ebc3cce1965ddcd1a6d894",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_4_crossdomain/es/main.md": {
-    "mtime": 1786602214.4496799,
-    "ast_hash": "77676793378823fd9b38281258670297",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_4_evolutionary_hpo/es/main.md": {
-    "mtime": 1786440800.7548485,
-    "ast_hash": "1501a018bc80aae62949decc250b5165",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_shift_left_data/en/main.md": {
-    "mtime": 1786440800.7578485,
-    "ast_hash": "305239ba77f488c39a8af616a9781d5a",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_shift_left_data/es/main.md": {
-    "mtime": 1786440800.7610805,
-    "ast_hash": "70682246b02ece262c413b4b1abeee54",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_statistical/en/main.md": {
-    "mtime": 1786696147.394482,
-    "ast_hash": "a4a2ba5cd0b037b8b0642a0fc349a944",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_statistical/es/main.md": {
-    "mtime": 1786696147.394737,
-    "ast_hash": "9a7c7f7b444c84ea3aec15d9498ce76e",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_6_llm_reporting/en/main.md": {
-    "mtime": 1786515882.0726361,
-    "ast_hash": "0104a8c4bc2c844a5604d35fe4bbc22b",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_6_llm_reporting/es/main.md": {
-    "mtime": 1786515882.0733385,
-    "ast_hash": "61cc3087fdd323d1f181a126ef6c2f7e",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_7_wpipe/en/main.md": {
-    "mtime": 1786525225.1533754,
-    "ast_hash": "5bda87dee701a3226a0bbe758a6d5b01",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_7_wpipe/es/main.md": {
-    "mtime": 1786525227.145409,
-    "ast_hash": "d095f9577ebfbfa111b2235f2035ac4b",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_8_hardware_complexity/en/DRAFT.md": {
-    "mtime": 1786440897.35544,
-    "ast_hash": "25df3906178f058829c731cf1ad81330",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_8_hardware_complexity/en/main.md": {
-    "mtime": 1786454586.9568646,
-    "ast_hash": "e0e83ea7f984da78e6eac85e93bccad1",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_8_hardware_complexity/es/main.md": {
-    "mtime": 1786454634.410699,
-    "ast_hash": "eca4ef4b36624866ffc184e33a54b9b4",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_3_automated_xai/en/main.md": {
-    "mtime": 1786440800.7748485,
-    "ast_hash": "3650fc941695ae69050eb37b883dc4cf",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_3_automated_xai/es/main.md": {
-    "mtime": 1786440800.7778485,
-    "ast_hash": "e0c0c3a168e7b50a145a4404926d73b8",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_6_robustness_adversarial/en/DRAFT.md": {
-    "mtime": 1786440855.2886178,
-    "ast_hash": "9c68f33b51956a7e405a348929e91221",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_7_cross_domain_generalization/en/DRAFT.md": {
-    "mtime": 1786440870.3215542,
-    "ast_hash": "2e1f68c12f2fac06d58193807d22cbb2",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_7_cross_domain_generalization/en/main.md": {
-    "mtime": 1786452126.1430035,
-    "ast_hash": "653d3413a87b2d8f6564d4b259a911db",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_7_cross_domain_generalization/es/main.md": {
-    "mtime": 1786452211.021563,
-    "ast_hash": "39d2d7928c1f81b91cf06a17cb9ff87d",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_9_llm_research_reporting/en/DRAFT.md": {
-    "mtime": 1786440884.991492,
-    "ast_hash": "9cc65f440ef1a6dd14a7035808a6264d",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_9_llm_research_reporting/en/main.md": {
-    "mtime": 1786454586.7677088,
-    "ast_hash": "d1f5472c1593286d25df07502fa87fdd",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_9_llm_research_reporting/es/main.md": {
-    "mtime": 1786454634.6023731,
-    "ast_hash": "1cd47eea0349d3c3dbec58566035d0a7",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_a_decentralized_mlops/es/main.md": {
-    "mtime": 1786440800.7801943,
-    "ast_hash": "3a50b1500e4902706c9dad821088da49",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_a_decentralized_mlops/es/paper_a_es.md": {
-    "mtime": 1786440800.780559,
-    "ast_hash": "cded11d946bf1b96ab67bc8b564eec09",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_b_autonomous_evaluation_xai/es/main.md": {
-    "mtime": 1786440800.7808826,
-    "ast_hash": "85913e45a5a44e799805546b73d8e66d",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_b_autonomous_evaluation_xai/es/paper_b_es.md": {
-    "mtime": 1786440800.7814136,
-    "ast_hash": "7512837076fd9e31ade13a2bb885b106",
+    "mtime": 1786752604.6984386,
+    "ast_hash": "bf1dbe3a75aa4cf15a53b17a17ce1576",
     "semantic_hash": ""
   },
   "rnd_papers/paper_c_domain_shift_prediction/en/main.md": {
@@ -614,24 +379,14 @@
     "ast_hash": "ce964541d140fcfdc4de128504d47b7e",
     "semantic_hash": ""
   },
-  "normal_papers/paper_10_wpipe_framework/en/main.pdf": {
-    "mtime": 1786454564.760642,
-    "ast_hash": "6314d12107a83da0afc85f0720d8a787",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_10_wpipe_framework/es/main.pdf": {
-    "mtime": 1786454651.373905,
-    "ast_hash": "d249d5c5f4ff648aeda06a219c2b8a71",
-    "semantic_hash": ""
-  },
   "normal_papers/paper_1_mlops/en/figures/architecture.pdf": {
     "mtime": 1786516691.3248188,
     "ast_hash": "5fef84bea6e0f604848e6d77f93eddd0",
     "semantic_hash": ""
   },
   "normal_papers/paper_1_mlops/en/main.pdf": {
-    "mtime": 1786521904.445959,
-    "ast_hash": "2f414aaef4e92209e9a8c34b9fa16f9b",
+    "mtime": 1786752691.2728996,
+    "ast_hash": "dfa908a2469d6149e4124fdf858fcda9",
     "semantic_hash": ""
   },
   "normal_papers/paper_1_mlops/es/figures/architecture.pdf": {
@@ -640,188 +395,8 @@
     "semantic_hash": ""
   },
   "normal_papers/paper_1_mlops/es/main.pdf": {
-    "mtime": 1786521905.0889611,
-    "ast_hash": "9519fe34f8fbdd9a26c520b16a9b4594",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_2_xai/en/main.pdf": {
-    "mtime": 1786522884.0326502,
-    "ast_hash": "39b3c11e7a2a6fcc95e99f04e67ab285",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_2_xai/es/main.pdf": {
-    "mtime": 1786522886.3076558,
-    "ast_hash": "b1219898a24a489ce6a6dfcfc498e05e",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_3_robustness/en/main.pdf": {
-    "mtime": 1786527660.5175014,
-    "ast_hash": "5d43bd96e15aadff2dd5111884ed03b4",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_3_robustness/es/main.pdf": {
-    "mtime": 1786527662.5355072,
-    "ast_hash": "1bb27afde0afc19fd594f15f38e416d3",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_4_crossdomain/en/main.pdf": {
-    "mtime": 1786602212.095827,
-    "ast_hash": "297b32385f2aeec1a2fc5379e0042598",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_4_crossdomain/es/main.pdf": {
-    "mtime": 1786602214.443834,
-    "ast_hash": "f9f5f0ea4a74f15caa7e24554a3bbfcf",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_4_evolutionary_hpo/en/main.md": {
-    "mtime": 1786440800.7543414,
-    "ast_hash": "a4e6fce1404a27c088f0b9fe5d23bda1",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_4_evolutionary_hpo/en/main.pdf": {
-    "mtime": 1786454347.7209828,
-    "ast_hash": "fc014b9b6be31137e1fc3cac6cb4ad64",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_shift_left_data/en/figures/gatekeeper.pdf": {
-    "mtime": 1786440800.756586,
-    "ast_hash": "b1540f1ccbc6a8b4926a52217f588ca1",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_shift_left_data/en/figures/waste_chart.pdf": {
-    "mtime": 1786440800.7578485,
-    "ast_hash": "e91ab5a2989be5f68cd078c67d2a8eae",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_shift_left_data/en/main.pdf": {
-    "mtime": 1786440800.7588484,
-    "ast_hash": "160d80388a0daca60abfb81cd2b8bea3",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_shift_left_data/es/figures/gatekeeper.pdf": {
-    "mtime": 1786440800.7608995,
-    "ast_hash": "b1540f1ccbc6a8b4926a52217f588ca1",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_shift_left_data/es/figures/waste_chart.pdf": {
-    "mtime": 1786440800.7610805,
-    "ast_hash": "e91ab5a2989be5f68cd078c67d2a8eae",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_shift_left_data/es/main.pdf": {
-    "mtime": 1786440800.7618484,
-    "ast_hash": "f0df4260e51342c39cc37bef000a0d9c",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_statistical/en/main.pdf": {
-    "mtime": 1786696149.3792026,
-    "ast_hash": "0d7990a5f0bc25df4ca4a7640b49b037",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_5_statistical/es/main.pdf": {
-    "mtime": 1786696151.7202096,
-    "ast_hash": "89cf5a6058e87315f280913eadc7cc11",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_6_llm_reporting/en/figures/pipeline.pdf": {
-    "mtime": 1786517451.5702016,
-    "ast_hash": "68bc3f318531172eb56084610ca80013",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_6_llm_reporting/en/figures/pipeline_fit.pdf": {
-    "mtime": 1786495082.2409725,
-    "ast_hash": "e59776cc2901a59fe57e451fce6abd82",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_6_llm_reporting/en/figures/pipeline_test.pdf": {
-    "mtime": 1786495031.2388186,
-    "ast_hash": "c311db01508875c96acc9718240be8c0",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_6_llm_reporting/en/main.pdf": {
-    "mtime": 1786517453.2262068,
-    "ast_hash": "f0bf716c88ef092b217bd9688cc3038c",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_6_llm_reporting/es/figures/pipeline.pdf": {
-    "mtime": 1786517451.6745799,
-    "ast_hash": "68bc3f318531172eb56084610ca80013",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_6_llm_reporting/es/main.pdf": {
-    "mtime": 1786517454.7262113,
-    "ast_hash": "3d64fc6e06c2dda8e9d24624dc46c749",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_7_wpipe/en/main.pdf": {
-    "mtime": 1786525225.1473753,
-    "ast_hash": "9f5c6536d3e35017e71d7ae834a0db85",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_7_wpipe/es/main.pdf": {
-    "mtime": 1786525227.140381,
-    "ast_hash": "54d260bc049a2f0d451868e15a410b8f",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_8_hardware_complexity/en/main.pdf": {
-    "mtime": 1786619438.1108606,
-    "ast_hash": "049fc99c93a0a7cf76971bc1f170ea9c",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_8_hardware_complexity/es/main.pdf": {
-    "mtime": 1786619441.4938686,
-    "ast_hash": "571308640afea299dc1794d0d5b484f1",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_9_outlier_failure_analysis/en/main.pdf": {
-    "mtime": 1786687755.5520904,
-    "ast_hash": "bb8d9040295809048956d5dcfb3d0608",
-    "semantic_hash": ""
-  },
-  "normal_papers/paper_9_outlier_failure_analysis/es/main.pdf": {
-    "mtime": 1786687756.3190928,
-    "ast_hash": "c805cb496ab5a4e31dd13faeaad6775b",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_3_automated_xai/en/main.pdf": {
-    "mtime": 1786440800.7758484,
-    "ast_hash": "076450bb4ef70fee1bfdae4855e87ded",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_3_automated_xai/es/main.pdf": {
-    "mtime": 1786440800.7788484,
-    "ast_hash": "75a7e4bc11aba092c9a9d3092c7af6ff",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_7_cross_domain_generalization/en/figures/pipeline_flow.pdf": {
-    "mtime": 1786452325.780901,
-    "ast_hash": "ff33548961c8be797ccbda1f8a901e8f",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_7_cross_domain_generalization/en/main.pdf": {
-    "mtime": 1786452327.8799071,
-    "ast_hash": "d0f43778ab8d22f0ab3ac22ad5fa4f2a",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_7_cross_domain_generalization/es/figures/pipeline_flow.pdf": {
-    "mtime": 1786452377.9615784,
-    "ast_hash": "ff33548961c8be797ccbda1f8a901e8f",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_7_cross_domain_generalization/es/main.pdf": {
-    "mtime": 1786452330.0119135,
-    "ast_hash": "5ffabb695cc8ee81d6a33adf87c1e1e6",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_9_llm_research_reporting/en/main.pdf": {
-    "mtime": 1786454564.3576407,
-    "ast_hash": "40256a58f94c03bfdeabc34cf2eedc12",
-    "semantic_hash": ""
-  },
-  "rnd_papers/paper_9_llm_research_reporting/es/main.pdf": {
-    "mtime": 1786454651.1879044,
-    "ast_hash": "0e4dabd651be6c6c93f5c6db1b83a1a7",
+    "mtime": 1786752608.6556602,
+    "ast_hash": "184dd54493d2c84b3e465d3bf265377e",
     "semantic_hash": ""
   },
   "rnd_papers/paper_c_domain_shift_prediction/en/figures/prediction.pdf": {
@@ -864,42 +439,477 @@
     "ast_hash": "5c82e254e4ff30353c0cebec6c693308",
     "semantic_hash": ""
   },
-  "normal_papers/paper_4_crossdomain/en/fid_correlation.png": {
+  "generate_paper_10.py": {
+    "mtime": 1786714284.1759987,
+    "ast_hash": "18005ad0bad65a092d3bff30278561da",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/ablation_memory_limits.py": {
+    "mtime": 1786752585.183592,
+    "ast_hash": "5f25fd5030d48e2c97c99c68fea5922c",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/benchmarks/benchmark_latency.py": {
+    "mtime": 1786752585.167592,
+    "ast_hash": "c8b707d32362dbc8b60c6ce254b89ba8",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/evidencias/ablation_memory_limits.py": {
+    "mtime": 1786752398.1100497,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/evidencias/benchmark_latency.py": {
+    "mtime": 1786752398.1100497,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/fix_bibs.py": {
+    "mtime": 1786752346.6559005,
+    "ast_hash": "d6df0b9d5fa271347538f36b8d6a6953",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/purge_bibs.py": {
+    "mtime": 1786752600.7926373,
+    "ast_hash": "9746911215f42f408c353bd181f453f1",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/re_fix_paper.py": {
+    "mtime": 1786752595.0646207,
+    "ast_hash": "bdb2d035c10f2b6b72b08ce8fb90a5cf",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/tex_to_md.py": {
+    "mtime": 1786752416.200102,
+    "ast_hash": "ca56adadc0b772776484b3a4d97a1e5d",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/translate_abstract.py": {
+    "mtime": 1786752408.0350783,
+    "ast_hash": "24f0ab4817ca925997605d7438a1da39",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/update_tex.py": {
+    "mtime": 1786752374.406981,
+    "ast_hash": "ca86eebb3630f87edc39f467a2e7ae1c",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_3_xai/fix.py": {
+    "mtime": 1786522106.6925771,
+    "ast_hash": "5e8a9b610c81dba5e0568258914b926a",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_4_robustness/fix.py": {
+    "mtime": 1786526560.4698913,
+    "ast_hash": "033cb3a910e1ac095869959af154701c",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_5_crossdomain/fix.py": {
+    "mtime": 1786531373.3278644,
+    "ast_hash": "87492b56dbc2600c72e0d8ae8ae752e4",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_5_crossdomain/generate_plot.py": {
+    "mtime": 1786602176.6347213,
+    "ast_hash": "ad8c7c4e995e9a05c71a28cd80c475f5",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_6_statistical/fix.py": {
+    "mtime": 1786612135.5003216,
+    "ast_hash": "86ddbe7a71c20ab461a8f6bfbc2aebd7",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_6_statistical/generate_pipeline_plot.py": {
+    "mtime": 1786610904.9196734,
+    "ast_hash": "4535c70918949e0b4089cdded7866bab",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_7_llm_reporting/en/figures/pp-config.json": {
+    "mtime": 1786495026.947806,
+    "ast_hash": "26ac8e94aece6f7043cfab909929c89a",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_8_wpipe/fix.py": {
+    "mtime": 1786524790.384125,
+    "ast_hash": "eb4f5fba0bdc4344dc7ca6e0593351ff",
+    "semantic_hash": ""
+  },
+  "patch_readme.py": {
+    "mtime": 1786714382.3122902,
+    "ast_hash": "b0bd692559271f839baf22cb94e26d26",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_automated_xai/fix.py": {
+    "mtime": 1786440800.7798483,
+    "ast_hash": "f8aefce3be0333670017615e03ab8bf4",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_11_noise_evaluation/en/main.md": {
+    "mtime": 1786714284.3357491,
+    "ast_hash": "a7686e194ec0461943976ea71f904f47",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_11_noise_evaluation/es/main.md": {
+    "mtime": 1786714284.3357763,
+    "ast_hash": "d0c4daf5b000df111bb745f47673998e",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/docker-compose.yml": {
+    "mtime": 1786752585.1985922,
+    "ast_hash": "2a81af198a3a9238ef4f7c45f32f414e",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_1_mlops/evidencias/docker-compose.yml": {
+    "mtime": 1786752398.1100497,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_3_xai/en/main.md": {
+    "mtime": 1786522884.039781,
+    "ast_hash": "f0ad47e82e3a2c76b8ea4b9083b6ba72",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_3_xai/es/main.md": {
+    "mtime": 1786522886.313776,
+    "ast_hash": "280630cbbc453b8c06e1765e102d6712",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_4_robustness/en/main.md": {
+    "mtime": 1786527660.524809,
+    "ast_hash": "f65d095e5e6dad5dad614b7fa9ea98e9",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_4_robustness/es/main.md": {
+    "mtime": 1786527662.5412934,
+    "ast_hash": "ae3f76129571553a75144c061f288014",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_5_crossdomain/en/main.md": {
+    "mtime": 1786602212.1065938,
+    "ast_hash": "27a859eee4ebc3cce1965ddcd1a6d894",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_5_crossdomain/es/main.md": {
+    "mtime": 1786602214.4496799,
+    "ast_hash": "77676793378823fd9b38281258670297",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_6_statistical/en/main.md": {
+    "mtime": 1786696147.394482,
+    "ast_hash": "a4a2ba5cd0b037b8b0642a0fc349a944",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_6_statistical/es/main.md": {
+    "mtime": 1786696147.394737,
+    "ast_hash": "9a7c7f7b444c84ea3aec15d9498ce76e",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_7_llm_reporting/en/main.md": {
+    "mtime": 1786515882.0726361,
+    "ast_hash": "0104a8c4bc2c844a5604d35fe4bbc22b",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_7_llm_reporting/es/main.md": {
+    "mtime": 1786515882.0733385,
+    "ast_hash": "61cc3087fdd323d1f181a126ef6c2f7e",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_8_wpipe/en/main.md": {
+    "mtime": 1786525225.1533754,
+    "ast_hash": "5bda87dee701a3226a0bbe758a6d5b01",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_8_wpipe/es/main.md": {
+    "mtime": 1786525227.145409,
+    "ast_hash": "d095f9577ebfbfa111b2235f2035ac4b",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_9_hardware_complexity/en/DRAFT.md": {
+    "mtime": 1786440897.35544,
+    "ast_hash": "25df3906178f058829c731cf1ad81330",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_9_hardware_complexity/en/main.md": {
+    "mtime": 1786454586.9568646,
+    "ast_hash": "e0e83ea7f984da78e6eac85e93bccad1",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_9_hardware_complexity/es/main.md": {
+    "mtime": 1786454634.410699,
+    "ast_hash": "eca4ef4b36624866ffc184e33a54b9b4",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_automated_xai/en/main.md": {
+    "mtime": 1786440800.7748485,
+    "ast_hash": "3650fc941695ae69050eb37b883dc4cf",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_automated_xai/es/main.md": {
+    "mtime": 1786440800.7778485,
+    "ast_hash": "e0c0c3a168e7b50a145a4404926d73b8",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_3_robustness_adversarial/en/DRAFT.md": {
+    "mtime": 1786440855.2886178,
+    "ast_hash": "9c68f33b51956a7e405a348929e91221",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_4_cross_domain_generalization/en/DRAFT.md": {
+    "mtime": 1786440870.3215542,
+    "ast_hash": "2e1f68c12f2fac06d58193807d22cbb2",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_4_cross_domain_generalization/en/main.md": {
+    "mtime": 1786452126.1430035,
+    "ast_hash": "653d3413a87b2d8f6564d4b259a911db",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_4_cross_domain_generalization/es/main.md": {
+    "mtime": 1786452211.021563,
+    "ast_hash": "39d2d7928c1f81b91cf06a17cb9ff87d",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_5_llm_research_reporting/en/DRAFT.md": {
+    "mtime": 1786440884.991492,
+    "ast_hash": "9cc65f440ef1a6dd14a7035808a6264d",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_5_llm_research_reporting/en/main.md": {
+    "mtime": 1786454586.7677088,
+    "ast_hash": "d1f5472c1593286d25df07502fa87fdd",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_5_llm_research_reporting/es/main.md": {
+    "mtime": 1786454634.6023731,
+    "ast_hash": "1cd47eea0349d3c3dbec58566035d0a7",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_6_decentralized_mlops/es/main.md": {
+    "mtime": 1786440800.7801943,
+    "ast_hash": "3a50b1500e4902706c9dad821088da49",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_6_decentralized_mlops/es/paper_a_es.md": {
+    "mtime": 1786440800.780559,
+    "ast_hash": "cded11d946bf1b96ab67bc8b564eec09",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_7_autonomous_evaluation_xai/es/main.md": {
+    "mtime": 1786440800.7808826,
+    "ast_hash": "85913e45a5a44e799805546b73d8e66d",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_7_autonomous_evaluation_xai/es/paper_b_es.md": {
+    "mtime": 1786440800.7814136,
+    "ast_hash": "7512837076fd9e31ade13a2bb885b106",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_10_outlier_failure_analysis/en/main.pdf": {
+    "mtime": 1786687755.5520904,
+    "ast_hash": "bb8d9040295809048956d5dcfb3d0608",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_10_outlier_failure_analysis/es/main.pdf": {
+    "mtime": 1786687756.3190928,
+    "ast_hash": "c805cb496ab5a4e31dd13faeaad6775b",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_11_noise_evaluation/en/main.pdf": {
+    "mtime": 1786714286.659006,
+    "ast_hash": "8df0f02bef96d54f23cc56b33e314234",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_11_noise_evaluation/es/main.pdf": {
+    "mtime": 1786714289.0640132,
+    "ast_hash": "c2312d7b53da528a1350a30fb855a94b",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_3_xai/en/main.pdf": {
+    "mtime": 1786522884.0326502,
+    "ast_hash": "39b3c11e7a2a6fcc95e99f04e67ab285",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_3_xai/es/main.pdf": {
+    "mtime": 1786522886.3076558,
+    "ast_hash": "b1219898a24a489ce6a6dfcfc498e05e",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_4_robustness/en/main.pdf": {
+    "mtime": 1786527660.5175014,
+    "ast_hash": "5d43bd96e15aadff2dd5111884ed03b4",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_4_robustness/es/main.pdf": {
+    "mtime": 1786527662.5355072,
+    "ast_hash": "1bb27afde0afc19fd594f15f38e416d3",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_5_crossdomain/en/main.pdf": {
+    "mtime": 1786602212.095827,
+    "ast_hash": "297b32385f2aeec1a2fc5379e0042598",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_5_crossdomain/es/main.pdf": {
+    "mtime": 1786602214.443834,
+    "ast_hash": "f9f5f0ea4a74f15caa7e24554a3bbfcf",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_6_statistical/en/main.pdf": {
+    "mtime": 1786696149.3792026,
+    "ast_hash": "0d7990a5f0bc25df4ca4a7640b49b037",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_6_statistical/es/main.pdf": {
+    "mtime": 1786696151.7202096,
+    "ast_hash": "89cf5a6058e87315f280913eadc7cc11",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_7_llm_reporting/en/figures/pipeline.pdf": {
+    "mtime": 1786517451.5702016,
+    "ast_hash": "68bc3f318531172eb56084610ca80013",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_7_llm_reporting/en/figures/pipeline_fit.pdf": {
+    "mtime": 1786495082.2409725,
+    "ast_hash": "e59776cc2901a59fe57e451fce6abd82",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_7_llm_reporting/en/figures/pipeline_test.pdf": {
+    "mtime": 1786495031.2388186,
+    "ast_hash": "c311db01508875c96acc9718240be8c0",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_7_llm_reporting/en/main.pdf": {
+    "mtime": 1786517453.2262068,
+    "ast_hash": "f0bf716c88ef092b217bd9688cc3038c",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_7_llm_reporting/es/figures/pipeline.pdf": {
+    "mtime": 1786517451.6745799,
+    "ast_hash": "68bc3f318531172eb56084610ca80013",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_7_llm_reporting/es/main.pdf": {
+    "mtime": 1786517454.7262113,
+    "ast_hash": "3d64fc6e06c2dda8e9d24624dc46c749",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_8_wpipe/en/main.pdf": {
+    "mtime": 1786525225.1473753,
+    "ast_hash": "9f5c6536d3e35017e71d7ae834a0db85",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_8_wpipe/es/main.pdf": {
+    "mtime": 1786525227.140381,
+    "ast_hash": "54d260bc049a2f0d451868e15a410b8f",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_9_hardware_complexity/en/main.pdf": {
+    "mtime": 1786619438.1108606,
+    "ast_hash": "049fc99c93a0a7cf76971bc1f170ea9c",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_9_hardware_complexity/es/main.pdf": {
+    "mtime": 1786619441.4938686,
+    "ast_hash": "571308640afea299dc1794d0d5b484f1",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_automated_xai/en/figures/chart.pdf": {
+    "mtime": 1786440800.774699,
+    "ast_hash": "8991d48cf6b283c54a815d51346e115c",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_automated_xai/en/figures/pipeline.pdf": {
+    "mtime": 1786440800.7748485,
+    "ast_hash": "33d85ff60a0e517355a04b3c4d97a370",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_automated_xai/en/main.pdf": {
+    "mtime": 1786440800.7758484,
+    "ast_hash": "076450bb4ef70fee1bfdae4855e87ded",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_automated_xai/es/figures/chart.pdf": {
+    "mtime": 1786440800.777681,
+    "ast_hash": "8991d48cf6b283c54a815d51346e115c",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_automated_xai/es/figures/pipeline.pdf": {
+    "mtime": 1786440800.777681,
+    "ast_hash": "33d85ff60a0e517355a04b3c4d97a370",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_2_automated_xai/es/main.pdf": {
+    "mtime": 1786440800.7788484,
+    "ast_hash": "75a7e4bc11aba092c9a9d3092c7af6ff",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_4_cross_domain_generalization/en/figures/pipeline_flow.pdf": {
+    "mtime": 1786452325.780901,
+    "ast_hash": "ff33548961c8be797ccbda1f8a901e8f",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_4_cross_domain_generalization/en/main.pdf": {
+    "mtime": 1786452327.8799071,
+    "ast_hash": "d0f43778ab8d22f0ab3ac22ad5fa4f2a",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_4_cross_domain_generalization/es/figures/pipeline_flow.pdf": {
+    "mtime": 1786452377.9615784,
+    "ast_hash": "ff33548961c8be797ccbda1f8a901e8f",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_4_cross_domain_generalization/es/main.pdf": {
+    "mtime": 1786452330.0119135,
+    "ast_hash": "5ffabb695cc8ee81d6a33adf87c1e1e6",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_5_llm_research_reporting/en/main.pdf": {
+    "mtime": 1786454564.3576407,
+    "ast_hash": "40256a58f94c03bfdeabc34cf2eedc12",
+    "semantic_hash": ""
+  },
+  "rnd_papers/paper_5_llm_research_reporting/es/main.pdf": {
+    "mtime": 1786454651.1879044,
+    "ast_hash": "0e4dabd651be6c6c93f5c6db1b83a1a7",
+    "semantic_hash": ""
+  },
+  "normal_papers/paper_5_crossdomain/en/fid_correlation.png": {
     "mtime": 1786602198.7437873,
     "ast_hash": "c8dc5cb58bd60387231df482682b6214",
     "semantic_hash": ""
   },
-  "normal_papers/paper_4_crossdomain/es/fid_correlation.png": {
+  "normal_papers/paper_5_crossdomain/es/fid_correlation.png": {
     "mtime": 1786602198.797412,
     "ast_hash": "c8dc5cb58bd60387231df482682b6214",
     "semantic_hash": ""
   },
-  "normal_papers/paper_4_crossdomain/evidencias/fid_correlation.png": {
+  "normal_papers/paper_5_crossdomain/evidencias/fid_correlation.png": {
     "mtime": 1786602198.6897871,
     "ast_hash": "c8dc5cb58bd60387231df482682b6214",
     "semantic_hash": ""
   },
-  "normal_papers/paper_5_statistical/en/pipeline.jpg": {
+  "normal_papers/paper_6_statistical/en/pipeline.jpg": {
     "mtime": 1786611386.425184,
     "ast_hash": "1a16e870dba8efd7392b3bc1ee37f0ab",
     "semantic_hash": ""
   },
-  "normal_papers/paper_5_statistical/es/pipeline.jpg": {
+  "normal_papers/paper_6_statistical/es/pipeline.jpg": {
     "mtime": 1786611386.427433,
     "ast_hash": "1a16e870dba8efd7392b3bc1ee37f0ab",
     "semantic_hash": ""
   },
-  "normal_papers/paper_6_llm_reporting/en/figures/origpage-1.png": {
+  "normal_papers/paper_7_llm_reporting/en/figures/origpage-1.png": {
     "mtime": 1786495088.3769908,
     "ast_hash": "a767fddff94110bae450ac95672df8a4",
     "semantic_hash": ""
   },
-  "normal_papers/paper_6_llm_reporting/en/figures/page-1.png": {
+  "normal_papers/paper_7_llm_reporting/en/figures/page-1.png": {
     "mtime": 1786495053.6528862,
     "ast_hash": "a767fddff94110bae450ac95672df8a4",
     "semantic_hash": ""
   },
-  "normal_papers/paper_6_llm_reporting/en/figures/pipeline_test.svg": {
+  "normal_papers/paper_7_llm_reporting/en/figures/pipeline_test.svg": {
     "mtime": 1786495036.6368349,
     "ast_hash": "893c8f0caee1f27e66380a51dbff09a2",
     "semantic_hash": ""
