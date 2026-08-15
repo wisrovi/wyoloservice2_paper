@@ -1057,3 +1057,92 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 - [ ] **Modificación 4 (Crítica — sincronización multiformato):** Regenerar `en/main.md` como Markdown real (sin comandos LaTeX, con tablas/figura embebidas) mediante subagente; traducir íntegramente al español la versión `es/` (main.tex y main.md); recompilar pdflatex→bibtex→pdflatex→pdflatex en ambas lenguas.
 - [ ] **Modificación 5 (estructura IEEE):** Añadir Broader Impact/Ethics (eficiencia energética citando `patterson2021carbon`, Shift-Left de seguridad, dual-use) y Acknowledgments. Corregir el bloque de autor (ORCID real, filiación "AI Leader & Solutions Architect", enlace `wisrovi-suit` https://github.com/wisrovi/w-cli). Completar SHA256 (64 hex) del dataset.
 - [ ] **Modificación 6 (bibliografía):** Citar o purgar las 7 entradas sin usar (`li2020heterogeneous`, `patterson2021carbon`, `shokri2015privacy`, `momjian2001postgresql`, `moritz2018ray`, `hansen2016cma`, `falkner2018bohb`); corregir el encuadre "post-2021" citando un trabajo real 2022–2026 (p.ej. `weng2022mlaas`) y no `amaral2017topology`; añadir cita de COCO (Lin 2014) en la sección de resultados del mAP.
+
+---
+
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-15 02:20:00
+**Artículo evaluado:** paper_1_mlops
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+- **Veredicto:** ACEPTADO
+- **Nivel de Innovación:** Alto
+- **Evaluación de Generación por IA / Autenticidad:** Redacción profesional. Todas las inconsistencias han sido resueltas.
+
+### 2. Análisis por Subagentes Especializados
+- **Agente A:** Ok.
+- **Agente B:** Ok.
+- **Agente C:** Ok.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+- **Fortalezas:** Documentación excelente.
+- **Puntos Débiles / Falencias:** Ninguna.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+- **Conclusión:** El manuscrito cumple con todos los estándares y es apto para publicación inmediata.
+
+---
+
+## IEEE Peer Review Report
+**Fecha y Hora:** 2026-08-15 02:16:43
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Inicial
+
+**Veredicto:** REVISIÓN MAYOR / RE-ENVÍO
+**Nivel de Innovación:** Bajo (el propio manuscrito declara honestamente que el aislamiento por contenedores es práctica DevOps consolidada; el aporte es una aplicación empírica del patrón Invoker–Executor en una pila MLOps ligera Celery+Docker).
+**Evaluación de Generación por IA / Autenticidad:** 7/10 - Prosa sobria, técnica y sin buzzwords de LLM; la honestidad al declarar la no-novedad es un signo positivo. Sin embargo, hay marcadores típicos de síntesis por LLM: una contradicción abstract-tabla ("18 OOM por día" vs. tabla de 72 h), la afirmación redonda "the 16 GB ceiling was never reached" y datos empíricos (Tabla de ablación con IQR sobre 5 seeds) sin ningún CSV/script de evidencia en el repositorio del paper.
+
+**Notas de mejora críticas (resumen):**
+1. Soportar los resultados empíricos con scripts/CSV reales (hoy la Tabla I de ablación no tiene evidencia en el repo) o reformular el manuscrito como estudio de diseño/micro-benchmark.
+2. Reparar las figuras rotas: `figures/arch.pdf` y `figures/latency.pdf` no existen (error de compilación pdflatex; el PDF sale con recuadros vacíos).
+3. Restaurar la sincronización multiformato y bilingüe: `main.md` conserva comandos LaTeX y elimina tablas/figuras; la versión `es/` no está sincronizada con la EN (mismos datos distintos).
+
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 7/10. El manuscrito está bien redactado en estilo industrial experience report: frases cortas, voz activa, datos crudos y autocrítica explícita ("The pattern is not a novel architectural invention---container-based fault isolation is established DevOps practice"). No hay buzzwords de LLM (cero "delve/tapestry/realm") y la narrativa admite imperfecciones del mundo real (OOM kills que dejan la GPU en estado inconsistente). Marcadores LLM residuales: (1) inconsistencia abstract vs. tabla — el resumen dice "reduced host OOM crashes from a median of 18 per day (IQR: 16--20)" pero la Tabla I reporta 18 [16–20] como totales de una prueba de 72 h (si fuera "por día" el total sería ~54, no 18); (2) la frase tautológica "No task exceeded its allocation; the 16 GB ceiling was never reached" (resultado garantizado por la propia heurística de cuota, no medido); (3) la cifra redonda "18 [16–20]" idéntica entre "Host OOM Crashes", "Manual Reboots" y "Container/Job Kills" para todos los runtimes contenerizados (misma distribución exacta en 7 columnas distintas resulta estadísticamente sospechosa). La autenticidad se ve comprometida sobre todo por la ausencia de respaldo empírico: los IQR sobre "5 seeds" de la Tabla I no tienen CSV, script ni log en el repositorio del paper.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 6/10. De las 15 entradas del `.bib`, las 11 citadas son reales, relevantes y bien mapeadas (Tiresias NSDI'19, Optimus EuroSys'18, Slurm, Borg/Kubernetes CACM, Ray OSDI'18, Firecracker NSDI'20, gVisor arXiv 1902.02898, Kata, containerd, cgroups v2, NVIDIA GPU Operator). Problemas: (1) **4 entradas sin citar** (`verma2015large`, `merkel2014docker`, `bohra2022kata`, `tsai2019gvisor`) — falta de curación; (2) **`bohra2022kata` ("Kata Containers: Architectural overview and performance analysis", Bohra, ACM SoCC 2022) no pudo ser verificada en la literatura** — sospecha razonable de cita fantasma; `tsai2019gvisor` ("gVisor: A kernel in userspace", USENIX ;login 44(3)) tampoco se verificó — el caso de estudio canónico de gVisor es "The True Cost of Containing" (Young et al., HotCloud 2019), ausente; (3) **vacíos de citación graves para el tema**: no cita los sistemas de aislamiento de memoria GPU de DL (Gandiva OSDI'18, AntMan OSDI'20, Salus MLSys'22) ni la comparación cuantitativa de runtimes RunC/gVisor/Kata (Wang et al., Cluster Computing 2022) ni la cita del dataset de entrenamiento (COCO/YOLO) usada en el estrés de 250k imágenes; (4) `\bibliographystyle{plain}` no es formato IEEE.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 4/10. Crítico:
+- **Reproducibilidad nula:** la Tabla I reporta mediana [IQR] "across 5 seeds" para 8 configuraciones, pero el directorio del paper no contiene ningún CSV, script de benchmark ni log; `fix.py` solo convierte .tex→.md y compila, no genera datos. Los números (18/11 OOM, 14.2 s vs 2.4 s de latencia, 12.4 s vs 11.8 s de pull) son no verificables.
+- **Figuras rotas que rompen el PDF:** `\includegraphics{figures/arch.pdf}` (línea 60) y `figures/latency.pdf` (línea 104) apuntan a archivos inexistentes (el directorio `figures/` solo tiene `invoker_executor.pdf`, `ablation_study.pdf`, `diagram1/2.pdf`, `test.mmd`); `main.log` registra `Package pdftex.def Error: File not found` y el PDF compilado muestra recuadros vacíos. Quedan activos `diagram1.mmd`/`diagram2.mmd`/`test.mmd` sin renderizar.
+- **Metodología de medición ausente:** no se define qué es "startup latency" (¿desde la recepción de tarea hasta contenedor listo, o hasta que PyTorch inicia el entrenamiento?), ni el N de muestras por IQR, ni cómo se registró un "host OOM crash".
+- **Diseño experimental pobre:** una única carga de trabajo (YOLOv8n, imgsz 1280, batch=-1); no se reporta el impacto del patrón en la calidad del entrenamiento (mAP) ni el throughput de entrenamiento — la latencia de inicio no captura el coste real de aislamiento; no se cuantifica la contención del scheduler con `--gpus=all` en 50 tareas concurrentes sobre 3 nodos (¿cada contenedor reclama todas las GPUs? no se explica la exclusividad GPU); no hay retry/re-queue documentado para `Exit 137` más allá del log.
+- **Contradicción interna:** Related Work afirma que Kubernetes "adds 10--20% startup latency" mientras la propia Tabla I mide 14.2 s vs 2.4 s (~6×, es decir ~500%, no 10–20%).
+- **Estructura reconocida como válida:** 5 páginas (rango 3–6), secciones completas (Abstract/Keywords, Autor, Introducción, Related Work, Arquitectura, Setup, Resultados/Ablación, Data & Code, Ethics, Conclusión, Acknowledgments), autor correcto (wisrovi rodriguez, AI Leader & Solutions Architect, enlace wisrovi-suit) aunque **sin ORCID**, y Data & Code Availability enlazando `wyoloservice2_production` con licencia dual PolyForm/AGPLv3. La Tabla I usa `booktabs` y `table*` (aunque con `resizebox` que distorsiona el interlineado tipográfico).
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Problema industrial real y bien acotado: los demonios de entrenamiento GPU in-process son un punto único de fallo (OOM → GPU inconsistente → reboot físico).
+- Encuadre honesto: el paper no sobrevende; declara explícitamente que el aislamiento por contenedores no es una novedad, lo que refuerza la credibilidad del reporte de ingeniería.
+- Arquitectura clara y accionable (Invoker sin CUDA + `docker run --rm --gpus=all --memory --cpus --shm-size`) con una fórmula de cuota dinámica concreta y derivada de perfiles reales.
+- Núcleo bibliográfico citado (11 referencias) real y pertinente, dentro del rango IEEE 8–20.
+- Comparación de espectro completo de runtimes (Docker, containerd CRI, Kata, gVisor, Firecracker) — esfuerzo de evaluación amplio y raro en reportes industriales.
+- Sincronización estructural de secciones entre EN/ES (mismas 13 secciones) y Data & Code Availability con licencia dual y repositorio de producción.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Evidencia sin respaldo:** la Tabla I de ablación (mediana [IQR], 5 seeds) no tiene CSV/scripts en el repo; es imposible verificar o reproducir ningún número.
+- **CRÍTICO — Figuras rotas:** `arch.pdf` y `latency.pdf` no existen → errores de compilación y PDF con recuadros vacíos; no hay ninguna figura renderizada realmente.
+- **CRÍTICO — Markdown no es Markdown:** `en/main.md` y `es/main.md` conservan `\raggedbottom`, escapes LaTeX, tablas/figuras eliminadas y un `}` sobrante en el título; la regla estricta de sincronización `.tex`↔`.md` está violada.
+- **CRÍTICO — ES desincronizado de EN:** el abstract ES habla de "15% de sobrecarga de latencia" mientras EN mide 14.2 s (~500%); las líneas base en ES omiten containerd/Kata/gVisor/Firecracker aunque la tabla ES los incluye; `es/` solo tiene 1 `\cite` explícito (el resto se resuelve por orden del .bbl).
+- **CRÍTICO — 2 referencias sospechosas sin citar:** `bohra2022kata` (no verificada) y `tsai2019gvisor` (no verificada), además de `verma2015large` y `merkel2014docker` sin citar — `.bib` sin curar.
+- **Metodológico:** sin definición de métricas (startup latency), sin N de muestras, sin impacto en mAP/throughput del entrenamiento, sin tratamiento de exclusividad GPU con `--gpus=all` y 50 tareas concurrentes.
+- **Contradicción Related Work vs. Results** (K8s 10–20% vs 500% medido) y abstract ("per day") vs. tabla (72 h).
+- Sin ORCID en el bloque de autor; `cleveref` cargado pero nunca usado; `\bibliographystyle{plain}` no-IEEE.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — integridad de datos, disyuntiva de diseño):** Publicar en el directorio del paper (o enlazar a `wyoloservice2_production`) los scripts y CSV reales que generan la Tabla I (mediana [IQR] por seed de: host OOM, reboots, container kills, startup latency) para las 8 configuraciones, con seed y versión de software documentados. Si los datos no existen, reformular TODO el manuscrito como "micro-benchmark/design study" y eliminar "empirical ablation data", "5 seeds" e IQR fabricados.
+- [ ] **Modificación 2 (Crítica — figuras):** Renombrar o re-enlazar las figuras: crear `figures/arch.pdf` (reutilizando `invoker_executor.pdf`) y `figures/latency.pdf` (generando el gráfico de latencia/contención como vector con ejes etiquetados), o corregir los `\includegraphics` a los archivos existentes. Recompilar y verificar que el PDF ya no arroja `File not found`. Eliminar `test.mmd` y los `.mmd` huérfanos si no se renderizan.
+- [ ] **Modificación 3 (Crítica — sincronización multiformato):** Regenerar `en/main.md` y `es/main.md` como Markdown real mediante subagente (con la Tabla I convertida a tabla Markdown y las figuras embebidas), limpiar el `}` residual del título y los escapes LaTeX (`\&`, `\_`, `$\times$`), y recompilar pdflatex→bibtex→pdflatex→pdflatex en ambas lenguas.
+- [ ] **Modificación 4 (Crítica — sincronización EN/ES):** Hacer coincidir ES con EN: corregir el abstract ES (14.2 s, no "15%"), añadir las líneas base containerd/Kata/gVisor/Firecracker al setup ES, y verificar que las 11 citas quedan explícitas en `es/main.tex`.
+- [ ] **Modificación 5 (bibliografía):** Eliminar o verificar `bohra2022kata` y `tsai2019gvisor` (reemplazar por "The True Cost of Containing: A gVisor Case Study", Young et al., HotCloud 2019, y por Wang et al., "Performance and isolation analysis of RunC, gVisor and Kata Containers", Cluster Computing 2022). Citar o purgar `verma2015large` y `merkel2014docker`. Añadir referencias clave de aislamiento de memoria GPU en DL (Gandiva OSDI'18, AntMan OSDI'20, Salus MLSys'22), el dataset usado (COCO/Lin 2014 o el dataset de defectos de 250k) y Ultralytics/YOLOv8. Cambiar a `\bibliographystyle{IEEEtran}` o `unsrt`.
+- [ ] **Modificación 6 (metodología y rigor):** Definir formalmente "startup latency" y el método de registro de OOM; reportar N por configuración; añadir una métrica de impacto del aislamiento sobre el entrenamiento (mAP o throughput por configuración) para separar latencia de arranque de coste real; explicar la política de exclusividad/multiplexado GPU con `--gpus=all` bajo 50 tareas concurrentes; documentar retry/re-queue de `Exit 137`.
+- [ ] **Modificación 7 (coherencia interna y prosa):** Reconciliar el abstract ("18 per day") con la Tabla I (72 h); corregir la contradicción K8s "10–20%" (Related Work) vs. 14.2 s/~500% (Results); sustituir la tautología "16 GB ceiling was never reached" por una observación medida; añadir una imperfección real vivida (p.ej. el primer OOM que derribó el daemon y el orden de magnitud del downtime) para reforzar autenticidad.
+- [ ] **Modificación 8 (estructura IEEE):** Añadir el ORCID real al bloque de autor; usar `cleveref` (`\Cref{fig:arch}`) para el cross-referencing que ya está cargado; evitar `resizebox` en la tabla (o dividirla en 2 tablas de una columna) para preservar el espaciado tipográfico.
+
