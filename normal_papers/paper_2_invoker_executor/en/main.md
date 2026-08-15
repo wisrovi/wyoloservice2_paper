@@ -15,7 +15,7 @@ This report was conceptualized and developed by William Steve Rodriguez Villamiz
 ## Introduction
 Distributed deep learning clusters suffer from a persistent operational failure mode: the training daemon itself becomes a single point of failure. In the conventional layout, a Celery worker (or Ray actor) imports PyTorch, initializes CUDA contexts, and runs the training loop in-process. When a YOLO script leaks memory, the process RSS grows until the kernel OOM killer terminates it. Because the daemon holds the CUDA context, the kill often leaves the GPU in an inconsistent state, requiring a full node reboot.
 
-This report describes a structural fix: separate the control plane from the compute plane. The Invoker (`wyoloservice2_invoker`) is a minimal Python process that polls a Redis queue and manages container lifecycles. It never imports `torch` or `ultralytics`. The Executor (`wyoloservice2_worker`) is an ephemeral Docker container launched per task with hard limits enforced by cgroups. When the training finishes or crashes, the container is destroyed (`docker run --rm`), instantly releasing all resources.
+- Execute `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
 
 ## Related Work and Baselines
 GPU cluster management with fault isolation has been studied extensively. Tiresias [gu2019tiresias], Gandiva [xiao2018gandiva], AntMan [xiao2020antman], and Salus [yu2022salus] optimize scheduling to reduce bottlenecks and provide fine-grained GPU sharing, but do not necessarily mandate hard ephemeral containerization per task to prevent daemon crashes. Optimus [peng2018optimus] introduces dynamic resource scaling. Kubernetes [burns2016borg] enforces container limits natively but its control-plane overhead adds startup latency. Ray [moritz2018ray] runs workers as long-lived processes, risking host instability.
@@ -27,7 +27,7 @@ The `wyoloservice2_invoker` daemon runs on each GPU node. On task receipt:
 
     - Deserialize payload (YAML config).
     - Compute resource quotas: `mem_limit` scales with `imgsz`; `shm_size` scales with DataLoader workers.
-    - Execute `docker run --rm --gpus=all --memory=${mem_limit` --cpus=${nano_cpus* --shm-size=${shm_size* wisrovi/train_service:worker_executor_v1.0.0*.
+- Execute `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
     - Block on completion; capture exit code.
     - Write results to Redis.
 
@@ -41,7 +41,7 @@ Cluster: three nodes, each with NVIDIA RTX 4090, 64 GB DDR5 RAM. Software: Celer
 
 In our observational study, direct execution periodically crashed the host daemon due to memory exhaustion, often requiring a physical reboot due to corrupted GPU states. Ray workers exhibited similar issues, occasionally allowing the GPU driver to recover autonomously. 
 
-Over an observational window of 14 days and approximately 1,500 training tasks, containerized runtimes qualitatively isolated failures, allowing individual tasks to fail without seemingly affecting the host daemon. While Kubernetes offers robust limits natively, its control-plane added noticeable latency in launching pods compared to the lightweight daemon. VM-based runtimes like Kata, gVisor, and Firecracker provided strong security boundaries but introduced significant boot overhead. 
+Over an observational window of 14 days and approximately 1,500 training tasks, containerized runtimes qualitatively isolated failures, allowing individual tasks to fail without seemingly affecting the host daemon. While Kubernetes offers robust limits natively, its control-plane added noticeably higher startup latency in our observations in launching pods compared to the lightweight daemon. VM-based runtimes like Kata, gVisor, and Firecracker provided strong security boundaries but introduced measurable boot overhead in our setup. 
 
 The Invoker-Executor pattern achieved crash containment comparable to Kubernetes and microVMs while maintaining a minimal startup profile, as it merely executes Docker CLI commands outside of a heavy orchestration plane. The dynamic quota cap effectively contained tasks, with cgroups memory usage logs confirming that outliers were typically terminated via `OOMKilled`, which generally avoided a cascade of host instability.
 
@@ -60,37 +60,36 @@ We thank the wisrovi-suit contributors for the orchestration infrastructure.
 
 ## References
 
+[1] V. Garousi, M.~Felderer, and M.~V. M"antyl"a, "The need for empirical evidence in software engineering," \emphIEEE Software, vol. 33, no. 1, pp. 68-75, 2016.
 
-[1] V.~Garousi, M.~Felderer, and M.~V. M"antyl"a, ``The need for empirical evidence in software engineering,'' *IEEE Software*, vol.~33, no.~1, pp. 68-75, 2016.
+[2] J.~Gu \emphet~al., "Tiresias: A gpu cluster manager for distributed deep learning," \emphUSENIX NSDI, 2019.
 
-[2] J.~Gu *et al.*, ``Tiresias: A gpu cluster manager for distributed deep learning,'' *USENIX NSDI*, 2019.
+[3] W.~Xiao \emphet~al., "Gandiva: Introspective cluster scheduling for deep learning," in \emph13th USENIX Symposium on Operating Systems Design and Implementation (OSDI 18), 2018.
 
-[3] W.~Xiao *et al.*, ``Gandiva: Introspective cluster scheduling for deep learning,'' in *13th USENIX Symposium on Operating Systems Design and Implementation (OSDI 18)*, 2018.
+[4] W. Xiao *et al.*, "Antman: Dynamic scaling on GPU clusters for deep learning," in \emph14th USENIX Symposium on Operating Systems Design and Implementation (OSDI 20), 2020.
 
-[4] -, ``Antman: Dynamic scaling on GPU clusters for deep learning,'' in *14th USENIX Symposium on Operating Systems Design and Implementation (OSDI 20)*, 2020.
+[5] P.~Yu and M.~Chowdhury, "Salus: Fine-grained GPU sharing primitives for deep learning applications," in \emphProceedings of the 3rd Conference on Machine Learning and Systems (MLSys), 2022.
 
-[5] P.~Yu and M.~Chowdhury, ``Salus: Fine-grained GPU sharing primitives for deep learning applications,'' in *Proceedings of the 3rd Conference on Machine Learning and Systems (MLSys)*, 2022.
+[6] Y.~Peng \emphet~al., "Optimus: an efficient dynamic resource scheduler for deep learning clusters," in \emphProceedings of the Thirteenth EuroSys Conference, 2018, pp. 1-14.
 
-[6] Y.~Peng *et al.*, ``Optimus: an efficient dynamic resource scheduler for deep learning clusters,'' in *Proceedings of the Thirteenth EuroSys Conference*, 2018, pp. 1-14.
+[7] B.~Burns \emphet~al., "Borg, omega, and kubernetes," in \emphACM Queue, 2016.
 
-[7] B.~Burns *et al.*, ``Borg, omega, and kubernetes,'' in *ACM Queue*, 2016.
+[8] P.~Moritz \emphet~al., "Ray: A distributed framework for emerging ai applications," in \emphUSENIX OSDI, 2018.
 
-[8] P.~Moritz *et al.*, ``Ray: A distributed framework for emerging ai applications,'' in *USENIX OSDI*, 2018.
+[9] T.~Young \emphet~al., "The true cost of containing: A performance study of container runtimes," in \emphUSENIX HotCloud, 2019.
 
-[9] T.~Young *et al.*, ``The true cost of containing: A performance study of container runtimes,'' in *USENIX HotCloud*, 2019.
+[10] A.~Agache \emphet~al., "Firecracker: Lightweight virtualization for serverless applications," \emphUSENIX NSDI, 2020.
 
-[10] A.~Agache *et al.*, ``Firecracker: Lightweight virtualization for serverless applications,'' *USENIX NSDI*, 2020.
+[11] M.~Crosby \emphet~al., "containerd: An industry-standard container runtime," in \emphCNCF, 2017.
 
-[11] M.~Crosby *et al.*, ``containerd: An industry-standard container runtime,'' in *CNCF*, 2017.
+[12] T.~Heo, "Control groups v2," \emphLinux Kernel Documentation, 2017.
 
-[12] T.~Heo, ``Control groups v2,'' *Linux Kernel Documentation*, 2017.
+[13] Y.~Wang \emphet~al., "Performance and isolation analysis of runc, gvisor and kata containers," \emphCluster Computing, 2022.
 
-[13] Y.~Wang *et al.*, ``Performance and isolation analysis of runc, gvisor and kata containers,'' *Cluster Computing*, 2022.
+[14] NVIDIA, "Nvidia gpu operator," https://github.com/NVIDIA/gpu-operator, 2021.
 
-[14] NVIDIA, ``Nvidia gpu operator,'' https://github.com/NVIDIA/gpu-operator, 2021.
+[15]  G.~Jocher \emphet~al., "Ultralytics yolov8," 2023. [Online]. Available: https://github.com/ultralytics/ultralytics 
 
-[15]  G.~Jocher *et al.*, ``Ultralytics yolov8,'' 2023. [Online]. Available: https://github.com/ultralytics/ultralytics 
+[16] NVIDIA, "Multi-process service (mps)," https://docs.nvidia.com/deploy/mps/index.html, 2023.
 
-[16] NVIDIA, ``Multi-process service (mps),'' https://docs.nvidia.com/deploy/mps/index.html, 2023.
-
-[17] D.~Patterson *et al.*, ``Carbon emissions and large neural network training,'' *arXiv preprint arXiv:2104.10350*, 2021.
+[17] D.~Patterson \emphet~al., "Carbon emissions and large neural network training," \empharXiv preprint arXiv:2104.10350, 2021.

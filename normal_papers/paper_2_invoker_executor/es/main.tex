@@ -27,7 +27,7 @@ Este informe fue desarrollado por William Steve Rodriguez Villamizar (wisrovi ro
 Los clústeres de aprendizaje profundo sufren porque el demonio de entrenamiento es un punto único de fallo. Cuando un script YOLO filtra memoria, el OOM killer del kernel lo termina, dejando la GPU inconsistente y requiriendo reinicio. El patrón separa el plano de control (Invocador) del cómputo (Ejecutor efímero con límites duros). Al terminar, el contenedor se destruye (\texttt{docker run --rm}), liberando recursos.
 
 \section{Trabajo Relacionado y Líneas Base}
-Tiresias \cite{gu2019tiresias}, Gandiva \cite{xiao2018gandiva}, AntMan \cite{xiao2020antman} y Salus \cite{yu2022salus} optimizan recursos GPU, pero no fuerzan contenedorización efímera por tarea para prevenir caídas de demonios. Optimus \cite{peng2018optimus} y Kubernetes \cite{burns2016borg} ofrecen gestión, pero con overhead. Ray \cite{moritz2018ray} corre procesos persistentes. Firecracker \cite{agache2020firecracker}, containerd \cite{containerd}, cgroups \cite{cgroups2017}, Kata Containers y gVisor \cite{wang2022performance} ofrecen aislamiento seguro a costa de la latencia de arranque \cite{young2019true} ofrecen aislamiento diverso. NVIDIA GPU Operator \cite{nvidia2021gpuoperator} estandariza acceso.
+Tiresias \cite{gu2019tiresias}, Gandiva \cite{xiao2018gandiva}, AntMan \cite{xiao2020antman} y Salus \cite{yu2022salus} optimizan recursos GPU, pero no fuerzan contenedorización efímera por tarea para prevenir caídas de demonios. Optimus \cite{peng2018optimus} y Kubernetes \cite{burns2016borg} ofrecen gestión, pero con overhead. Ray \cite{moritz2018ray} corre procesos persistentes. Las alternativas de runtimes de contenedores proporcionan garantías de aislamiento variables \cite{young2019true}. Firecracker \cite{agache2020firecracker} usa microVMs KVM para aislamiento fuerte. containerd \cite{containerd} provee un runtime CRI. cgroups v2 \cite{cgroups2017} permite un control de grano fino. Kata Containers y gVisor \cite{wang2022performance} ofrecen aislamiento seguro a costa de latencia de arranque. ofrecen aislamiento diverso. NVIDIA GPU Operator \cite{nvidia2021gpuoperator} estandariza acceso.
 
 \section{Arquitectura Propuesta / Metodología}
 El demonio \texttt{wyoloservice2\_invoker} corre en cada nodo. Al recibir tarea:
@@ -51,7 +51,7 @@ Clúster: tres nodos RTX 4090, 64 GB RAM. Software: Celery 5.3, Docker 24.0, con
 \section{Resultados y Discusión}
 \subsection{Observaciones Cualitativas: Aislamiento Efímero}
 
-En nuestro estudio observacional, la ejecución directa causó inestabilidad del demonio host y requirió reinicios. Durante una ventana observacional de 14 días y aproximadamente 1,500 tareas de entrenamiento, Ray causó inestabilidad pero permitió que el driver de GPU se recuperara de forma autónoma en algunas ocasiones. Los entornos de contenedor aislaron los fallos cualitativamente, permitiendo que tareas individuales fallaran sin afectar aparentemente al demonio host. Kubernetes añadió latencia notable; VMs también añadieron overhead de inicio. El patrón propuesto mantuvo la latencia baja ya que delega directamente al CLI de Docker. La verificación de diseño confirmó que el uso de memoria atípico típicamente resultó en la terminación vía \texttt{OOMKilled}, lo que generalmente evitó una cascada de inestabilidad en el proceso Invocador host.
+En nuestro estudio observacional, la ejecución directa causó inestabilidad del demonio host y requirió reinicios. Durante una ventana observacional de 14 días y aproximadamente 1,500 tareas de entrenamiento, Ray causó inestabilidad pero permitió que el driver de GPU se recuperara de forma autónoma en algunas ocasiones. Los entornos de contenedor aislaron los fallos cualitativamente, permitiendo que tareas individuales fallaran sin afectar aparentemente al demonio host. Kubernetes añadió una latencia de arranque notablemente mayor en nuestras observaciones; VMs también añadieron overhead de arranque medible en nuestra configuración. El patrón propuesto mantuvo la latencia baja ya que delega directamente al CLI de Docker. La verificación de diseño confirmó que el uso de memoria atípico típicamente resultó en la terminación vía \texttt{OOMKilled}, lo que generalmente evitó una cascada de inestabilidad en el proceso Invocador host.
 
 \section{Declaración de Disponibilidad de Datos y Código}
 Licencia Dual (PolyForm / AGPLv3). Los scripts y el código fuente residen en \url{https://github.com/wisrovi/wyoloservice2_production}.
@@ -60,7 +60,7 @@ Licencia Dual (PolyForm / AGPLv3). Los scripts y el código fuente residen en \u
 Prevenir caídas reduce el desgaste de hardware y mejora la eficiencia energética \cite{patterson2021carbon}.
 
 \section{Conclusión y Trabajo Futuro}
-Patrón pragmático de MLOps. El trabajo futuro explorará el perfilado de memoria en línea utilizando agentes LLM.
+El patrón proporciona un aislamiento de fallos robusto para pipelines de entrenamiento YOLO. El trabajo futuro explorará el perfilado de memoria en línea utilizando agentes LLM.
 
 \section{Agradecimientos}
 Gracias a los contribuyentes de wisrovi-suit.
