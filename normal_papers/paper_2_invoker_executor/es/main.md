@@ -1,10 +1,8 @@
 # Informe de Ingeniería Industrial: Patrón Invocador-Ejecutor para Aislamiento de Fallos en Entrenamiento YOLO Distribuido
-**Author:** William Steve Rodriguez Villamizar (wisrovi rodriguez)
-AI Leader & Solutions Architect
-wisrovi-suit (https://github.com/wisrovi/w-cli)
+**Author:** William Steve Rodriguez Villamizar (wisrovi rodriguez) \href{https://orcid.org/0000-0002-4740-9734{\includegraphics[width=0.03\textwidth]{figures/orcid.pdf}}\\AI Leader & Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
 
 ## Resumen y Palabras Clave
-**Resumen:** Los procesos demonio persistentes que ejecutan PyTorch directamente en su propio espacio son vulnerables a fugas de memoria y kills OOM del kernel que causan inestabilidad del host. Este informe documenta el patrón Invocador-Ejecutor en `wyoloservice2`: un demonio Celery (Invocador) que nunca importa CUDA, y contenedores Docker efímeros (Ejecutores) con límites duros a nivel de SO (`mem_limit`, `nano_cpus`, `shm_size`). Presentamos un estudio de micro-benchmark ($N=5$ réplicas) en un clúster RTX 4090 comparando este patrón contra ejecución directa, Ray, Kubernetes, containerd CRI, Kata, gVisor y Firecracker. El Invocador-Ejecutor eliminó caídas OOM del host en pruebas de 72 horas, con fallos de contenedor (`Exit 137`) registrados vía cgroups sin interrupción. Kubernetes, containerd, Kata, gVisor y Firecracker igualaron la contención; sin embargo, Kubernetes introdujo 14.2 s de latencia frente a 2.4 s del Invocador-Ejecutor. containerd CRI logró latencia comparable (2.6 s). Kata, gVisor y Firecracker añadieron 3.8--8.2 s por el arranque de VM. El patrón no es una invención novedosa pero su integración en una pila MLOps ligera produce una solución pragmática para estabilidad GPU sin sacrificar calidad (0.84+ mAP50, 15+ imgs/s).
+**Resumen:** Los procesos demonio persistentes que ejecutan PyTorch directamente en su propio espacio son vulnerables a fugas de memoria y kills OOM del kernel que causan inestabilidad del host. Este informe documenta un estudio observacional de diseño del patrón Invocador-Ejecutor en `wyoloservice2`: un demonio Celery (Invocador) que nunca importa CUDA, y contenedores Docker efímeros (Ejecutores) con límites duros a nivel de SO (`mem_limit`, `nano_cpus`, `shm_size`). Comparamos cualitativamente este patrón contra ejecución directa, Ray, Kubernetes, containerd CRI, Kata, gVisor y Firecracker. El Invocador-Ejecutor contuvo exitosamente las fugas de memoria, registrando fallos vía eventos cgroups sin interrumpir el demonio. El patrón no es una invención novedosa pero su integración en una pila MLOps ligera produce una solución pragmática para estabilidad GPU.
 
 **Palabras Clave:** Ingeniería Industrial, Aislamiento de Fallos, Aprendizaje Profundo Distribuido, Colas de Tareas Celery, Contenedores Efímeros, Container Runtimes.
 
@@ -22,34 +20,21 @@ El demonio `wyoloservice2_invoker` corre en cada nodo. Al recibir tarea:
 
     - Deserializa payload YAML.
     - Calcula cuotas (`mem_limit`, `shm_size`).
-    - Ejecuta `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
+    - Ejecuta `docker run --rm --gpus=all --memory=${mem_limit` --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0}.
     - Captura código de salida y escribe en Redis.
 
 ![Invocador genera contenedores Ejecutor efímeros por tarea.](figures/invoker_executor.pdf)
 
-## Configuración Experimental y Detalles de Implementación
-Clúster: tres nodos RTX 4090, 64 GB RAM. Software: Celery 5.3, Docker 24.0, YOLOv8 [ultralytics]. Benchmark de estrés: 50 tareas YOLOv8 concurrentes en 72 horas, sobre dataset COCO-defectos de 250k imgs (https://github.com/ultralytics/assets). Multiplexación vía MPS [nvidia_mps]. OOMs registrados con `dmesg`/cgroups. Usamos $N=5$ réplicas (ver `latency_ablation.csv`). Reportamos promedios en la tab:ablation.
+## Estudio Observacional de Diseño
+Clúster: tres nodos RTX 4090, 64 GB RAM. Software: Celery 5.3, Docker 24.0, containerd 1.7, Kata Containers 3.0, gVisor, Firecracker 1.5, YOLOv8 [ultralytics]. Multiplexación vía MPS [nvidia_mps]. OOMs cualitativamente registrados con `dmesg`/cgroups. 
 
 ## Resultados y Discusión
-### Estudio de Ablación: Aislamiento Efímero
+### Observaciones Cualitativas: Aislamiento Efímero
 
-**Estabilidad de Host y Latencia (Promedio N=5, 72h estrés)**
-
-|Configuración|Host OOMs|Reinicios Manuales|Kills Contenedor|Inicio (s)|mAP50|Throughput (img/s)|
-|---|---|---|---|---|---|---|
-|Direct Exec|$3.6 \pm 0.5$|$3.6 \pm 0.5$|0|$2.1 \pm 0.1$|0.829|15.1|
-|Ray|$2.2 \pm 0.4$|$1.8 \pm 0.4$|0|$3.8 \pm 0.1$|0.834|15.1|
-|Kubernetes|0|0|$3.6 \pm 0.5$|$14.2 \pm 0.1$|0.840|14.8|
-|containerd|0|0|$3.6 \pm 0.5$|$2.6 \pm 0.1$|0.842|15.3|
-|Kata|0|0|$3.6 \pm 0.5$|$6.2 \pm 0.1$|0.840|15.0|
-|gVisor|0|0|$3.6 \pm 0.5$|$8.2 \pm 0.1$|0.839|14.8|
-|Firecracker|0|0|$3.6 \pm 0.5$|$10.4 \pm 0.1$|0.843|15.1|
-|Invoker-Executor|0|0|$3.6 \pm 0.5$|$2.4 \pm 0.1$|0.845|15.5|
-
-La ejecución directa derribó el host 3.6 veces promedio (3.6 reinicios requeridos). Ray causó 2.2 OOMs y 1.8 reinicios (el driver GPU se recuperó en 0.4 casos). Entornos de contenedor contuvieron los fallos a nivel pod. Kubernetes añadió 14.2 s de latencia; VMs añadieron 3.8--10.4 s. El patrón propuesto mantuvo la latencia en 2.4 s. La verificación de diseño confirmó que el uso de memoria alcanzó un pico de 12.4 GB medido por cgroups.
+En nuestro estudio observacional, la ejecución directa causó inestabilidad del demonio host y requirió reinicios. Entornos de contenedor contuvieron los fallos a nivel pod. Kubernetes añadió latencia notable; VMs también añadieron overhead de inicio. El patrón propuesto mantuvo la latencia baja ya que delega directamente al CLI de Docker. La verificación de diseño confirmó que el uso de memoria fue contenido exitosamente vía cgroups.
 
 ## Declaración de Disponibilidad de Datos y Código
-Licencia Dual (PolyForm / AGPLv3). El CSV, los scripts y el código fuente residen en [https://github.com/wisrovi/wyoloservice2_production](https://github.com/wisrovi/wyoloservice2_production).
+Licencia Dual (PolyForm / AGPLv3). Los scripts y el código fuente residen en [https://github.com/wisrovi/wyoloservice2_production](https://github.com/wisrovi/wyoloservice2_production).
 
 ## Impacto Amplio / Declaración Ética
 Prevenir caídas reduce el desgaste de hardware y mejora la eficiencia energética [patterson2021carbon].
