@@ -49,7 +49,7 @@ La arquitectura se representa en \Cref{fig:arch}. El demonio \texttt{wyoloservic
 Clúster: tres nodos físicos, cada uno con una GPU NVIDIA RTX 4090 y 64 GB de RAM DDR5, conectados vía LAN 10 Gbps. El entorno de software incluye Driver NVIDIA 535.104, CUDA 12.2, PyTorch 2.1, Ultralytics YOLOv8 8.0 \cite{ultralytics}, Celery 5.3 \cite{celery} y Docker 24.0 \cite{docker}. La multiplexación usa NVIDIA MPS \cite{nvidia_mps}. Los eventos OOM (Exit 137) se registraron explícitamente mediante \texttt{cgroups} (\texttt{memory.oom\_control}). 
 
 \section{Resultados y Discusión}
-Durante una ventana observacional de 14 días y 1,524 tareas, el patrón Invocador-Ejecutor contuvo el 100\% de los fallos de memoria. Los registros empíricos (ver \texttt{data/production\_oom\_logs.csv}) muestran que 47 scripts YOLO (tasa de fallo 3.08\%) filtraron memoria y dispararon \texttt{OOMKilled} (Exit 137). En la línea base (ejecución directa), esto causó 47 caídas del demonio y requirió 12 reinicios físicos. Con nuestro patrón, el Invocador mantuvo un overhead estable de $\sim$200 MB, sobreviviendo las 47 caídas con 0 reinicios requeridos. La latencia de arranque del contenedor fue evaluada empíricamente ($n=100$ réplicas), mostrando una mediana de 440 ms (P95: 450 ms, $\sigma=15$ ms), mucho menor que microVMs KVM ($\sim$1200 ms) y Kubernetes ($\sim$2100 ms). Avances recientes como Pollux \cite{qiao2021pollux} y SLoPe \cite{zhang2024slope} optimizan el throughput pero asumen ejecución confiable, haciendo nuestra tolerancia a fallos \cite{qiao2023fault} altamente complementaria.
+Durante una ventana observacional de 14 días y 1,524 tareas, el patrón Invocador-Ejecutor contuvo el 100\% de los fallos de memoria. Los registros empíricos (ver \texttt{data/production\_oom\_logs.csv}) muestran que 47 scripts YOLO (tasa de fallo 3.08\%) filtraron memoria y dispararon \texttt{OOMKilled} (Exit 137). En la línea base (ejecución directa), esto causó 47 caídas del demonio y requirió 12 reinicios físicos. Con nuestro patrón, el Invocador mantuvo un overhead estable de $\sim$200 MB, sobreviviendo las 47 caídas con 0 reinicios requeridos. La latencia de arranque del contenedor fue evaluada empíricamente ($n=100$ réplicas), mostrando una mediana de 440 ms (P95: 450 ms, $\sigma=15$ ms), mucho menor que microVMs KVM ($\sim$1200 ms) y Kubernetes ($\sim$2100 ms). Avances recientes como Pollux \cite{qiao2021pollux,zhang2024slope,qiao2023fault} y SLoPe \cite{zhang2024slope} optimizan el throughput pero asumen ejecución confiable, haciendo nuestra tolerancia a fallos \cite{qiao2023fault} altamente complementaria.
 
 \begin{table}[htbp]
 \centering
@@ -64,8 +64,7 @@ Kata / gVisor & 1800 & 1980 & Medición empírica ($n=10$) & 180 ms \\
 Docker (Nuestro) & 440 & 450 & Medición empírica ($n=100$) & 15 ms \\ \bottomrule
 \end{tabular}
 }
-
-\noindent Protocolo: Latencia definida como el tiempo desde 	exttt{ootnotesize docker run} hasta el proceso listo. Evaluado en hardware uniforme.
+\noindent Protocolo: Latencia definida como el tiempo desde \texttt{\footnotesize docker run} hasta el proceso listo. Evaluado en hardware uniforme.
 \end{table}
 
 \section{Estudio de Ablación}

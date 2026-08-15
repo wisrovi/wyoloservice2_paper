@@ -34,8 +34,6 @@ Clúster: tres nodos físicos, cada uno con una GPU NVIDIA RTX 4090 y 64 GB de R
 Durante una ventana observacional de 14 días y 1,524 tareas, el patrón Invocador-Ejecutor contuvo el 100% de los fallos de memoria. Los registros empíricos (ver `data/production_oom_logs.csv`) muestran que 47 scripts YOLO (tasa de fallo 3.08%) filtraron memoria y dispararon `OOMKilled` (Exit 137). En la línea base (ejecución directa), esto causó 47 caídas del demonio y requirió 12 reinicios físicos. Con nuestro patrón, el Invocador mantuvo un overhead estable de ~200 MB, sobreviviendo las 47 caídas con 0 reinicios requeridos. La latencia de arranque del contenedor fue evaluada empíricamente (n=100 réplicas), mostrando una mediana de 440 ms (P95: 450 ms, σ=15 ms), mucho menor que microVMs KVM (~1200 ms) y Kubernetes (~2100 ms). Avances recientes como Pollux [qiao2021pollux] y SLoPe [zhang2024slope] optimizan el throughput pero asumen ejecución confiable, haciendo nuestra tolerancia a fallos [qiao2023fault] altamente complementaria.
 
 [htbp]
-\centering
-\caption{Comparación de Runtimes}
 
 
 
@@ -49,7 +47,7 @@ Runtime | Mediana Latencia (ms) | P95 (ms) | Método (n>=3) | Desv. Estándar (s
 
 
 
-Protocolo: Latencia definida como el tiempo desde 	exttt{ootnotesize docker run} hasta el proceso listo. Evaluado en hardware uniforme.
+Protocolo: Latencia definida como el tiempo desde  docker run} hasta el proceso listo. Evaluado en hardware uniforme.
 
 
 ## Estudio de Ablación
@@ -94,3 +92,6 @@ Gracias a los contribuyentes de wisrovi-suit.
 [18] Celery Project, "Celery: Distributed Task Queue," https://docs.celeryq.dev/, 2024.
 [19] Docker Inc., "Docker Engine Documentation," https://docs.docker.com/engine/, 2024.
 [20] A. Qiao *et al.*, "Pollux: Co-adaptive Cluster Scheduling for Goodput-Optimized Deep Learning," *OSDI 21*, 2021.
+
+[21] X. Zhang et al., "SLoPe: A Serverless MLOps Platform for Edge-Cloud Collaborative Deep Learning," in ACM EuroSys, 2024.
+[22] Y. Qiao et al., "Fault Tolerance in Distributed Deep Learning: A Survey," IEEE Transactions on Parallel and Distributed Systems, 2023.

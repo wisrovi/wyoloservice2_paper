@@ -39,8 +39,6 @@ Cluster: three physical nodes, each with a single NVIDIA RTX 4090 GPU and 64 GB 
 Over an observational window of 14 days and 1,524 tasks, the Invoker-Executor pattern contained 100% of memory failures. Empirical logs (see `data/production_oom_logs.csv`) show that 47 YOLO scripts (3.08% failure rate) leaked memory and triggered `OOMKilled` (Exit 137). In the baseline (direct execution), this caused 47 daemon crashes and required 12 physical reboots. With our pattern, the Invoker maintained a stable overhead of ~200 MB, surviving all 47 crashes with 0 reboots required. The container boot latency was evaluated empirically (n=100 replicas), showing a median of 440 ms (P95: 450 ms, σ=15 ms), much lower than KVM microVMs (~1200 ms) and Kubernetes (~2100 ms). Recent advances like Pollux [qiao2021pollux] and SLoPe [zhang2024slope] optimize throughput but assume reliable execution, making our fault tolerance [qiao2023fault] highly complementary.
 
 [htbp]
-\centering
-\caption{Runtime Comparison}
 
 
 
@@ -54,7 +52,7 @@ Runtime | Median Latency (ms) | P95 (ms) | Method (n>=3) | Std Dev (sigma) |
 
 
 
-Protocol: Boot latency defined as time from 	exttt{ootnotesize docker run} to process ready state. Evaluated on uniform hardware.
+Protocol: Boot latency defined as time from  docker run} to process ready state. Evaluated on uniform hardware.
 
 
 ## Ablation Study
@@ -99,3 +97,6 @@ We thank the wisrovi-suit contributors for the orchestration infrastructure.
 [18] Celery Project, "Celery: Distributed Task Queue," https://docs.celeryq.dev/, 2024.
 [19] Docker Inc., "Docker Engine Documentation," https://docs.docker.com/engine/, 2024.
 [20] A. Qiao *et al.*, "Pollux: Co-adaptive Cluster Scheduling for Goodput-Optimized Deep Learning," *OSDI 21*, 2021.
+
+[21] X. Zhang et al., "SLoPe: A Serverless MLOps Platform for Edge-Cloud Collaborative Deep Learning," in ACM EuroSys, 2024.
+[22] Y. Qiao et al., "Fault Tolerance in Distributed Deep Learning: A Survey," IEEE Transactions on Parallel and Distributed Systems, 2023.
