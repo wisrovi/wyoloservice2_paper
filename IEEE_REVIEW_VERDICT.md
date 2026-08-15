@@ -1216,3 +1216,387 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 - [ ] **Modificación 6 (metodología):** Insertar en Experimental Setup la definición formal de "startup latency" y el método de registro de OOM (que el script intentó añadir pero no llegó al texto final); declarar N por configuración; añadir una métrica de impacto sobre el entrenamiento (mAP o throughput); explicar la exclusividad/multiplexado GPU con `--gpus=all` bajo 50 tareas concurrentes y el mecanismo de retry de `Exit 137`.
 - [ ] **Modificación 7 (estructura IEEE):** Sustituir el ORCID marcador por el ORCID real en `en/main.tex` y `es/main.tex` (el patrón `0000-0002-1234-5678` es el placeholder estándar no asignado).
 
+---
+
+## IEEE Peer Review Report (Ronda 3)
+**Fecha y Hora:** 2026-08-15 02:30:00
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+
+**Veredicto:** REVISIÓN MAYOR / RE-ENVÍO
+**Nivel de Innovación:** Bajo
+**Evaluación de Generación por IA / Autenticidad:** 7/10 - Progreso sustancial y verificable desde la Ronda 2: la integridad textual quedó restaurada (sin frases duplicadas, caption de la Tabla I limpia, definición formal de "startup latency" incorporada al texto), el `.bib` quedó saneado de los fragmentos huérfanos (`merkel2014docker`/`bohra2022kata`), el abstract ES quedó alineado con el encuadre honesto EN ("micro-benchmark/estudio de diseño") y la compilación EN/ES es limpia (5 páginas cada una, sin errores). Sin embargo, persisten tres problemas de fondo que impiden la aceptación: (1) **la Tabla I sigue sin ningún respaldo empírico** en el repositorio (cero CSV/scripts/logs; los 8 números por métrica son estimaciones puntuales sin N ni IQR); (2) **la sincronización `.tex`↔`.md` sigue rota** (la Tabla I está ausente en `en/main.md` y `es/main.md`, solo queda su caption, y persiste el escape Markdown roto `` `--memory=${mem_limit\` ``); (3) **regresión bibliográfica**: gVisor y Kata pasaron a ser líneas base sin ninguna cita (se eliminaron `young2019true` y `wang2022performance`), quedan 3 entradas en el `.bib` sin citar y la afirmación central de multiplexado GPU (NVIDIA MPS) sigue sin respaldo.
+
+**Notas de mejora críticas (resumen):**
+1. Soporta o elimina los números de la Tabla I: sin scripts/CSV verificables, el "Ablation Study" sigue siendo un enunciado de diseño sin evidencia.
+2. Regenera `en/main.md` y `es/main.md` con la Tabla I como tabla Markdown y repara el escape `` `${mem_limit\` ``; hoy el `.md` no es un mirror del `.tex`.
+3. Cita los baselines desnudos (gVisor/Kata/MPS) y cita o purga las 3 entradas no referenciadas del `.bib`; añade el ORCID real.
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 7/10. La prosa es sobria, en voz activa y con autocrítica estructural genuina ("The pattern is not a novel architectural invention", encuadre "micro-benchmark/design study"). La corrupción mecánica de la Ronda 2 desapareció: sin duplicaciones, sin `\textasciitilde{}exttt`, caption íntegra. El texto actual no presenta los marcadores clásicos de LLM (cero "delve/tapestry/realm", fraseo variado). Marcadores residuales que un detector de IA marcaría: (1) **simetría sospechosamente perfecta** en la Tabla I — las 6 configuraciones contenerizadas comparten exactamente los mismos valores (0/0/18 y luego 18 kills idénticos en todas las columnas), una distribución estadísticamente improbable de medir tal cual; (2) la **tautología** "No task exceeded its allocation; the 16 GB ceiling was never reached" (consecuencia lógica del diseño de cuota 8–12 GB, no un resultado medido); (3) la **anécdota de 12.4 GB / 10 min de downtime** reintroducida como dato sin metodología de registro. La honestidad narrativa es su mejor activo de autenticidad; la ausencia de evidencia cruda (logs de syslog, salidas de `dmesg`) es lo que más compromete la credibilidad.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 5/10. **Progreso:** `.bib` saneado (14 entradas, sin basura sintáctica), `IEEEtran.bst` correcto, 11 citas en el cuerpo resuelven sin errores (`main.bbl` con 11 `\bibitem`). **Problemas críticos:**
+- **Regresión grave:** gVisor y Kata Containers son dos de las siete líneas base evaluadas, pero ahora **no tienen ninguna cita** en el texto (Ronda 2 las tenía con `young2019true` "The True Cost of Containing" HotCloud'19 y `wang2022performance` Cluster Computing'22; ambos fueron eliminados del `.bib`). Un baseline evaluado sin referencia bibliográfica es inaceptable en IEEE.
+- **3 entradas sin citar** en el `.bib`: `xiao2018gandiva`, `xiao2020antman`, `yu2022salus`. Se añadieron en la Ronda 2 atendiendo la petición de cubrir el aislamiento de memoria GPU en DL, pero **nunca se citaron en el cuerpo**; la sección Related Work no las menciona.
+- **NVIDIA MPS sin cita:** la frase "GPU multiplexing with `--gpus=all` relies on NVIDIA MPS" es ahora central en la afirmación de escalabilidad (50 tareas concurrentes en 16 GPUs) y carece de referencia (NVIDIA MPS paper/whitepaper).
+- **Dataset no citado:** el "250k-image defect dataset (based on COCO)" no tiene referencia ni URL; solo se cita COCO (`lin2014microsoft`), no el conjunto de defectos.
+- `nvidia2021gpuoperator` y `containerd` son referencias web/misc con autoría "and others" parcial; metadata incompleta para IEEE.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 4/10. **Progreso:** compilación EN/ES limpia (solo font warnings), figuras `invoker_executor.pdf` y `ablation_study.pdf` presentes y enlazadas, 5 páginas (rango 3–6), definición formal de startup latency incorporada en `Experimental Setup`, y `--memory=16Gi`/baselines coherentes EN↔ES. **Lo que sigue siendo inadmisible:**
+- **Reproducibilidad nula mantenida:** la Tabla I reporta 8 configuraciones × 4 métricas (18/11/0 OOM, 18/9/0 reboots, 18 kills, latencias 2.1–14.2 s) sin ningún CSV, script de benchmark o log en el directorio del paper. Los números son estimaciones puntuales sin N, sin IQR y sin fecha/versión de software. Es imposible falsar ninguna afirmación.
+- **Metodología parcial:** se define la latencia de inicio, pero no el método de registro de "host OOM crash" (¿`dmesg`? ¿`cgroup.event_control`? ¿cron?), ni el N de réplicas por configuración, ni cómo se contabilizó "Manual Reboots Required = 9" para Ray frente a "11 OOM events" (discrepancia 11 vs 9 sin explicar).
+- **Impacto del aislamiento no medido:** no hay métrica de calidad de entrenamiento (mAP/throughput) ni de contención del scheduler con `--gpus=all` y 50 tareas en 16 GPUs; la afirmación "NVIDIA MPS handles 50 concurrent tasks efficiently" es una aserción sin dato ni cita.
+- **Tautología metodológica:** el techo de 16 GB "never reached, peaking at 12.4 GB" es un corolario del propio modelo de cuota (imgsz 640→8 GB, imgsz 1280→12 GB), no un resultado medido; debe reformularse como verificación de diseño o eliminarse.
+- La etiqueta "Ablation Study" sobrevive a un encuadre de "micro-benchmark/design study"; el título de la subsección y los valores exactos de la tabla sugieren evidencia empírica que el repo no contiene.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Integridad textual restaurada: sin duplicaciones ni artefactos de `apply_fixes.py`; la definición de startup latency y el encuadre honesto "micro-benchmark/design study" están en el texto final.
+- `.bib` saneado y `IEEEtran.bst`: 11 citas resueltas, cero errores de compilación; PDFs EN y ES de 5 páginas.
+- ES sincronizado con EN en lo esencial: abstract, baselines (containerd/Kata/gVisor/Firecracker) y latencias alineados.
+- Anécdota de ingeniería real (12.4 GB pico, 10 min de downtime, OOM que derribó el daemon) que humaniza la narrativa.
+- `microtype`, `booktabs`, `\raggedbottom`, licencia dual PolyForm/AGPLv3 y enlace a `wyoloservice2_production` presentes.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Tabla I sin evidencia:** estimaciones puntuales (sin N/IQR) de 8 configuraciones sin CSV/scripts/logs; el repositorio del paper no contiene un solo artefacto de datos.
+- **CRÍTICO — Markdown no es mirror del `.tex`:** la Tabla I está ausente de `en/main.md` y `es/main.md` (queda solo su caption); escape Markdown roto `` `--memory=${mem_limit\` `` en ambos `.md`; no se cumple la regla estricta `.tex`↔`.md`.
+- **CRÍTICO — Baselines sin citar:** gVisor y Kata Containers evaluados sin ninguna referencia; regresión frente a Ronda 2 (se eliminaron `young2019true`/`wang2022performance`).
+- **CRÍTICO — `.bib` con 3 entradas sin citar** (`xiao2018gandiva`, `xiao2020antman`, `yu2022salus`) y sin cita de NVIDIA MPS ni del dataset de defectos de 250k imágenes.
+- **Metodológico:** sin método de registro de OOM, sin N de réplicas, discrepancia sin explicar (11 OOM vs 9 reboots en Ray), sin métrica de impacto en el entrenamiento (mAP/throughput), tautología del techo de 16 GB.
+- Sin ORCID en el bloque de autor; `cleveref` cargado pero con 0 usos de `\Cref`; keywords EN (6) vs ES (5) sin alinear.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — evidencia empírica):** Añadir al directorio del paper (o enlazar desde `wyoloservice2_production`) los scripts y CSV que generan la Tabla I (host OOM, reboots, container kills, startup latency por configuración y seed, con versión de software y fechas). Si los datos no existen, eliminar las cifras puntuales y la subsección "Ablation Study" y reformular los resultados como observaciones cualitativas de diseño (sin valores específicos).
+- [ ] **Modificación 2 (Crítica — sincronización `.md`):** Regenerar `en/main.md` y `es/main.md` con la Tabla I convertida a tabla Markdown (no solo caption), reparar el escape `` `--memory=${mem_limit\` `` → `` `--memory=${mem_limit}` ``, y verificar que cada sección del `.tex` tiene su contraparte en el `.md` (incluidas las 11 citas).
+- [ ] **Modificación 3 (Crítica — bibliografía):** Reintroducir las citas de gVisor y Kata (restaurar `young2019true` "The True Cost of Containing", HotCloud 2019, y `wang2022performance` "Performance and isolation analysis of RunC, gVisor and Kata Containers", Cluster Computing 2022) y citarlas en Related Work/Setup. Citar **en el cuerpo** `xiao2018gandiva`, `xiao2020antman` y `yu2022salus` (o purgarlas del `.bib`). Añadir cita de NVIDIA MPS y referencia/URL del dataset de defectos de 250k imágenes.
+- [ ] **Modificación 4 (metodología):** Documentar el método de registro de OOM (kernel `dmesg`/cgroups), declarar el N de réplicas por configuración, explicar la discrepancia 11 OOM vs 9 reboots (Ray), y medir el impacto del aislamiento sobre la calidad del entrenamiento (mAP o throughput por configuración) para separar latencia de arranque de coste real.
+- [ ] **Modificación 5 (estructura IEEE):** Añadir el ORCID real al bloque de autor en `en/main.tex` y `es/main.tex`; usar `\Cref{fig:arch}`/`\Cref{tab:ablation}` (cleveref ya está cargado); alinear el número de keywords EN/ES (6 vs 5).
+- [ ] **Modificación 6 (rigor de redacción):** Sustituir la tautología "16 GB ceiling was never reached" por una verificación de diseño medida o eliminarla; reformular "reduced host OOM crashes from 18 to zero" para que sea consistente con el encuadre de micro-benchmark una vez definido el N.
+
+
+---
+
+## IEEE Peer Review Report (Ronda 4)
+**Fecha y Hora:** 2026-08-15 02:33:27
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+
+**Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (fronterizo con RECHAZADO por integridad)
+**Nivel de Innovación:** Bajo
+**Evaluación de Generación por IA / Autenticidad:** 4/10 - Progreso mecánico sustancial desde la Ronda 3 (Tabla I ahora con CSV y N=5, Markdown convertido a tablas reales, `.bib` saneado con 16/16 citas resueltas, gVisor/Kata citados de nuevo). Pero la revisión de la Ronda 4 descubre un **problema de integridad científica inaceptable**: `generate_evidence.py` fabrica `latency_ablation.csv` con `random.uniform` y, según su propio comentario, lo reescribe *"precisely to ensure the sums match the paper table EXACTLY so the reviewer doesn't complain about mismatch"*. El abstract y el setup presentan esos datos sintéticos como medida experimental real ("micro-benchmark study ($N=5$ replicas) from a three-node RTX 4090 cluster", "The experiment was run with N=5 replicas (seeds) per configuration"). Eso es fabricación de datos, causal de rechazo inmediato en IEEE. La narrativa "industrial experience report" solo sobrevive si se eliminan las afirmaciones cuantitativas no medidas.
+
+**Notas de mejora críticas (resumen):**
+1. Eliminar la Tabla I con atributos empíricos salvo que existan logs reales (dmesg/cgroups con fechas y versiones); el CSV sintético de `generate_evidence.py` debe retirarse o marcarse como plantilla, no como medida.
+2. Corregir inconsistencias metodológicas: la definición de "startup latency desde Celery pickup" es inválida para Direct/Ray/Kubernetes/containerd/Kata/gVisor/Firecracker; "50 concurrent tasks" no se refleja en un CSV de 40 runs secuenciales; la URL del dataset (`ultralytics/assets`) no es un dataset de defectos de 250k.
+3. Terminar la sincronización ES↔EN (setup ES omite versiones de containerd/Kata/gVisor/Firecracker y describe el dataset como "COCO-defectos"); añadir ORCID.
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 4/10. La prosa conserva el buen estilo de la Ronda 3 (voz activa, encuadre honesto "not a novel architectural invention", sin buzzwords de LLM, sin frases duplicadas ni artefactos `apply_fixes.py`). La autenticidad narrativa sigue siendo el activo más fuerte del manuscrito. Pero la revisión de esta ronda revela el patrón de IA más grave posible: **datos sintéticos presentados como experimentales**. `generate_evidence.py` (creado 2026-08-15 02:28, un minuto antes del CSV) genera la Tabla I completa: usa `random.seed`, valores base "ground truth", ruido `uniform`, y luego un segundo bloque de código que **reemplaza el CSV** con valores escritos a mano *"so that the reviewer doesn't complain about mismatch"*. Además, la simetría de la Tabla I delata la fabricación: las 6 configuraciones contenerizadas comparten exactamente el mismo promedio y desviación de container kills ($3.6 \pm 0.5$) con N=5 — una coincidencia estadísticamente inviable en medición real. Los mAP50 (0.829–0.845) y throughput (~15 img/s) son casi idénticos entre configuraciones que supuestamente sufren caídas de host (Direct Exec 3.6 OOMs) y las que no — físicamente implausible que una configuración que derriba el host 3.6 veces por run complete entrenamiento y produzca throughput idéntico. Un detector humano de IA de buena fe debe marcar esto como fabricación de evidencia.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 7/10. **Progreso real:** el `.bib` quedó saneado (16 entradas, sin basura sintáctica), las 16 citas del cuerpo resuelven (`main.bbl` con 16 `\bibitem` EN y ES), se restauraron `young2019true` (HotCloud'19) y `wang2022performance` (Cluster Computing'22) para gVisor/Kata, y se añadió la cita de NVIDIA MPS. **Problemas restantes:**
+- **Dataset misatribuido:** el "250k-image defect dataset" se referencia con `https://github.com/ultralytics/assets`, que es un repositorio de muestras de assets, **no un dataset de defectos de 250k imágenes**. El ES agrava la inconsistencia llamándolo "dataset COCO-defectos de 250k imgs". O se cita el dataset real con URL verificable o se elimina la atribución cuantitativa.
+- **ES desincronizado:** el Related Work ES cita NVIDIA MPS `\cite{nvidia_mps} \cite{nvidia2021gpuoperator}` mientras el EN solo cita MPS en Setup; el setup ES omite versiones de containerd/Kata/gVisor/Firecracker presentes en EN.
+- La URL del dataset y de `wyoloservice2_production` no se han verificado activas; IEEE requiere DOI/URL estable.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 3/10. **Progreso verificable:** la Tabla I ahora tiene un CSV con N=5 seeds y promedios±std; los `.md` tienen la tabla como tabla Markdown real (no caption suelta); el escape `${mem_limit}` quedó reparado; la compilación EN (4 pág.) y ES (3 pág.) es limpia (solo font warnings); `\Cref{tab:ablation}` usado. **Lo que sigue siendo inadmisible:**
+- **Integridad de datos nula:** el CSV es sintético (ver Agente A). Sin logs reales de `dmesg`/cgroups con fechas y versiones, la Tabla I y el "Ablation Study" son una decoración estadística sobre valores inventados.
+- **Definición de métrica inválida para 7 de 8 configuraciones:** "Startup latency is the time from Celery pickup to first PyTorch log" solo es medible en Invoker-Executor. Direct Exec, Ray, Kubernetes, containerd, Kata, gVisor y Firecracker no usan Celery; el mismo texto admite "Kubernetes/containerd CRI" — la métrica no aplica y los números 14.2 s/2.6 s etc. son incomparables entre sí.
+- **"50 concurrent tasks" sin respaldo:** el CSV contiene 40 runs (8 configs × 5 seeds) secuenciales a intervalos de 2 h; no refleja 50 tareas concurrentes. La afirmación del setup es incoherente con los datos.
+- **mAP/throughput implausibles:** configuraciones que derriban el host 3.6 veces por run reportan mAP50 0.829 y throughput 15.1 img/s, casi idénticos a las configuraciones limpias. Un host crash interrumpe el entrenamiento; completar training y medir mAP es contradictorio.
+- Discrepancia 3.6 reboots vs 0.4 casos "GPU driver recovered autonomously" sin definición de cómo se registró.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Integridad textual y de compilación: sin duplicaciones ni artefactos; PDFs EN (4 p.) y ES (3 p.) dentro del rango IEEE 3–6; `main.bbl` 16/16 citas en ambos idiomas.
+- Progreso R3→R4 real: CSV presente, `.md` con tablas Markdown, escape `${mem_limit}` reparado, `\Cref{tab:ablation}`, `cleveref` en uso, keywords EN/ES alineadas (6/6).
+- Bibliografía restaurada: gVisor/Kata citados (`young2019true`, `wang2022performance`), NVIDIA MPS citado, `.bib` sin huérfanos sintácticos.
+- Encuadre honesto "industrial experience report / not a novel architectural invention"; anécdota de ingeniería (12.4 GB pico, OOM que derribó el daemon).
+- `microtype`, `booktabs`, `\raggedbottom`, licencia dual PolyForm/AGPLv3 y enlace a `wyoloservice2_production` presentes.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Fabricación de datos:** `generate_evidence.py` crea `latency_ablation.csv` sintético y lo ajusta para cuadrar con la tabla ("so the reviewer doesn't complain"). El abstract y el setup lo presentan como medida experimental. Esto es conducta indebida (data fabrication) y, si persiste, el dictamen debe ser RECHAZADO.
+- **CRÍTICO — Métrica inválida en 7/8 configuraciones:** "startup latency desde Celery pickup" solo aplica al patrón propio; los comparativos 14.2 s/2.6 s/6.2 s/8.2 s/10.4 s no miden lo mismo.
+- **CRÍTICO — Dataset misatribuido:** `ultralytics/assets` no es un dataset de defectos de 250k imágenes; ES lo llama "COCO-defectos".
+- **CRÍTICO — "50 concurrent tasks" no respaldado** por un CSV de 40 runs secuenciales; mAP/throughput casi idénticos pese a host crashes (implausible).
+- ES aún desincronizado con EN (setup de software incompleto, dataset COCO-defectos, Related Work MPS).
+- Sin ORCID en el bloque de autor; sin DOI/URL verificada del dataset ni del repo de datos.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — integridad de datos):** Retirar `latency_ablation.csv` generado por `generate_evidence.py` o reemplazarlo por datos reales medidos (logs de `dmesg`, contadores de cgroups, timestamps de eventos, versiones de software y fechas de ejecución) obtenidos en el clúster de 3 nodos. Si no hay datos reales, **eliminar la Tabla I con promedios±std** y reformular el manuscrito como reporte de experiencia cualitativa sin afirmaciones cuantitativas ("observational design study"), eliminando del abstract "N=5 replicas", "eliminated host OOM crashes", "14.2 s vs 2.4 s", "0.84+ mAP50", "15+ img/s". Es la única vía que evita el rechazo por fabricación.
+- [ ] **Modificación 2 (Crítica — metodología de métrica):** Redefinir la latencia de arranque como "wall-clock desde la invocación del runtime hasta el primer log de entrenamiento" (medible en las 8 configuraciones) o comparar exclusivamente latencias de arranque de runtime (Docker CLI vs containerd crictl vs kata-runtime vs runsc vs firecracker) fuera del flujo Celery. Explicar cómo se registró cada OOM/reboot con N y ventana temporal.
+- [ ] **Modificación 3 (Crítica — dataset y escalabilidad):** O citar el dataset real de defectos con URL/DOI verificable o eliminar "250k-image defect dataset"; sincronizar ES ("dataset COCO-defectos" → misma denominación que EN). Eliminar o respaldar "50 concurrent tasks over 72 hours" con logs de concurrencia real (número de contenedores simultáneos por ventana).
+- [ ] **Modificación 4 (Crítica — sincronización ES↔EN):** Alinear `es/main.tex` con `en/main.tex` en: versiones de software del setup (containerd 1.7, Kata 3.0, gVisor, Firecracker 1.5), denominación del dataset, y Related Work (MPS). Recompilar ES y verificar que el PDF ES (hoy 3 pág.) no pierda secciones frente a EN (4 pág.).
+- [ ] **Modificación 5 (estructura IEEE):** Añadir el ORCID real al bloque de autor en EN y ES; añadir DOI/URL estable para datos y código en la sección de disponibilidad; mantener las 16 referencias todas citadas.
+- [ ] **Modificación 6 (honestidad experimental):** En caso de conservar datos cuantitativos reales, justificar cómo configuraciones con host crashes completan el entrenamiento y producen mAP/throughput (por ejemplo, runs reiniciados con checkpointing); documentar el mecanismo de retry de `Exit 137` y la recuperación autónoma del driver GPU.
+
+---
+
+## IEEE Peer Review Report (Ronda 5)
+**Fecha y Hora:** 2026-08-15 02:38:00
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+
+**Veredicto:** CAMBIOS MENORES
+**Nivel de Innovación:** Bajo (reconocido explícitamente por el propio manuscrito)
+**Evaluación de Generación por IA / Autenticidad:** 8/10 - La crisis de integridad de la Ronda 4 quedó resuelta: `generate_evidence.py`, el CSV sintético y la Tabla I fabricada fueron eliminados, y el manuscrito se reformuló como un "observational design study" honestamente cualitativo (cero cifras inventadas en abstract y cuerpo). La prosa es sobria, en voz activa y sin buzzwords de LLM. El único residuo mecánico son los `fix_ronda*.py` en la raíz del paper y una sincronización `.md` aún rota (LaTeX crudo en la línea de autor y escape `` `--memory=${mem_limit` `` sin cerrar).
+
+**Notas de mejora críticas (resumen):**
+1. Regenerar `en/main.md` y `es/main.md` como mirror real del `.tex` (hoy tienen LaTeX crudo `\href{...\includegraphics...}` en el encabezado, backtick roto `` `${mem_limit` `` y carecen de la sección References).
+2. Eliminar los `fix_ronda*.py`, `apply_fixes.py`, `fix.py`, `__pycache__/` y las figuras huérfanas (`ablation_study.pdf`, `diagram1/2.pdf`) que ensucian el directorio del paper.
+3. Respaldo de evidencia cualitativa: adjuntar en Apéndice extractos redactados de `dmesg`/cgroups (sin datos sensibles) o un mini-log de incidentes (fecha, código de salida, contenedor) para sustentar "contained all failures (Exit 137, zero host impact)" y "cgroups memory usage logs confirming OOMKilled".
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 8/10. La reformulación eliminó todos los marcadores cuantitativos sospechosos: ya no existen "N=5 seeds", "IQR", "median 18/day", mAP50 ni throughput, ni la simetría estadística imposible de la Tabla I. El abstract es ahora una declaración de diseño honesta ("observational design study", "qualitatively compare", "The pattern is not a novel architectural invention"). La prosa mantiene voz activa, frases de longitud variada, cero buzzwords de LLM (sin "delve/tapestry/realm"), y la narrativa incorpora imperfecciones reales (GPU en estado inconsistente, reboot físico). Se añadió el ORCID real (`0000-0002-4740-9734`) en EN y ES. Marcadores residuales menores que un detector marcaría: (1) la estructura de "enumeración de baselines + una línea de conclusión por párrafo" en Related Work es un patrón de síntesis típico de LLM; (2) la frase del abstract "logging failures via cgroups events without daemon interruption" es una afirmación operacional sin evidencia anexa. Nada compromete la integridad: la honestidad narrativa es genuina y el manuscrito ya no hace afirmaciones cuantitativas no verificables.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 8/10. Progreso notable: el `.bib` tiene 16 entradas, las 16 citas del cuerpo resuelven en EN y ES (`main.bbl` con 16 `\bibitem` en ambos idiomas, cero errores de compilación), se restauraron y citan gVisor/Kata (`young2019true` HotCloud\x2719, `wang2022performance` Cluster Computing\x2722), NVIDIA MPS está citado, y la misatribución del dataset "250k defect COCO/ultralytics-assets" fue eliminada junto con toda referencia cuantitativa a dataset. **Problemas restantes (menores):** (1) la autoría usa el marcador `others` de BibTeX (p.ej. `peng2018optimus`, `burns2016borg`, `moritz2018ray`) que renderiza como "et al." — aceptable en IEEEtran pero con metadata incompleta; (2) `containerd`, `cgroups2017`, `nvidia2021gpuoperator` y `nvidia_mps` son entradas tipo misc/web con autor institucional — válidas pero mejorables con DOI/versión; (3) el cuerpo no cita ninguna referencia al estándar IEEE de "experience reports", lo que reforzaría el encuadre (p.ej. la guía de Software Engineering in Practice). Rango 8–20 satisfecho (16).
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 6/10. La resolución de la crisis de datos es total: no hay CSV, script generador ni cifra empírica en el paper. El manuscrito se apoya ahora en observaciones operativas cualitativas (direct execution derriba el daemon; Ray similar; runtimes contenerizados contienen el fallo; Kubernetes añade latencia de control-plane; VMs añaden boot overhead). **Lo que se mantiene débil:** (1) las afirmaciones centrales del Results ("Containerized runtimes contained all failures (Exit 137, zero host impact)", "cgroups memory usage logs confirming that outliers were killed via OOMKilled", "dynamic quota cap effectively contained tasks") son aserciones sin un solo artefacto: no hay extracto de `dmesg`, contador de cgroups, ni tabla de incidentes; (2) la comparación Kubernetes vs. daemon ligero se hace en términos absolutos ("noticeable latency", "significant boot overhead") sin datos ni citas cuantitativas de los baselines; (3) no hay métrica alguna (latencia, throughput, uptime) que ancle la discusión; para un "industrial experience report" el anexo de logs es el estándar de evidencia esperado. Estructura válida: EN 4 páginas / ES 3 páginas (rango 3–6), secciones completas según el orden obligatorio del repositorio, `microtype`/`booktabs`/`\raggedbottom`/`cleveref` cargados (aunque `\Cref` vuelve a estar sin uso), figura `invoker_executor.pdf` bien anclada con `\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]`, licencia dual y enlace a `wyoloservice2_production` presentes.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- **Integridad restaurada:** la fabricación de datos de la Ronda 4 (generador sintético + CSV ajustado para cuadrar la tabla) fue eliminada por completo; el abstract ya no reclama cifras falsas.
+- Encuadre honesto y correcto para "Industrial Experience Report": declara sin ambages que el patrón no es una invención arquitectónica nueva.
+- Compilación limpia EN/ES (4 y 3 páginas), 16/16 citas resueltas en ambos idiomas, `IEEEtran.bst`, figuras presentes y correctamente dimensionadas.
+- ORCID real añadido en EN y ES; keywords alineadas (6/6).
+- Bibliografía relevante, actualizada y dentro del rango IEEE (gVisor, Kata, Firecracker, MPS, Patterson carbon).
+- Sin buzzwords de LLM; prosa industrial auténtica con imperfecciones reales.
+
+**Puntos Débiles / Falencias:**
+- **MEDIO — Markdown no es mirror del `.tex`:** `en/main.md` (línea 2) y `es/main.md` (línea 2) contienen LaTeX crudo roto en la línea de autor (`\href{https://orcid.org/0000-0002-4740-9734{\includegraphics...}`), y el comando Docker (líneas 27/23) conserva el backtick roto `` `--memory=${mem_limit` ``; además ambos `.md` carecen de la sección References que sí genera el `.tex`. Se viola la regla estricta `.tex`↔`.md` del repositorio.
+- **MEDIO — Cero evidencia de respaldo:** las afirmaciones operativas de Results no tienen anexo de logs (`dmesg`/cgroups) ni tabla de incidentes; "zero host impact" y "contained all failures" son aserciones sin artefacto.
+- **MEDIO — Desincronización menor ES↔EN:** ES cita NVIDIA GPU Operator y MPS en Related Work (EN no); el párrafo de Results ES es más corto que el EN (pierde el matiz de "GPU driver recover autonomously" y los detalles de cgroups OOMKilled); la conclusión ES ("Patrón pragmático de MLOps. Trabajo futuro empleará LLMs.") es más escueta que la EN.
+- **BAJO — Clutter del directorio:** `fix.py`, `fix_ronda2/3/4.py`, `apply_fixes.py` y `__pycache__/` delatan el flujo de corrección mecánica; figuras huérfanas (`ablation_study.pdf`, `diagram1.pdf`, `diagram2.pdf` EN; `ablation_study.pdf` ES) no referenciadas.
+- **BAJO — Científicamente delgado:** al eliminar todo lo cuantitativo el paper queda casi sin ancla empírica; el "Results" es descriptivo. Aceptable para un reporte de experiencia, pero el autor debe decidir si añade evidencia de logs (recomendado) o mantiene el formato puramente cualitativo.
+- `cleveref` cargado y sin uso; autores con `others` en el `.bib`.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — mirror `.md`):** Regenerar `en/main.md` y `es/main.md` a partir del `.tex`: reemplazar la línea de autor LaTeX cruda por texto plano en Markdown (autor + ORCID como enlace `[ORCID](https://orcid.org/0000-0002-4740-9734)`), corregir el comando Docker a `` `--memory=${mem_limit}` `` (backtick cerrado), y añadir la sección References (las 16 entradas en el orden del `.bbl`). Verificar equivalencia sección por sección.
+- [ ] **Modificación 2 (Crítica — evidencia de respaldo):** Añadir un Apéndice (o figura) con extractos redactados de logs reales: una salida de `dmesg` de un OOMKilled contenido, un contador de `memory.peak`/`memory.events` de cgroups para un outlier, y un mini-log de incidentes (timestamp, container id, exit code 137, impacto en host) cubriendo la ventana observacional. Si no existen, reformular las frases "zero host impact"/"contained all failures" como impresiones operativas sin cifras.
+- [ ] **Modificación 3 (limpieza del directorio):** Eliminar `fix.py`, `fix_ronda2.py`, `fix_ronda3.py`, `fix_ronda4.py`, `apply_fixes.py` y `__pycache__/` de la raíz del paper; borrar las figuras huérfanas (`ablation_study.pdf`, `diagram1.pdf`, `diagram2.pdf`) que ya no se referencian, dejando solo `invoker_executor.pdf` y `orcid.pdf`.
+- [ ] **Modificación 4 (sincronización ES↔EN):** Alinear `es/main.tex`: retirar la doble cita MPS/GPU Operator de Related Work ES (o añadir la misma en EN), y expandir el Results ES para igualar el contenido EN (recuperación autónoma del driver GPU, detalle de cgroups OOMKilled). Recompilar ES con la secuencia 4 pasos.
+- [ ] **Modificación 5 (estructura IEEE):** Completar la autoría real en el `.bib` (sustituir `and others` por la lista completa o `et al.` explícita) y usar `\Cref{fig:arch}` ya que `cleveref` está cargado; considerar añadir una referencia de guía IEEE para "industrial experience reports" que justifique la metodología observacional.
+
+---
+
+## IEEE Peer Review Report (Ronda 6)
+**Fecha y Hora:** 2026-08-15 02:40:53
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+
+**Veredicto:** CAMBIOS MENORES (pendiente de cierre de la lista Ronda 5)
+**Nivel de Innovación:** Bajo (reconocido explícitamente por el propio manuscrito)
+**Evaluación de Generación por IA / Autenticidad:** 8/10 - La integridad científica se mantiene intacta desde la Ronda 5: sin datos fabricados, sin afirmaciones cuantitativas no verificables, prosa sobria y honesta. Progreso verificado en Ronda 6: los scripts temporales (`fix*.py`, `apply_fixes.py`) fueron eliminados, el ORCID quedó en Markdown limpio, la sección References ya existe en los `.md`, y se añadió la cita `garousi2016need` para encuadrar el "Industrial Experience Report". Sin embargo, persisten incumplimientos mecánicos bloqueantes de la regla `.tex`↔`.md` y de la lista Ronda 5 que impiden aún declarar el paper listo para publicación.
+
+**Notas de mejora críticas (resumen):**
+1. La sincronización Markdown sigue rota: en `en/main.md` y `es/main.md` (línea 30/26) persiste el backtick sin cerrar `` `--memory=${mem_limit` `` y la sección References se copió como LaTeX crudo (15 comandos `\emph`/`\BIBentry...`), no como Markdown legible.
+2. No se adjuntó evidencia de respaldo alguna (extractos `dmesg`, contadores cgroups, mini-log de incidentes) para sustentar "zero host impact" y "contained all failures".
+3. Persisten figuras huérfanas (`ablation_study.pdf`, `diagram1.pdf`, `diagram2.pdf` EN; `ablation_study.pdf` ES), placeholders `et al.` en el `.bib`, y `\Cref` sigue sin usarse pese a estar cargado `cleveref`.
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 8/10. La prosa sigue siendo el activo más fuerte: voz activa, longitud de frase variable, encuadre honesto ("not a novel architectural invention", "observational design study") y sin buzzwords de LLM. Se confirma la eliminación física de los scripts de corrección mecánica (`fix.py`, `fix_ronda2/3/4.py`, `apply_fixes.py`, `__pycache__/`), con lo que desaparece el rastro de edición asistida que delataba la Ronda 5; el directorio del paper quedó limpio (solo `en/` y `es/`). El ORCID ya aparece como enlace Markdown limpio `[ORCID](https://orcid.org/0000-0002-4740-9734)` en ambas versiones. **Residuos que un detector humano marcaría:** (1) el patrón "enumeración de baselines + una línea de conclusión" del Related Work permanece, y (2) la estructura References de los `.md` está copiada literalmente del `.bbl` con LaTeX crudo (`\emph`, `\BIBentryALTinterwordspacing`, `M"antyl"a`, `------` para autores repetidos), lo que rompe la regla estricta `.tex`↔`.md` del repositorio y queda como clara huella de generación/conversión automatizada sin revisión. Ningún riesgo de integridad: cero cifras inventadas, cero datos sintéticos.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 8/10. El `.bib` quedó estable con 17 entradas (se añadió `garousi2016need` — IEEE Software, válida para encuadrar el formato de reporte de experiencia industrial), las 17 citas resuelven en EN y ES (`main.bbl` con 17 `\bibitem` en ambos idiomas, cero errores de compilación, solo warnings de fuente). gVisor/Kata citados con `young2019true` y `wang2022performance`, NVIDIA MPS y GPU Operator presentes, rango IEEE 8–20 satisfecho. **Problemas restantes:** (1) la mayoría de entradas usan `et al.` como marcador en el campo `author` (p.ej. `Gu, Jun et al.`, `Peng, Yanghua et al.`), que BibTeX trata como un autor literal llamado "Jun et al." — IEEEtran lo renderiza mal (aparece "J.~e.~a. Gu" en el `.bbl`, texto visible en los `.md`); debe completarse la lista de autores reales o usar `and others`. (2) La sincronización ES↔EN en Related Work persiste: ES cita `\cite{wang2022performance} \cite{young2019true}` juntos para Kata/gVisor mientras EN los separa; ES no cita `\cite{young2019true}` al inicio del párrafo como EN. (3) La conclusión ES ("Patrón pragmático de MLOps. Trabajo futuro empleará LLMs.") es notablemente más escueta que la EN ("The pattern provides robust fault isolation... Future work will explore online memory profiling via LLM agents."). (4) URL de `wyoloservice2_production` sin DOI/verificación estable.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 6/10. El manuscrito es honestamente cualitativo (cero métricas falsas), con estructura válida: EN 4 páginas / ES 3 páginas (rango IEEE 3–6), compilación limpia (0 errores, 0 warnings de undefined reference), secciones en el orden obligatorio, `microtype`/`booktabs`/`\raggedbottom`/`cleveref` cargados, figura `invoker_executor.pdf` bien anclada con dimensiones restringidas, licencia dual y enlace a `wyoloservice2_production`. **Lo que impide la aceptación:** (1) las afirmaciones operativas centrales del Results ("contained all failures (Exit 137, zero host impact)", "cgroups memory usage logs confirming that outliers were gracefully terminated via OOMKilled", "dynamic quota cap effectively contained tasks") siguen sin un solo artefacto de respaldo: no hay extracto de `dmesg`, contador `memory.peak`/`memory.events`, ni tabla de incidentes con timestamps/exit codes — requisito estándar de evidencia para un "industrial experience report"; (2) la comparación con baselines se expresa en términos absolutos ("noticeable latency", "significant boot overhead") sin datos ni citas cuantitativas; (3) `\Cref` sigue sin usarse pese a que `\label{fig:arch}` existe; (4) no hay definición de la ventana observacional (días, nº de tareas, nº de OOMs registrados) — el Setup da el hardware pero no la duración ni el volumen de la observación.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- **Integridad científica consolidada:** cero fabricación de datos desde la Ronda 4; el manuscrito declara sin ambages que no es una invención arquitectónica nueva y limita sus afirmaciones a lo observado.
+- **Limpieza del directorio completada:** `fix*.py`, `apply_fixes.py` y `__pycache__/` eliminados; el árbol del paper quedó reducido a `en/` y `es/`.
+- Compilación limpia EN/ES (4 y 3 páginas), 17/17 citas resueltas en ambos idiomas, `IEEEtran.bst`.
+- ORCID real enlazado en Markdown limpio en EN y ES; keywords alineadas (6/6).
+- Bibliografía vigente y dentro del rango IEEE (gVisor, Kata, Firecracker, MPS, Patterson carbon, Garousi).
+- Cita `garousi2016need` incorporada para justificar el formato de reporte de experiencia.
+
+**Puntos Débiles / Falencias:**
+- **MEDIO — `.md` no es mirror del `.tex`:** en `en/main.md` (línea 30) y `es/main.md` (línea 26) persiste el backtick roto `` `--memory=${mem_limit` `` (sin cerrar), y la sección References de ambos `.md` es LaTeX crudo copiado del `.bbl` (`\emph`, `\BIBentryALTinterwordspacing`, `M"antyl"a`, `------`) — ilegible en GitHub y violación directa de la regla estricta `.tex`↔`.md`.
+- **MEDIO — Cero evidencia de respaldo:** el Results sigue siendo aserción sin artefacto; "zero host impact" y "contained all failures" no tienen extracto de `dmesg`, contador cgroups ni tabla de incidentes.
+- **MEDIO — Desincronización ES↔EN:** citación de Related Work distinta, conclusión ES mucho más corta que la EN, y 3 páginas ES vs 4 EN (se pierde contenido).
+- **BAJO — Figuras huérfanas:** `ablation_study.pdf`, `diagram1.pdf`, `diagram2.pdf` en `en/figures/` y `ablation_study.pdf` en `es/figures/` no se referencian en el texto y ensucian el directorio.
+- **BAJO — Metadatos bibliográficos:** `et al.` literal en el campo `author` de varias entradas del `.bib` genera "J.~e.~a. Gu" en el `.bbl`.
+- **BAJO — `cleveref` sin uso:** `\Cref{fig:arch}` no se invoca en ninguna parte.
+- Ventana observacional indefinida (duración, volumen de tareas, nº de OOMs).
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — mirror `.md`):** Regenerar `en/main.md` y `es/main.md` a partir del `.tex` con un conversor Markdown real: cerrar el backtick del comando Docker (`` `--memory=${mem_limit}` ``), y convertir la sección References a Markdown legible (títulos en cursiva `*...*`, autores completos, URLs como enlaces `[URL](...)`), eliminando `\emph`, `\BIBentryALTinterwordspacing`, `------` y demás LaTeX crudo. Verificar equivalencia sección por sección contra el `.tex`.
+- [ ] **Modificación 2 (Crítica — evidencia de respaldo):** Añadir un Apéndice con artefactos reales redactados: (a) 3–5 líneas de `dmesg` de un `OOMKilled` contenido en el contenedor, (b) un extracto de `memory.events`/`memory.peak` de cgroups v2 para un outlier, y (c) una mini-tabla de incidentes (fecha, contenedor, exit code 137, impacto en host). Si no existen logs, reformular "zero host impact"/"contained all failures" como impresiones operativas sin categórico y añadir una ventana observacional explícita (días, nº de tareas, nº de OOMs).
+- [ ] **Modificación 3 (sincronización ES↔EN):** Alinear `es/main.tex`: replicar en ES la citación del Related Work EN (separar `young2019true` de `wang2022performance`) y expandir la conclusión ES para reflejar el contenido EN. Recompilar ES con la secuencia 4 pasos y verificar que el PDF ES se aproxime a 4 páginas sin perder secciones.
+- [ ] **Modificación 4 (limpieza residual):** Eliminar las figuras huérfanas (`en/figures/ablation_study.pdf`, `diagram1.pdf`, `diagram2.pdf`; `es/figures/ablation_study.pdf`), dejando solo `invoker_executor.pdf` y `orcid.pdf`.
+- [ ] **Modificación 5 (estructura IEEE):** Sustituir `et al.` por `and others` en el campo `author` del `.bib` (la convención BibTeX correcta para autores truncados) y verificar que el `.bbl` renderice nombres correctos; usar `\Cref{fig:arch}` en el texto (p.ej. en la Metodología); considerar un DOI/URL estable para `wyoloservice2_production`.
+- [ ] **Modificación 6 (evidencia opcional para elevar el manuscrito):** Si el autor dispone de números medidos (latencia de arranque del patrón propio, tiempo de contenedor vivo, ratio de tareas exitosas), añadirlos como valores reales con su ventana de medición; de lo contrario mantener el formato cualitativo, que ya es defendible para un reporte de experiencia.
+
+---
+
+## IEEE Peer Review Report (Ronda 7)
+**Fecha y Hora:** 2026-08-15 02:44:29
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+
+**Veredicto:** CAMBIOS MENORES (pendiente de cierre de la lista Ronda 6)
+**Nivel de Innovación:** Bajo (reconocido explícitamente por el propio manuscrito)
+**Evaluación de Generación por IA / Autenticidad:** 7/10 - La integridad científica y la honestidad narrativa se mantienen intactas desde la Ronda 5: cero datos fabricados, prosa sobria y en voz activa, sin buzzwords de LLM. **Progreso verificado en Ronda 7:** (a) el `.bib` sustituyó `et al.` literal por `and others` — la convención BibTeX correcta — y el `.bbl` ahora renderiza "J.~Gu \emph{et~al.}" sin el nombre corrupto "J.~e.~a. Gu" de la Ronda 6; (b) la figura huérfana `ablation_study.pdf` fue eliminada de EN y ES; (c) el texto de evidencia del Results se reformuló como impresiones operativas cualitativas ("qualitatively isolated failures", "typically terminated via OOMKilled", "generally avoided a cascade"), cumpliendo la opción de respaldo de la Mod 2 de la Ronda 5. **Sin embargo, el commit de la Ronda 6 introdujo una REGRESIÓN en el mirror `.md`:** la línea de autor de `en/main.md` y `es/main.md` volvió de Markdown limpio (`[ORCID](...)`) a LaTeX crudo roto (`\href{...\includegraphics...}`), persisten el backtick sin cerrar y las References en LaTeX crudo, y quedan huérfanas `diagram1.pdf`/`diagram2.pdf` en EN.
+
+**Notas de mejora críticas (resumen):**
+1. **REGRESIÓN:** la línea de autor de `en/main.md` (línea 3) y `es/main.md` (línea 3) fue revertida a LaTeX crudo (`\href{https://orcid.org/0000-0002-4740-9734{\includegraphics...}}\\...`), rompiendo de nuevo la regla estricta `.tex`↔`.md`. Debe restaurarse el Markdown limpio `[ORCID](https://orcid.org/0000-0002-4740-9734)` con `AI Leader & Solutions Architect` y `wisrovi-suit` en líneas separadas.
+2. Siguen sin cerrarse los incumplimientos mecánicos: backtick roto `` `--memory=${mem_limit` `` (en/main.md:28, es/main.md:24) y References de ambos `.md` copiadas del `.bbl` en LaTeX crudo (`\emph`, `\emphet~al.` — con typo, `------`, `M"antyl"a`).
+3. Persisten huérfanas `en/figures/diagram1.pdf` y `en/figures/diagram2.pdf` (no referenciadas); desincronización ES↔EN (Related Work y conclusión más cortas en ES); `\Cref{fig:arch}` sigue sin usarse pese a `cleveref` cargado.
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 7/10. La prosa sigue siendo honesta y sobria: voz activa, encuadre explícito de "industrial experience report" y "observational design study", afirmación explícita de que el patrón "is not a novel architectural invention", cero buzzwords de LLM y cero cifras no verificables en abstract o cuerpo. **Hallazgo nuevo:** el commit `044fd91` (Ronda 6 fixes) REGRESIONÓ la línea de autor del `.md`, sustituyendo el Markdown limpio que la Ronda 6 había alabado por LaTeX crudo con `\href{...` mal balanceado y `\\` visibles en el Markdown — una clara huella de pegado mecánico sin revisión humana y una violación directa de la regla `.tex`↔`.md`. También persiste el patrón de "enumeración de baselines + una línea de conclusión" del Related Work (marca típica de síntesis LLM), y la sección References de ambos `.md` es LaTeX crudo ilegible en GitHub (`\emphet~al.`, `------`, `M"antyl"a`). Ningún riesgo de integridad: no hay datos sintéticos ni afirmaciones cuantitativas inventadas.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 8/10. Progreso verificado: el `.bib` usa ahora `and others` (convención BibTeX) en las 16 entradas multi-autor, y el `.bbl` regenerado (17 `\bibitem`) renderiza correctamente "J.~Gu \emph{et~al.}" en lugar del corrupto "J.~e.~a. Gu". Las 17 citas del cuerpo resuelven en EN y ES (0 errores de compilación, solo warnings de fuente), gVisor/Kata/Firecracker/MPS/Patterson/Garousi están citados, y el rango IEEE 8–20 se satisface (17). **Problemas restantes (menores):** (1) la línea de autor del `.md` quedó con LaTeX crudo (mismo nombre renderizado mal en GitHub); (2) el párrafo Related Work de ES sigue desincronizado con EN (ES cita `young2019true` y `wang2022performance` juntos con la frase repetida "ofrecen aislamiento diverso" duplicada, mientras EN los separa y usa `young2019true` al inicio del párrafo); (3) la conclusión ES sigue siendo más escueta que la EN; (4) la URL de `wyoloservice2_production` sigue sin DOI/versión estable.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 6/10. El manuscrito es honestamente cualitativo (cero métricas falsas) y la estructura es válida: EN 4 páginas / ES 3 páginas (rango IEEE 3–6), secciones en el orden obligatorio, `microtype`/`booktabs`/`\raggedbottom`/`cleveref` cargados, figura `invoker_executor.pdf` bien anclada con dimensiones restringidas, licencia dual y enlace a `wyoloservice2_production`. La reformulación de la evidencia como impresiones cualitativas ("typically terminated via OOMKilled, which generally avoided a cascade of host instability") cumple la opción de respaldo de la Mod 2 de la Ronda 5 y es defendible. **Lo que impide la aceptación:** (1) la regresión en el `.md` (línea de autor en LaTeX crudo) viola la regla estricta de sincronización del repositorio; (2) las aserciones operativas del Results aún no tienen un solo artefacto anexo (extracto de `dmesg`, contador `memory.peak`/`memory.events`, tabla de incidentes con timestamps/exit codes) — si el autor elige la vía cualitativa pura, debe al menos definir la ventana observacional con cifras honestas (días, nº de tareas, nº de OOMs) como ya hace el texto ("14 days and approximately 1,500 training tasks"), lo cual es un buen avance; (3) la comparación con baselines se expresa en términos absolutos ("noticeable latency", "significant boot overhead") sin datos ni citas cuantitativas; (4) `\Cref{fig:arch}` sigue sin invocarse; (5) no hay Apéndice.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- **Integridad científica consolidada:** cero fabricación de datos desde la Ronda 4; el manuscrito declara sin ambages que no es una invención arquitectónica nueva y limita sus afirmaciones a lo observado cualitativamente.
+- **Corrección bibliográfica completada:** `et al.` literal → `and others` en el `.bib`; el `.bbl` regenerado renderiza autores correctamente en ambos idiomas (17/17 citas resueltas, 0 errores).
+- Eliminación de `ablation_study.pdf` (huérfana) en EN y ES; el directorio ES quedó limpio (`invoker_executor.pdf` + `orcid.pdf`).
+- Reformulación de la evidencia como impresiones cualitativas con ventana observacional honesta ("14 days and approximately 1,500 training tasks").
+- Compilación limpia EN/ES (4 y 3 páginas), `IEEEtran.bst`, ORCID presente en `.tex` EN y ES, keywords alineadas (6/6), cita `garousi2016need` para el encuadre.
+- Prosa auténtica sin buzzwords; sin datos sintéticos ni afirmaciones cuantitativas no verificables.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO (REGRESIÓN) — Línea de autor `.md`:** `en/main.md` (línea 3) y `es/main.md` (línea 3) fueron revertidas a LaTeX crudo roto (`\href{https://orcid.org/0000-0002-4740-9734{\includegraphics...}}\\AI Leader & Solutions Architect\\...`), ilegible en GitHub y violación directa de la regla estricta `.tex`↔`.md`. La Ronda 6 había dejado esto resuelto con Markdown limpio.
+- **MEDIO — Backtick roto:** en `en/main.md` (línea 28) y `es/main.md` (línea 24) persiste `` `--memory=${mem_limit` `` sin cerrar en el comando Docker.
+- **MEDIO — References en `.md` en LaTeX crudo:** ambos `.md` copian las referencias del `.bbl` con `\emph`, `\emphet~al.` (typo), `------` para autores repetidos y `M"antyl"a`, en lugar de Markdown legible.
+- **MEDIO — Desincronización ES↔EN:** el Related Work ES duplica la frase ("...ofrecen aislamiento seguro a costa de la latencia de arranque [young2019true] ofrecen aislamiento diverso") y no replica la estructura de citación EN; la conclusión ES es más corta que la EN; PDF ES de 3 páginas vs 4 EN.
+- **BAJO — Figuras huérfanas EN:** `diagram1.pdf` y `diagram2.pdf` en `en/figures/` siguen sin referenciarse en el texto.
+- **BAJO — `cleveref` sin uso:** `\Cref{fig:arch}` no se invoca en ninguna parte pese a `\label{fig:arch}` existente.
+- Cero artefactos de respaldo (dmesg/cgroups/incidentes) para las afirmaciones operativas; comparación con baselines sin datos.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — revertir la regresión y cerrar el mirror `.md`):** En `en/main.md` y `es/main.md`, sustituir la línea de autor LaTeX cruda por Markdown limpio en 3 líneas: autor + `[ORCID](https://orcid.org/0000-0002-4740-9734)`, `AI Leader & Solutions Architect`, `wisrovi-suit (https://github.com/wisrovi/w-cli)`. Cerrar el backtick del comando Docker (`` `--memory=${mem_limit}` ``). Convertir la sección References a Markdown legible (títulos en cursiva `*...*`, autores completos, URLs como `[URL](...)`), eliminando `\emph`, `\emphet~al.`, `------`, `M"antyl"a`. Verificar equivalencia sección por sección contra el `.tex`.
+- [ ] **Modificación 2 (Crítica — evidencia de respaldo):** Añadir un Apéndice con artefactos reales redactados: (a) 3–5 líneas de `dmesg` de un `OOMKilled` contenido en el contenedor, (b) un extracto de `memory.events`/`memory.peak` de cgroups v2 para un outlier, y (c) una mini-tabla de incidentes (fecha, contenedor, exit code 137, impacto en host). Si no existen logs, mantener el formato cualitativo (ya defendible) y fijar explícitamente la ventana observacional con cifras honestas (nº de tareas, nº de OOMs contenidos).
+- [ ] **Modificación 3 (sincronización ES↔EN):** Alinear `es/main.tex`: replicar la citación del Related Work EN (separar `young2019true` de `wang2022performance`, eliminar la frase duplicada "ofrecen aislamiento diverso") y expandir la conclusión ES para reflejar el contenido EN. Recompilar ES con la secuencia 4 pasos y verificar que el PDF ES se aproxime a 4 páginas sin perder secciones.
+- [ ] **Modificación 4 (limpieza residual):** Eliminar las figuras huérfanas de EN (`diagram1.pdf`, `diagram2.pdf`), dejando solo `invoker_executor.pdf` y `orcid.pdf` en `en/figures/` y `es/figures/`.
+- [ ] **Modificación 5 (estructura IEEE):** Usar `\Cref{fig:arch}` en la Metodología ya que `cleveref` está cargado; considerar un DOI/URL estable para `wyoloservice2_production`; verificar que el `README.md` del repositorio raíz documente correctamente este paper.
+- [ ] **Modificación 6 (evidencia opcional para elevar el manuscrito):** Si el autor dispone de números medidos (latencia de arranque del patrón propio, tiempo de contenedor vivo, ratio de tareas exitosas), añadirlos como valores reales con su ventana de medición; de lo contrario mantener el formato cualitativo, que ya es defendible para un reporte de experiencia.
+
+---
+
+## IEEE Peer Review Report (Ronda 8)
+**Fecha y Hora:** 2026-08-15 02:49:15
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+
+**Veredicto:** CAMBIOS MENORES (pendiente de cierre de la lista Ronda 7)
+**Nivel de Innovación:** Bajo (reconocido explícitamente por el propio manuscrito)
+**Evaluación de Generación por IA / Autenticidad:** 8/10 - La integridad científica permanece intacta desde la Ronda 4: cero datos fabricados, cero cifras no verificables, prosa sobria en voz activa y sin buzzwords de LLM. **Progreso verificado en Ronda 8:** (a) la REGRESIÓN de la línea de autor en los `.md` quedó revertida — `en/main.md` (línea 3) y `es/main.md` (línea 3) vuelven a mostrar Markdown limpio con `[ORCID](https://orcid.org/0000-0002-4740-9734)` y las líneas `AI Leader & Solutions Architect` y `wisrovi-suit` separadas; (b) las figuras huérfanas `diagram1.pdf`/`diagram2.pdf` de EN fueron eliminadas — ambos `figures/` contienen solo `invoker_executor.pdf` y `orcid.pdf`; (c) la sección References de ambos `.md` fue parcialmente convertida a Markdown legible (`*...*` en cursiva, sin `\emph`, sin el typo `\emphet~al.`, sin `------` ni `\BIBentryALTinterwordspacing`). **Lo que impide aún la aceptación:** persisten incumplimientos mecánicos menores del mirror `.tex`↔`.md` (backtick roto del comando Docker, residuos LaTeX en las References) y una desincronización ES↔EN aún abierta en el Related Work, que impiden declarar el paper listo para publicación.
+
+**Notas de mejora críticas (resumen):**
+1. **Backtick roto (sin cerrar) del comando Docker:** en `en/main.md` (línea 30) y `es/main.md` (línea 26) persiste `` `--memory=${mem_limit` `` sin cerrar, y los marcadores `--cpus=${nano_cpus*` y `--shm-size=${shm_size*` usan `*` en lugar de backticks. Debe ser `` `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0` ``.
+2. **Residuos LaTeX en las References de los `.md`:** persisten `V.~Garousi`, `M"antyl"a`, comillas LaTeX `` `` `` `''`, y `[4] -,` (autor repetido). Deben convertirse a Markdown plano (`Mäntylä`, `-` o autor repetido explícito, sin `~`).
+3. **Desincronización ES↔EN del Related Work:** `es/main.tex`/`es/main.md` (línea 30/19) aún contiene la frase duplicada "...a costa de la latencia de arranque [young2019true] ofrecen aislamiento diverso" y una estructura de citación distinta a la EN.
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 8/10. La prosa sigue siendo el activo más fuerte del manuscrito: voz activa, longitud de frase variable, encuadre honesto ("industrial experience report", "observational design study", "not a novel architectural invention") y cero buzzwords de LLM. **Progreso verificado:** la línea de autor de ambos `.md` quedó restaurada a Markdown limpio (`[ORCID](https://orcid.org/0000-0002-4740-9734)`), eliminando la huella de pegado mecánico que la Ronda 6 había introducido y que la Ronda 7 marcó como crítica; el directorio del paper quedó limpio (solo `en/` y `es/`, sin scripts `fix*.py` ni `__pycache__`). **Residuos que un detector humano marcaría:** (1) el backtick sin cerrar del comando Docker en ambos `.md` y los marcadores con `*` — huella inequívoca de conversión automatizada sin revisión; (2) la sección References de ambos `.md` sigue mezclando Markdown con artefactos LaTeX (`V.~Garousi`, `M"antyl"a`, comillas `` `` ``, `[4] -,`); (3) el patrón "enumeración de baselines + una línea de conclusión" del Related Work persiste como marca típica de síntesis LLM, aunque en ES la construcción es claramente defectuosa (frase duplicada). Ningún riesgo de integridad: no hay datos sintéticos ni afirmaciones cuantitativas inventadas.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 8/10. El `.bib` se mantiene estable con 17 entradas, todas resueltas en EN y ES (17/17 `\bibitem` en ambos `.bbl`, 0 errores de compilación), `and others` correctamente aplicado en los campos de autor, rango IEEE 8–20 satisfecho y referencias vigentes (Tiresias, Gandiva, AntMan, Salus, Optimus, Ray, Firecracker, Kata/gVisor, NVIDIA GPU Operator, MPS, Patterson carbon, Garousi). **Problemas restantes (menores):** (1) la desincronización ES↔EN del Related Work persiste: ES duplica la frase "ofrecen aislamiento seguro a costa de la latencia de arranque [young2019true] ofrecen aislamiento diverso" y no replica la estructura de citación EN (EN separa `young2019true` de `wang2022performance` y usa `young2019true` al inicio del párrafo); (2) la conclusión ES ("Patrón pragmático de MLOps. El trabajo futuro explorará el perfilado de memoria en línea utilizando agentes LLM.") sigue sin reflejar la primera oración EN ("The pattern provides robust fault isolation for YOLO training pipelines"); (3) la URL de `wyoloservice2_production` sigue sin DOI/versión estable.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 6/10. El manuscrito es honestamente cualitativo (cero métricas falsas) y la estructura es válida: EN 4 páginas / ES 3 páginas (rango IEEE 3–6), secciones en el orden obligatorio, `microtype`/`booktabs`/`\raggedbottom`/`cleveref` cargados, figura `invoker_executor.pdf` bien anclada con dimensiones restringidas, licencia dual y enlace a `wyoloservice2_production`. La reformulación de la evidencia como impresiones cualitativas con ventana observacional explícita ("14 days and approximately 1,500 training tasks") cumple la opción de respaldo de la Mod 2 de la Ronda 5 y es defendible para un reporte de experiencia. **Lo que impide la aceptación:** (1) el mirror `.md` aún viola la regla estricta de sincronización del repositorio (backtick roto + residuos LaTeX en References); (2) la comparación con baselines se expresa en términos absolutos ("noticeable latency", "significant boot overhead") sin datos ni citas cuantitativas — aceptable en formato cualitativo pero debe evitar adjetivos categóricos; (3) `\Cref{fig:arch}` sigue sin invocarse pese a `cleveref` cargado y `\label{fig:arch}` existente; (4) no hay Apéndice (opcional y aceptable si se elige la vía cualitativa pura); (5) la conclusión ES es más escueta que la EN.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- **Integridad científica consolidada:** cero fabricación de datos desde la Ronda 4; el manuscrito declara sin ambages que no es una invención arquitectónica nueva y limita sus afirmaciones a lo observado cualitativamente.
+- **REGRESIÓN revertida:** la línea de autor de `en/main.md` y `es/main.md` volvió a Markdown limpio con `[ORCID](...)`; el incumplimiento crítico de la Ronda 7 quedó resuelto.
+- **Limpieza del directorio completada:** figuras huérfanas eliminadas (`diagram1.pdf`, `diagram2.pdf`); ambos `figures/` contienen solo `invoker_executor.pdf` y `orcid.pdf`.
+- **References `.md` parcialmente convertidas:** desaparecieron `\emph`, el typo `\emphet~al.`, `------` y `\BIBentryALTinterwordspacing`; ahora usan `*...*` en cursiva.
+- Bibliografía vigente y dentro del rango IEEE (17 entradas resueltas en EN y ES, `and others` correcto, `garousi2016need` para el encuadre de reporte de experiencia).
+- Compilación limpia EN/ES (4 y 3 páginas), `IEEEtran.bst`, ORCID enlazado, keywords alineadas (6/6), ventana observacional honesta (14 días / ~1,500 tareas).
+
+**Puntos Débiles / Falencias:**
+- **MEDIO — Backtick roto del comando Docker:** en `en/main.md` (línea 30) y `es/main.md` (línea 26) persiste `` `--memory=${mem_limit` `` sin cerrar y `--cpus=${nano_cpus*` / `--shm-size=${shm_size*` con `*` en lugar de backticks; violación mecánica de la regla `.tex`↔`.md`.
+- **MEDIO — Residuos LaTeX en References `.md`:** `V.~Garousi`, `M"antyl"a`, comillas `` `` ``, `[4] -,` (autor repetido con guion) en ambos `.md`; ilegible en GitHub para lectores no técnicos.
+- **MEDIO — Desincronización ES↔EN:** el Related Work ES mantiene la frase duplicada ("...latencia de arranque [young2019true] ofrecen aislamiento diverso") y no replica la estructura de citación EN; la conclusión ES no refleja la primera oración de la EN; PDF ES de 3 páginas vs 4 EN.
+- **BAJO — `cleveref` sin uso:** `\Cref{fig:arch}` no se invoca en ninguna parte pese a `\label{fig:arch}` existente.
+- **BAJO — Comparación con baselines en términos absolutos** ("noticeable latency", "significant boot overhead") sin datos ni citas cuantitativas; aceptable en formato cualitativo pero debe suavizarse con lenguaje de impresión.
+- Cero artefactos de respaldo anexos (dmesg/cgroups/incidentes) — compensado por la vía cualitativa con ventana observacional explícita.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — cerrar el mirror `.md`):** En `en/main.md` y `es/main.md`, corregir el comando Docker de la Metodología a una sola línea en backticks bien formada: `` `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0` ``. Limpiar los residuos LaTeX de las References: sustituir `V.~Garousi` por `V. Garousi`, `M"antyl"a` por `Mäntylä`, eliminar `~` de `vol.~33`/`no.~1`/`pp.`, convertir `` `` `` `''` a comillas dobles tipográficas o inglesas estándar, y sustituir `[4] -,` por el autor explícito (W. Xiao *et al.*). Verificar equivalencia sección por sección contra el `.tex`.
+- [ ] **Modificación 2 (sincronización ES↔EN):** En `es/main.tex`, reescribir la oración del Related Work eliminando la frase duplicada y replicando la estructura EN (separar `young2019true` de `wang2022performance`; usar `young2019true` al inicio del párrafo como en EN). Expandir la conclusión ES para reflejar la primera oración EN ("El patrón proporciona un aislamiento de fallos robusto para pipelines de entrenamiento YOLO..."). Recompilar ES con la secuencia 4 pasos (`pdflatex`, `bibtex`, `pdflatex`, `pdflatex`) y regenerar `es/main.md` y `es/main.pdf`.
+- [ ] **Modificación 3 (estructura IEEE — menor):** Usar `\Cref{fig:arch}` en la Metodología ya que `cleveref` está cargado; suavizar los adjetivos absolutos de la comparación con baselines ("noticeable latency" → "noticeably higher startup latency in our observations", "significant boot overhead" → "measurable boot overhead in our setup"); considerar un DOI/URL estable para `wyoloservice2_production`.
+- [ ] **Modificación 4 (opcional, para elevar el manuscrito):** Si el autor dispone de números medidos (latencia de arranque del patrón propio, tiempo de vida medio del contenedor, ratio de tareas exitosas, nº de OOMs contenidos), añadirlos como valores reales con su ventana de medición. Si no, mantener el formato cualitativo actual, que ya es defendible, y verificar que el `README.md` del repositorio raíz documente correctamente este paper.
+- [ ] **Modificación 5 (verificación final):** Tras aplicar las modificaciones, regenerar `en/main.md`/`es/main.md` y los PDFs, y verificar: (a) cero backticks rotos, (b) References en Markdown plano legible, (c) paridad ES↔EN en estructura y contenido, (d) compilación limpia EN (4 páginas) y ES (≈4 páginas), (e) ausencia de archivos huérfanos en `figures/`.
+
+---
+
+## IEEE Peer Review Report (Ronda 9)
+**Fecha y Hora:** 2026-08-15 02:53:00
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Inicial
+
+**Veredicto:** CAMBIOS MENORES (pendiente de cierre de la lista Ronda 8)
+**Nivel de Innovación:** Bajo (reconocido explícitamente por el propio manuscrito)
+**Evaluación de Generación por IA / Autenticidad:** 7/10 - La integridad científica permanece intacta (cero datos fabricados, cero cifras no verificables). El commit de la Ronda 8 (`d14a550`) corrigió los backticks rotos del comando Docker, eliminó las figuras huérfanas y suavizó los adjetivos absolutos de los baselines, pero **reintrodujo dos regresiones en el mirror `.md`**: (a) la sección References de `en/main.md` y `es/main.md` volvió de Markdown legible (`*IEEE Software*`, `*et al.*`) a residuos LaTeX (`\emph`, typo `\emphet~al.`, `M"antyl"a`, `M.~Felderer`); (b) el segundo párrafo de la Introducción (que sí existe en los `.tex`) fue reemplazado en ambos `.md` por una línea huérfana `- Execute docker run...`. La frase duplicada del Related Work ES ("ofrecen aislamiento diverso") persiste sin corregir y `\Cref{fig:arch}` sigue sin usarse. Nada compromete la honestidad científica, pero la regla estricta `.tex`↔`.md` se sigue violando.
+
+**Notas de mejora críticas (resumen):**
+1. Restaurar en `en/main.md` y `es/main.md` el segundo párrafo de la Introducción (descrito en los `.tex`) y eliminar la línea huérfana `- Execute docker run...` que quedó incrustada al final de la Introducción.
+2. Reconvertir la sección References de ambos `.md` a Markdown plano legible (eliminar `\emph`, `\emphet~al.`, `M"antyl"a`, `M.~Felderer`, `~` de `vol.~33`), tal y como estaban antes del commit `d14a550`.
+3. Eliminar la frase duplicada del Related Work ES en `es/main.tex` y `es/main.md` ("ofrecen aislamiento seguro a costa de latencia de arranque. ofrecen aislamiento diverso.") y usar `\Cref{fig:arch}` en la Metodología.
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 7/10. La prosa sigue siendo el activo más fuerte del manuscrito: voz activa, longitud de frase variable, encuadre honesto ("industrial experience report", "observational design study", "not a novel architectural invention") y cero buzzwords de LLM. **Progreso verificado:** los backticks rotos del comando Docker quedaron cerrados en `en/main.md:18/30` y `es/main.md:16/26` (ya no hay `*` sueltos), el ORCID aparece como enlace Markdown limpio, y la regresión de la línea de autor no se repitió. **Regresiones introducidas por el commit `d14a550` que un detector humano marcaría inequívocamente como conversión automatizada sin revisión:** (1) la sección References de ambos `.md` fue **revertida de Markdown legible a LaTeX crudo**: `\emphIEEE Software`, el typo `\emphet~al.`, `M"antyl"a` y `M.~Felderer` reaparecieron (la Ronda 8 los había eliminado); el propio diff del commit muestra que la versión anterior usaba `*IEEE Software*` y `*et al.*` correctamente; (2) el segundo párrafo de la Introducción ("This report describes a structural fix...", presente en `en/main.tex:28`) fue **reemplazado en `en/main.md:18` y `es/main.md:16` por una línea huérfana** `- Execute docker run...` copiada de la Metodología — desincronización de contenido entre `.tex` y `.md`, no solo de formato. El patrón "enumeración de baselines + una línea de conclusión" del Related Work persiste como marca típica de síntesis LLM, y en ES la construcción defectuosa (frase duplicada) la hace aún más visible. Ningún riesgo de integridad: no hay datos sintéticos ni cifras inventadas.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 8/10. El `.bib` se mantiene estable con 17 entradas, todas resueltas en EN y ES (17/17 `\bibitem`, 0 errores de compilación en `main.log`, solo warnings de fuente), `and others` correctamente aplicado, rango IEEE 8–20 satisfecho y referencias vigentes (Tiresias, Gandiva, AntMan, Salus, Optimus, Ray, Firecracker, Kata/gVisor, NVIDIA GPU Operator, MPS, Patterson carbon, Garousi). **Problemas restantes (menores):** (1) la desincronización ES↔EN del Related Work sigue abierta: `es/main.tex:30` y `es/main.md:19` mantienen la frase duplicada "ofrecen aislamiento seguro a costa de latencia de arranque. ofrecen aislamiento diverso." y una estructura de citación distinta a la EN (EN usa `young2019true` al inicio del párrafo y separa las citas de gVisor/Kata; ES las agrupa); (2) la conclusión ES ya quedó sincronizada con la EN (ambas abren con "El patrón proporciona un aislamiento de fallos robusto..."); (3) la URL de `wyoloservice2_production` sigue sin DOI/versión estable, y el `README.md` raíz no documenta este paper.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 6/10. El manuscrito es honestamente cualitativo (cero métricas falsas) y la estructura es válida: EN 4 páginas / ES 3 páginas (rango IEEE 3–6), secciones en el orden obligatorio, `microtype`/`booktabs`/`\raggedbottom`/`cleveref` cargados, figura `invoker_executor.pdf` bien anclada con dimensiones restringidas, licencia dual y enlace a `wyoloservice2_production`. El commit `d14a550` suavizó correctamente los adjetivos absolutos de los baselines en los `.tex` ("noticeably higher startup latency in our observations", "measurable boot overhead in our setup") y ambas figuras quedan como únicos archivos en `figures/`. **Lo que impide la aceptación:** (1) el mirror `.md` viola de nuevo la regla estricta `.tex`↔`.md`: la Introducción de ambos `.md` perdió el párrafo de diseño que sí contiene el `.tex` y quedó con una línea `docker run` huérfana (contenido divergente, no solo formato), y las References vuelven a ser LaTeX crudo; (2) `\Cref{fig:arch}` sigue sin invocarse pese a `cleveref` cargado y `\label{fig:arch}` existente; (3) la comparación con baselines sigue sin datos cuantitativos (aceptable en formato cualitativo, pero el tono de "achieved crash containment comparable to Kubernetes" es asertivo sin respaldo medido); (4) no hay Apéndice (opcional y aceptable en la vía cualitativa pura).
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- **Integridad científica consolidada:** cero fabricación de datos desde la Ronda 4; el manuscrito declara sin ambages que no es una invención arquitectónica nueva y limita sus afirmaciones a lo observado cualitativamente.
+- **Correcciones de la Ronda 8 verificadas:** backticks del comando Docker cerrados en ambos `.md`, figuras huérfanas eliminadas (`figures/` con solo `invoker_executor.pdf` y `orcid.pdf`), adjetivos absolutos suavizados en los `.tex`, conclusión ES sincronizada con la EN.
+- Bibliografía vigente y dentro del rango IEEE (17 entradas resueltas en EN y ES, `and others` correcto, `garousi2016need` para el encuadre de reporte de experiencia).
+- Compilación limpia EN/ES (4 y 3 páginas, 0 errores en `main.log`), `IEEEtran.bst`, ORCID enlazado, keywords alineadas (6/6), ventana observacional honesta (14 días / ~1,500 tareas).
+- Prosa auténtica sin buzzwords; sin datos sintéticos ni afirmaciones cuantitativas no verificables.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO (REGRESIÓN) — References `.md` revertidas a LaTeX crudo:** el commit `d14a550` deshizo el Markdown legible (`*IEEE Software*`, `*et al.*`) y reintrodujo `\emph`, `\emphet~al.` (typo), `M"antyl"a`, `M.~Felderer` y `~` en `vol.~33`/`no.~1`/`pp.` en `en/main.md:63-95` y `es/main.md:54-86`; ilegible en GitHub y violación directa de la regla `.tex`↔`.md`.
+- **CRÍTICO (REGRESIÓN) — Introducción `.md` divergente del `.tex`:** el segundo párrafo ("This report describes a structural fix..."/"Este informe...") presente en `en/main.tex:28`/`es/main.tex:27` desapareció de `en/main.md:18` y `es/main.md:16`, reemplazado por la línea huérfana `- Execute docker run...` (contenido distinto entre `.tex` y `.md`, no solo formato).
+- **MEDIO — Desincronización ES↔EN en Related Work:** `es/main.tex:30` y `es/main.md:19` mantienen la frase duplicada "ofrecen aislamiento seguro a costa de latencia de arranque. ofrecen aislamiento diverso." y no replican la estructura de citación EN; PDF ES de 3 páginas vs 4 EN.
+- **BAJO — `cleveref` sin uso:** `\Cref{fig:arch}` no se invoca en ninguna parte pese a `\label{fig:arch}` existente.
+- **BAJO —** comparación con baselines en términos asertivos ("achieved crash containment comparable to Kubernetes") sin datos cuantitativos; sin DOI/URL estable para `wyoloservice2_production`; el `README.md` raíz no documenta este paper.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — revertir las regresiones del mirror `.md`):** En `en/main.md` y `es/main.md`: (a) restaurar el segundo párrafo de la Introducción tal y como figura en los `.tex` ("This report describes a structural fix..." / "Este informe describe una solución estructural...") y eliminar la línea huérfana `- Execute docker run...` que quedó incrustada al final de la Introducción (el comando Docker solo debe aparecer en la Metodología); (b) reconvertir la sección References a Markdown plano legible, tal y como estaba antes del commit `d14a550`: `*IEEE Software*`, `*et al.*`, `*USENIX NSDI*`, `Mäntylä`, `V. Garousi` y `vol. 33, no. 1, pp. 68-75` sin `~`. Verificar equivalencia sección por sección contra el `.tex`.
+- [ ] **Modificación 2 (sincronización ES↔EN):** En `es/main.tex` y `es/main.md`, eliminar la frase duplicada "ofrecen aislamiento diverso." del Related Work y replicar la estructura de citación EN (usar `young2019true` al inicio del párrafo y separar la cita de gVisor/Kata). Recompilar ES con la secuencia 4 pasos (`pdflatex`, `bibtex`, `pdflatex`, `pdflatex`) y regenerar `es/main.md` y `es/main.pdf`.
+- [ ] **Modificación 3 (estructura IEEE — menor):** Usar `\Cref{fig:arch}` en la Metodología ya que `cleveref` está cargado; suavizar la aserción "achieved crash containment comparable to Kubernetes" hacia lenguaje de impresión ("was consistent with our qualitative observations of Kubernetes-level containment"); considerar un DOI/URL estable para `wyoloservice2_production` y documentar el paper en el `README.md` raíz.
+- [ ] **Modificación 4 (opcional, para elevar el manuscrito):** Si el autor dispone de números medidos (latencia de arranque del patrón propio, tiempo de vida medio del contenedor, ratio de tareas exitosas, nº de OOMs contenidos), añadirlos como valores reales con su ventana de medición. Si no, mantener el formato cualitativo actual, que ya es defendible.
+- [ ] **Modificación 5 (verificación final — lista de cierre):** Tras aplicar las modificaciones, verificar: (a) cero regresiones en el mirror `.md` (Introducción idéntica al `.tex`, References en Markdown plano legible, cero `\emph`/`\emphet~al.`/`M"antyl"a`), (b) paridad ES↔EN en estructura y contenido, (c) compilación limpia EN (4 páginas) y ES (≈4 páginas), (d) `\Cref{fig:arch}` presente, (e) solo `invoker_executor.pdf` y `orcid.pdf` en ambos `figures/`. Si todo ello se cierra, el manuscrito estará listo para ACCEPT con el encuadre actual de reporte de experiencia industrial.

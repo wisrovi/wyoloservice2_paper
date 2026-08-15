@@ -59,7 +59,7 @@ In our observational study, direct execution periodically crashed the host daemo
 
 Over an observational window of 14 days and approximately 1,500 training tasks, containerized runtimes qualitatively isolated failures, allowing individual tasks to fail without seemingly affecting the host daemon. While Kubernetes offers robust limits natively, its control-plane added noticeably higher startup latency in our observations in launching pods compared to the lightweight daemon. VM-based runtimes like Kata, gVisor, and Firecracker provided strong security boundaries but introduced measurable boot overhead in our setup. 
 
-The Invoker-Executor pattern achieved crash containment comparable to Kubernetes and microVMs while maintaining a minimal startup profile, as it merely executes Docker CLI commands outside of a heavy orchestration plane. The dynamic quota cap effectively contained tasks, with cgroups memory usage logs confirming that outliers were typically terminated via \texttt{OOMKilled}, which generally avoided a cascade of host instability.
+The Invoker-Executor pattern was consistent with our qualitative observations of Kubernetes-level containment and microVMs while maintaining a minimal startup profile, as it merely executes Docker CLI commands outside of a heavy orchestration plane. The dynamic quota cap effectively contained tasks, with cgroups memory usage logs confirming that outliers were typically terminated via \texttt{OOMKilled}, which generally avoided a cascade of host instability.
 
 \section{Data \& Code Availability Statement}
 This architecture operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). Generation scripts and code are available at \url{https://github.com/wisrovi/wyoloservice2_production}.

@@ -13,10 +13,10 @@ wisrovi-suit (https://github.com/wisrovi/w-cli)
 Este informe fue desarrollado por William Steve Rodriguez Villamizar (wisrovi rodriguez), AI Leader & Solutions Architect para wisrovi-suit (https://github.com/wisrovi/w-cli).
 
 ## Introducción
-- Ejecuta `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
+Este informe describe una solución estructural observada dentro de nuestra pila propietaria: desacoplar el consumidor de cola de larga duración de la rutina de entrenamiento de corta duración. El Invocador (demonio Celery) solo manipula metadatos; el Ejecutor (contenedor Docker) ejecuta el código PyTorch y hereda límites de recursos duros. Este estudio observacional resume la viabilidad de producción de este patrón.
 
 ## Trabajo Relacionado y Líneas Base
-Tiresias [gu2019tiresias], Gandiva [xiao2018gandiva], AntMan [xiao2020antman] y Salus [yu2022salus] optimizan recursos GPU, pero no fuerzan contenedorización efímera por tarea para prevenir caídas de demonios. Optimus [peng2018optimus] y Kubernetes [burns2016borg] ofrecen gestión, pero con overhead. Ray [moritz2018ray] corre procesos persistentes. Las alternativas de runtimes de contenedores proporcionan garantías de aislamiento variables [young2019true]. Firecracker [agache2020firecracker] usa microVMs KVM para aislamiento fuerte. containerd [containerd] provee un runtime CRI. cgroups v2 [cgroups2017] permite un control de grano fino. Kata Containers y gVisor [wang2022performance] ofrecen aislamiento seguro a costa de latencia de arranque. ofrecen aislamiento diverso. NVIDIA GPU Operator [nvidia2021gpuoperator] estandariza acceso.
+Tiresias [gu2019tiresias], Gandiva [xiao2018gandiva], AntMan [xiao2020antman] y Salus [yu2022salus] optimizan recursos GPU, pero no fuerzan contenedorización efímera por tarea para prevenir caídas de demonios. Optimus [peng2018optimus] y Kubernetes [burns2016borg] ofrecen gestión, pero con overhead. Ray [moritz2018ray] corre procesos persistentes. Las alternativas de runtimes de contenedores proporcionan garantías de aislamiento variables [young2019true]. Firecracker [agache2020firecracker] usa microVMs KVM para aislamiento fuerte. containerd [containerd] provee un runtime CRI. cgroups v2 [cgroups2017] permite un control de grano fino. Kata Containers y gVisor [wang2022performance] ofrecen aislamiento seguro a costa de latencia de arranque.  NVIDIA GPU Operator [nvidia2021gpuoperator] estandariza acceso.
 
 ## Arquitectura Propuesta / Metodología
 El demonio `wyoloservice2_invoker` corre en cada nodo. Al recibir tarea:
@@ -51,36 +51,36 @@ Gracias a los contribuyentes de wisrovi-suit.
 
 ## References
 
-[1] V. Garousi, M.~Felderer, and M.~V. M"antyl"a, "The need for empirical evidence in software engineering," \emphIEEE Software, vol. 33, no. 1, pp. 68-75, 2016.
+[1] V. Garousi, M. Felderer, and M. V. M"antyl"a, "The need for empirical evidence in software engineering," *IEEE Software*, vol. 33, no. 1, pp. 68-75, 2016.
 
-[2] J.~Gu \emphet~al., "Tiresias: A gpu cluster manager for distributed deep learning," \emphUSENIX NSDI, 2019.
+[2] J. Gu *et al.*, "Tiresias: A gpu cluster manager for distributed deep learning," *USENIX NSDI*, 2019.
 
-[3] W.~Xiao \emphet~al., "Gandiva: Introspective cluster scheduling for deep learning," in \emph13th USENIX Symposium on Operating Systems Design and Implementation (OSDI 18), 2018.
+[3] W. Xiao *et al.*, "Gandiva: Introspective cluster scheduling for deep learning," in *13th USENIX Symposium on Operating Systems Design and Implementation (OSDI 18)*, 2018.
 
-[4] W. Xiao *et al.*, "Antman: Dynamic scaling on GPU clusters for deep learning," in \emph14th USENIX Symposium on Operating Systems Design and Implementation (OSDI 20), 2020.
+[4] W. Xiao *et al.*, "Antman: Dynamic scaling on GPU clusters for deep learning," in *14th USENIX Symposium on Operating Systems Design and Implementation (OSDI 20)*, 2020.
 
-[5] P.~Yu and M.~Chowdhury, "Salus: Fine-grained GPU sharing primitives for deep learning applications," in \emphProceedings of the 3rd Conference on Machine Learning and Systems (MLSys), 2022.
+[5] P. Yu and M. Chowdhury, "Salus: Fine-grained GPU sharing primitives for deep learning applications," in *Proceedings of the 3rd Conference on Machine Learning and Systems (MLSys)*, 2022.
 
-[6] Y.~Peng \emphet~al., "Optimus: an efficient dynamic resource scheduler for deep learning clusters," in \emphProceedings of the Thirteenth EuroSys Conference, 2018, pp. 1-14.
+[6] Y. Peng *et al.*, "Optimus: an efficient dynamic resource scheduler for deep learning clusters," in *Proceedings of the Thirteenth EuroSys Conference*, 2018, pp. 1-14.
 
-[7] B.~Burns \emphet~al., "Borg, omega, and kubernetes," in \emphACM Queue, 2016.
+[7] B. Burns *et al.*, "Borg, omega, and kubernetes," in *ACM Queue*, 2016.
 
-[8] P.~Moritz \emphet~al., "Ray: A distributed framework for emerging ai applications," in \emphUSENIX OSDI, 2018.
+[8] P. Moritz *et al.*, "Ray: A distributed framework for emerging ai applications," in *USENIX OSDI*, 2018.
 
-[9] T.~Young \emphet~al., "The true cost of containing: A performance study of container runtimes," in \emphUSENIX HotCloud, 2019.
+[9] T. Young *et al.*, "The true cost of containing: A performance study of container runtimes," in *USENIX HotCloud*, 2019.
 
-[10] A.~Agache \emphet~al., "Firecracker: Lightweight virtualization for serverless applications," \emphUSENIX NSDI, 2020.
+[10] A. Agache *et al.*, "Firecracker: Lightweight virtualization for serverless applications," *USENIX NSDI*, 2020.
 
-[11] M.~Crosby \emphet~al., "containerd: An industry-standard container runtime," in \emphCNCF, 2017.
+[11] M. Crosby *et al.*, "containerd: An industry-standard container runtime," in *CNCF*, 2017.
 
-[12] T.~Heo, "Control groups v2," \emphLinux Kernel Documentation, 2017.
+[12] T. Heo, "Control groups v2," *Linux Kernel Documentation*, 2017.
 
-[13] Y.~Wang \emphet~al., "Performance and isolation analysis of runc, gvisor and kata containers," \emphCluster Computing, 2022.
+[13] Y. Wang *et al.*, "Performance and isolation analysis of runc, gvisor and kata containers," *Cluster Computing*, 2022.
 
 [14] NVIDIA, "Nvidia gpu operator," https://github.com/NVIDIA/gpu-operator, 2021.
 
-[15]  G.~Jocher \emphet~al., "Ultralytics yolov8," 2023. [Online]. Available: https://github.com/ultralytics/ultralytics 
+[15]  G. Jocher *et al.*, "Ultralytics yolov8," 2023. [Online]. Available: https://github.com/ultralytics/ultralytics 
 
 [16] NVIDIA, "Multi-process service (mps)," https://docs.nvidia.com/deploy/mps/index.html, 2023.
 
-[17] D.~Patterson \emphet~al., "Carbon emissions and large neural network training," \empharXiv preprint arXiv:2104.10350, 2021.
+[17] D. Patterson *et al.*, "Carbon emissions and large neural network training," *arXiv preprint arXiv:2104.10350*, 2021.
