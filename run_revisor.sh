@@ -34,5 +34,5 @@ echo "=================================================="
 echo " Ejecutando Revisor IEEE para: $PAPER_NAME"
 echo "=================================================="
 
-opencode run -m ollama/qwen3-coder-next:latest "$(cat "$tmp")"
+opencode run -m opencode/deepseek-v4-flash-free "$(cat "$tmp")"
 rm -f "$tmp"
