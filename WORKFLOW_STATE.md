@@ -1,4 +1,4 @@
-STATUS: DRAFTED
+STATUS: IN_REVIEW
 ROUND: 0
 PAPER: paper_c_domain_shift_prediction + paper_d_autonomous_evaluation
 
