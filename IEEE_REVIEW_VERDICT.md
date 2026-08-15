@@ -1146,3 +1146,73 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 - [ ] **Modificación 7 (coherencia interna y prosa):** Reconciliar el abstract ("18 per day") con la Tabla I (72 h); corregir la contradicción K8s "10–20%" (Related Work) vs. 14.2 s/~500% (Results); sustituir la tautología "16 GB ceiling was never reached" por una observación medida; añadir una imperfección real vivida (p.ej. el primer OOM que derribó el daemon y el orden de magnitud del downtime) para reforzar autenticidad.
 - [ ] **Modificación 8 (estructura IEEE):** Añadir el ORCID real al bloque de autor; usar `cleveref` (`\Cref{fig:arch}`) para el cross-referencing que ya está cargado; evitar `resizebox` en la tabla (o dividirla en 2 tablas de una columna) para preservar el espaciado tipográfico.
 
+---
+
+## IEEE Peer Review Report (Ronda 2)
+**Fecha y Hora:** 2026-08-15 02:21:30
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Inicial
+
+**Veredicto:** REVISIÓN MAYOR / RE-ENVÍO
+**Nivel de Innovación:** Bajo
+**Evaluación de Generación por IA / Autenticidad:** 5/10 - La Ronda 2 corrige parte de la ronda anterior (figuras rotas, IEEEtran, abstract "72 h", honestidad "micro-benchmark/design study" en EN, eliminación de `bohra2022kata`/`tsai2019gvisor`), pero el script de corrección (`apply_fixes.py`) corrompió el manuscrito: frases duplicadas, caption de la Tabla I con cierre colgante ("across )"), un `.bib` con fragmentos corruptos y sin datos empíricos que respalden la Tabla I (sigue sin haber CSV/scripts en el repositorio). La versión ES mantiene la afirmación "datos de ablación empírica" que contradice el nuevo encuadre honesto EN.
+
+**Notas de mejora críticas (resumen):**
+1. Los datos de la Tabla I (mediana [IQR]) siguen sin respaldo: ningún CSV/script/log en el repo. Soportar o reformular.
+2. El texto quedó corrompido por la doble aplicación de `apply_fixes.py`: frases duplicadas y caption rota; el `.bib` contiene remanentes corruptos de `merkel2014docker`/`bohra2022kata`.
+3. ES desincronizado de EN: el abstract ES todavía reclama "datos de ablación empírica" y omite las líneas base containerd/Kata/gVisor/Firecracker; `main.md` no es Markdown real (bloque `table*` LaTeX crudo, `}` colgante en el título).
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 5/10. La prosa sigue siendo sobria, con voz activa y honestidad estructural genuina en EN ("We present a micro-benchmark/design study", "The pattern is not a novel architectural invention"). Sin embargo, la ronda introdujo **corrupción textual inconfundible de edición automatizada por regex**, más sospechosa de síntesis no revisada que de redacción humana:
+- **Frase duplicada en `en/main.tex:68`**: "GPU multiplexing with ... Exit 137 failures are automatically re-queued." aparece dos veces consecutivas; la primera instancia contiene un literal corrupto `\textasciitilde{}exttt{--gpus=all}` (tabulador + `exttt` sin backslash) que se imprime como texto plano en el PDF.
+- **Frase duplicada/truncada en `en/main.tex:108`**: "...before manual intervention. peaking at 12.4 GB during epoch transitions. The first OOM crash ... manual intervention." — colapso de dos aplicaciones del mismo reemplazo.
+- **Caption rota de la Tabla I** (`main.tex:86`): "median [IQR] across )" — la eliminación de "5 seeds" dejó un cierre colgante; idéntico en ES ("a lo largo de )").
+- **Artefactos tipográficos por borrado de "(IQR: ...)"**: espacios dobles ("18 over 72 hours  to zero", "14.2 s  versus 2.4 s"), espacios antes de puntuación ("18 times ;", "11 host OOM events .", "12.4 s  cold").
+- El repositorio raíz del paper contiene `apply_fixes.py` y `fix.py`, scripts que revelan el flujo de "corrección por búsqueda/reemplazo" — evidencia de refinamiento mecánico sin verificación humana.
+- ORCID sigue siendo el marcador `0000-0002-1234-5678`. La Tabla I sigue sin evidencia (cero CSV/scripts/logs) que sustente los IQR de 8 configuraciones; las distribuciones idénticas "18 [16--20]" en 7 columnas de runtimes contenerizados continúan siendo estadísticamente sospechosas.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 6/10. **Progreso real desde la Ronda 1:** se cambió a `\bibliographystyle{IEEEtran}`; `bohra2022kata` y `tsai2019gvisor` dejaron de citarse y fueron sustituidos por `young2019true` ("The True Cost of Containing", HotCloud'19) y `wang2022performance` (Cluster Computing'22) — exactamente lo solicitado; se añadieron las citas de aislamiento de memoria GPU en DL solicitadas (`xiao2018gandiva`, `xiao2020antman`, `yu2022salus`), COCO (`lin2014microsoft`) y Ultralytics. BibTeX resuelve 16 citas sin errores. **Problemas críticos:**
+- **`.bib` CORRUPTO** (`en/references.bib:99-112`): la eliminación por regex no-avariciosa (`.*?\}`) dejó **fragmentos huérfanos**: `,\n author={Merkel, Dirk}, journal={Linux Journal}, ...` (remanente de `merkel2014docker`) y `,\n author={Bohra, Anoop and others}, booktitle={...}, year={2022}` (remanente de `bohra2022kata`). Son basura sintáctica que BibTeX ignora silenciosamente pero que convierte al `.bib` en no-publicable.
+- Entradas sin citar que persisten: `verma2015large`, `gvisorpaper`, `katacontainers`.
+- Las entradas nuevas usan autores truncados "and others" (p.ej. `author={Wang, X. and others}`) — metadata incompleta y poco profesional; `wang2022performance` tiene autoría completa verificable (Wang et al.) que debería constar.
+- Sin cita de NVIDIA MPS, ahora central en la afirmación de multiplexado GPU (`--gpus=all` + 50 tareas).
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 3/10. **Lo corregido desde la Ronda 1:** las figuras `figures/invoker_executor.pdf` y `figures/ablation_study.pdf` existen y se referencian correctamente (`pdflatex` ya no reporta `File not found`); PDF EN de 6 páginas y ES de 5 (rango 3–6); abstract EN reconciliado ("18 over 72 hours"); Related Work corregido (~500% en vez de 10–20%); `resizebox` eliminado y `\Cref{fig:arch}` usado; añadida la anécdota de 12.4 GB pico + 10 min de downtime. **Lo que sigue siendo inadmisible:**
+- **Reproducibilidad nula mantenida:** la Tabla I (mediana [IQR] de 8 configuraciones) no tiene ningún CSV, script de benchmark ni log en el repositorio del paper; los números (18/11 OOM, 14.2 s vs 2.4 s de latencia, 12.4 s vs 11.8 s de pull) son no verificables. El caption ni siquiera declara el N ("across )").
+- **Definiciones metodológicas ausentes:** `apply_fixes.py` intentó insertar "Startup latency is defined as the wall-clock time from task scheduling to the first logged training step" y "OOM events are registered via kernel syslog monitoring", pero **esos reemplazos no llegaron al `main.tex` final** — la sección Experimental Setup no contiene ninguna definición formal de métrica.
+- Sin métrica de impacto del aislamiento sobre la calidad del entrenamiento (mAP/throughput); la latencia de arranque no captura el coste real de aislamiento.
+- Política de exclusividad/multiplexado GPU con `--gpus=all` bajo 50 tareas concurrentes en 3 nodos (16 GPUs) sin explicar; el respaldo en NVIDIA MPS es una afirmación sin evidencia ni cita.
+- Retry/re-queue de `Exit 137` mencionado como hecho, sin registro del mecanismo.
+- La duplicación de frases y la caption rota rompen la legibilidad del documento final.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Problema industrial real y honestamente encuadrado como experiencia de ingeniería (no sobrevende novedad).
+- Correcciones verificadas de la Ronda 1: figuras reparadas (`invoker_executor.pdf`, `ablation_study.pdf`), `IEEEtran.bst`, abstract "72 h", "~500%" en Related Work, y adición de las citas clave solicitadas (Gandiva/AntMan/Salus, COCO, Ultralytics, gVisor HotCloud, runc/Kata Cluster Computing).
+- PDFs EN (6 p.) y ES (5 p.) dentro del rango IEEE 3–6, sin errores de compilación de figuras.
+- Anécdota de ingeniería real (pico 12.4 GB, 10 min de downtime, OOM que derribó el daemon) que refuerza autenticidad narrativa.
+- `\Cref`, `booktabs`, `microtype`, `\raggedbottom` correctamente usados; licencia dual y enlace a `wyoloservice2_production` presentes.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Evidencia empírica inexistente:** Tabla I sin CSV/scripts/logs; el caption perdió su N al eliminar "5 seeds" ("across )"); ningún número es verificable.
+- **CRÍTICO — Corrupción textual:** frases duplicadas (`main.tex:68` y `:108`), literal `\textasciitilde{}exttt{--gpus=all}` impreso en el PDF, caption rota, espacios dobles y antes de puntuación — secuelas de la doble ejecución de `apply_fixes.py`.
+- **CRÍTICO — `.bib` corrupto:** fragmentos huérfanos de `merkel2014docker` y `bohra2022kata` (`references.bib:99-112`); entradas sin citar (`verma2015large`, `gvisorpaper`, `katacontainers`); autores truncados "and others".
+- **CRÍTICO — ES desincronizado:** el abstract ES mantiene "Presentamos datos de ablación empírica" contradiciendo el encuadre EN "micro-benchmark/design study"; ES omite containerd/Kata/gVisor/Firecracker del abstract y del setup (incluida la cita COCO y el multiplexado GPU); las contribuciones ES mencionan solo Kubernetes.
+- **CRÍTICO — Markdown no es Markdown:** `en/main.md` y `es/main.md` conservan el bloque `table*` LaTeX crudo (líneas 63/54), `}` colgante en el título, escapes `~500\%` y `\textasciitilde{}exttt`, escapes rotos `--memory=\$\{mem_limit\`.
+- Metodología ausente: sin definición de "startup latency"/registro de OOM, sin N por configuración, sin métrica mAP/throughput, sin política de exclusividad GPU.
+- ORCID de marcador de posición; sin cita de NVIDIA MPS.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+- [ ] **Modificación 1 (Crítica — restaurar integridad del texto):** Revisar `en/main.tex` y `es/main.tex` línea a línea y eliminar las duplicaciones (`main.tex:68` y `:108`), corregir el literal `\textasciitilde{}exttt{--gpus=all}` por `\texttt{--gpus=all}`, cerrar la caption de la Tabla I ("median [IQR] across 5 seeds)" o declarar el N real) y limpiar los artefactos de espaciado ("18 times ;", "events .", "12.4 s  cold"). No volver a ejecutar `apply_fixes.py` sobre el archivo ya corregido.
+- [ ] **Modificación 2 (Crítica — datos empíricos):** Publicar en el directorio del paper (o enlazar a `wyoloservice2_production`) los scripts y CSV que generan la Tabla I (host OOM, reboots, container kills, startup latency por configuración y seed, con software y fechas documentados). Si los datos no existen, eliminar los IQR de la tabla y reformular TODO el manuscrito como "micro-benchmark/design study" sin atributos empíricos.
+- [ ] **Modificación 3 (Crítica — sincronizar ES con EN):** Reescribir `es/main.tex` a partir de EN: sustituir "datos de ablación empírica" por "micro-benchmark/estudio de diseño", añadir containerd/Kata/gVisor/Firecracker al abstract y setup (con COCO y multiplexado GPU), y alinear el número de páginas del PDF ES con EN.
+- [ ] **Modificación 4 (Crítica — Markdown real):** Regenerar `en/main.md` y `es/main.md` con un convertidor que maneje `table*` (convertir la Tabla I a tabla Markdown), elimine el `}` colgante del título y los escapes LaTeX residuales (`~500\%`, `\textasciitilde{}exttt`, `\$\{`).
+- [ ] **Modificación 5 (Crítica — sanear `.bib`):** Eliminar los fragmentos huérfanos de `references.bib:99-112`; purgar o citar `verma2015large`, `gvisorpaper`, `katacontainers`; completar la autoría real de `young2019true`, `wang2022performance`, `xiao2018gandiva`, `xiao2020antman`, `yu2022salus`, `lin2014microsoft` y `ultralytics` (sin "and others"); añadir cita de NVIDIA MPS. Recompilar pdflatex→bibtex→pdflatex→pdflatex y verificar `.bbl`.
+- [ ] **Modificación 6 (metodología):** Insertar en Experimental Setup la definición formal de "startup latency" y el método de registro de OOM (que el script intentó añadir pero no llegó al texto final); declarar N por configuración; añadir una métrica de impacto sobre el entrenamiento (mAP o throughput); explicar la exclusividad/multiplexado GPU con `--gpus=all` bajo 50 tareas concurrentes y el mecanismo de retry de `Exit 137`.
+- [ ] **Modificación 7 (estructura IEEE):** Sustituir el ORCID marcador por el ORCID real en `en/main.tex` y `es/main.tex` (el patrón `0000-0002-1234-5678` es el placeholder estándar no asignado).
+
