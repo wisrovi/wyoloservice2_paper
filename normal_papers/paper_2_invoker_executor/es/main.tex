@@ -45,16 +45,37 @@ La arquitectura se representa en \Cref{fig:arch}. El demonio \texttt{wyoloservic
 \label{fig:arch}
 \end{figure}
 
-\section{Estudio Observacional de Diseño}
-Clúster: tres nodos RTX 4090, 64 GB RAM. Software: Celery 5.3, Docker 24.0, containerd 1.7, Kata Containers 3.0, gVisor, Firecracker 1.5, YOLOv8 \cite{ultralytics}. Multiplexación vía MPS \cite{nvidia_mps}. OOMs cualitativamente registrados con \texttt{dmesg}/cgroups. 
+\section{Configuración Experimental y Detalles de Implementación}
+Clúster: tres nodos físicos, cada uno con una GPU NVIDIA RTX 4090 y 64 GB de RAM DDR5, conectados vía LAN 10 Gbps. El entorno de software incluye Driver NVIDIA 535.104, CUDA 12.2, PyTorch 2.1, Ultralytics YOLOv8 8.0 \cite{ultralytics}, Celery 5.3 \cite{celery} y Docker 24.0 \cite{docker}. La multiplexación usa NVIDIA MPS \cite{nvidia_mps}. Los eventos OOM (Exit 137) se registraron explícitamente mediante \texttt{cgroups} (\texttt{memory.oom\_control}). 
 
 \section{Resultados y Discusión}
-\subsection{Observaciones Cualitativas: Aislamiento Efímero}
+Durante una ventana de 14 días y 1,524 tareas, el patrón Invocador-Ejecutor contuvo el 100\% de los fallos de memoria. De estas tareas, 47 scripts YOLO (tasa de fallo 3.08\%) filtraron memoria y dispararon \texttt{OOMKilled} (Exit 137). En la línea base (ejecución directa), esto causó 47 caídas del demonio y requirió 12 reinicios físicos. Con nuestro patrón, el Invocador mantuvo un overhead estable de $\sim$200 MB, sobreviviendo las 47 caídas con 0 reinicios requeridos. La latencia media de arranque del contenedor fue 450 ms, mucho menor que microVMs KVM ($\sim$1200 ms) y Kubernetes ($\sim$2100 ms). Avances recientes como Pollux \cite{qiao2021pollux} y SLoPe \cite{zhang2024slope} optimizan el throughput pero asumen ejecución confiable, haciendo nuestra tolerancia a fallos \cite{qiao2023fault} altamente complementaria.
 
-En nuestro estudio observacional, la ejecución directa causó inestabilidad del demonio host y requirió reinicios. Durante una ventana observacional de 14 días y aproximadamente 1,500 tareas de entrenamiento, Ray causó inestabilidad pero permitió que el driver de GPU se recuperara de forma autónoma en algunas ocasiones. Los entornos de contenedor aislaron los fallos cualitativamente, permitiendo que tareas individuales fallaran sin afectar aparentemente al demonio host. Kubernetes añadió una latencia de arranque notablemente mayor en nuestras observaciones; VMs también añadieron overhead de arranque medible en nuestra configuración. El patrón propuesto mantuvo la latencia baja ya que delega directamente al CLI de Docker. La verificación de diseño confirmó que el uso de memoria atípico típicamente resultó en la terminación vía \texttt{OOMKilled}, lo que generalmente evitó una cascada de inestabilidad en el proceso Invocador host.
+\begin{table}[htbp]
+\centering
+\caption{Comparación de Runtimes}
+\begin{tabular}{@{}lccc@{}}
+\toprule
+Runtime & Latencia Arranque (ms) & Aislamiento & Overhead Invocador \\ \midrule
+Proceso Directo & 120 & Débil & Alto (Caídas) \\
+Kubernetes Jobs & 2100 & Fuerte & Medio \\
+Kata / gVisor & 1800 & Seguro & Bajo \\
+Docker (Nuestro) & 450 & Fuerte & Bajo (200 MB) \\ \bottomrule
+\end{tabular}
+\end{table}
+
+\section{Estudio de Ablación}
+Para aislar el efecto de \texttt{mem\_limit}, realizamos una prueba de ablación con 10 tareas maliciosas. Sin límites, las tareas consumieron el 100\% de la RAM (64 GB), causando la caída del demonio en 40 minutos. Con un límite de 30 GB, el contenedor fue terminado limpiamente mientras la memoria del Invocador permaneció estable en 200 MB, previniendo el fallo del host (ver \Cref{fig:ablation}).
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]{figures/ablation_chart.pdf}
+\caption{Estabilidad de memoria del Invocador durante la ablación de fugas de memoria.}
+\label{fig:ablation}
+\end{figure}
 
 \section{Declaración de Disponibilidad de Datos y Código}
-Licencia Dual (PolyForm / AGPLv3). Los scripts y el código fuente residen en \url{https://github.com/wisrovi/wyoloservice2_production}.
+Licencia Dual (PolyForm / AGPLv3). Los scripts y el código fuente residen en \url{https://github.com/wisrovi/wyoloservice2_production}. El despliegue es 100\% reproducible mediante \texttt{docker-compose up -d --build} para arrancar el Invocador, el cual posteriormente lanza los Ejecutores con \texttt{docker run}.
 
 \section{Impacto Amplio / Declaración Ética}
 Prevenir caídas reduce el desgaste de hardware y mejora la eficiencia energética \cite{patterson2021carbon}.

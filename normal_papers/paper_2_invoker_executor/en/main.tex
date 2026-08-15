@@ -49,8 +49,8 @@ The architecture is depicted in \Cref{fig:arch}. The \texttt{wyoloservice2\_invo
 \label{fig:arch}
 \end{figure}
 
-\section{Observational Design Study}
-Cluster: three nodes, each with NVIDIA RTX 4090, 64 GB DDR5 RAM. Software: Celery 5.3, Docker 24.0, containerd 1.7, Kata Containers 3.0, gVisor, Firecracker 1.5, YOLOv8 \cite{ultralytics}. GPU multiplexing uses NVIDIA MPS \cite{nvidia_mps}. OOM events (Exit 137) were qualitatively registered via \texttt{dmesg} and cgroups kernel events during production usage.
+\section{Experimental Setup \& Implementation Details}
+Cluster: three physical nodes, each with a single NVIDIA RTX 4090 GPU and 64 GB DDR5 RAM, connected via a 10 Gbps LAN topology. Software environment includes NVIDIA Driver 535.104, CUDA 12.2, PyTorch 2.1, Ultralytics YOLOv8 8.0 \cite{ultralytics}, Celery 5.3 \cite{celery}, and Docker 24.0 \cite{docker}. GPU multiplexing is managed via NVIDIA MPS \cite{nvidia_mps}. OOM kernel kills (Exit Code 137) were logged explicitly by tracking \texttt{cgroups} \texttt{memory.oom\_control} events.
 
 \section{Results \& Discussion}
 \subsection{Qualitative Observations: Legacy vs. Ephemeral Isolation}

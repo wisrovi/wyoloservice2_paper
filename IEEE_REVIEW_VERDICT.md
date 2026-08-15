@@ -1699,3 +1699,59 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 - [ ] **Modificación 4 (menor):** Eliminar el doble espacio tras "ultralytics" en la ref. [15] de ambos `.md`; revisar la redacción del mensaje de commit para que refleje exactamente los cambios aplicados (evitar sobre-afirmaciones verificables).
 - [ ] **Modificación 5 (verificación final — lista de cierre):** Tras aplicar las modificaciones, verificar: (a) Introducción `.md` = `.tex` byte-a-byte en EN y ES (diff sin salida); (b) `\Cref{fig:arch}` presente en EN y ES `.tex` y ausente de los `.md` (cero comandos LaTeX en Markdown); (c) lista Metodología renderizando como lista numerada y figura como PNG/SVG en GitHub; (d) compilación limpia EN (4 páginas) y ES (3-4 páginas) con 0 errores; (e) cero `M"antyl"a`, cero `\emph`, cero dobles espacios en refs. Si se cierra esta lista, el manuscrito queda listo para ACCEPT con el encuadre de reporte de experiencia industrial.
 
+## IEEE Peer Review Report (Ronda 12)
+**Fecha y Hora:** 2026-08-15 03:08:51
+**Artículo evaluado:** `normal_papers/paper_2_invoker_executor` ("Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+
+**Veredicto:** REVISIÓN MAYOR (Re-envío) — veredicto inicial conciso
+**Nivel de Innovación:** Bajo-Moderado (encuadre honesto de "industrial experience report"; aporte pragmático, no novedoso)
+**Evaluación de Generación por IA / Autenticidad:** 8/10 — Prosa auténtica, sin buzzwords ni datos fabricados; cerrada la lista de Ronda 11 (sincronía `.tex`↔`.md` verificada, `\Cref` simétrico, figura PNG renderizable).
+
+**Veredicto (refinado):** REVISIÓN MAYOR (Re-envío). El cierre de la lista Ronda 11 se confirma en los tres mirrors (EN/ES × `.tex`/`.md`/`.pdf`), pero una re-evaluación integral bajo los criterios `revisor.md` (Agente C: rigor metodológico extremo, métricas reales, ablación obligatoria y arquitectura reproducible) no permite aún ACCEPT: el manuscrito **no contiene una sola métrica cuantitativa**, no hay tablas (pese a `booktabs` cargado), no hay estudio de ablación y la sección de reproducibilidad no ofrece comandos de despliegue. El salto al estándar IEEE exige convertir el estudio observacional (cuyos datos ya existen en logs de cgroups/`dmesg`) en evidencia medida.
+**Nivel de Innovación:** Bajo-Moderado (encuadre honesto de "industrial experience report"; aporte pragmático de integración, no invención arquitectónica)
+**Evaluación de Generación por IA / Autenticidad:** 8/10 — autenticidad intacta, sin patrones de LLM, cero datos fabricados; prosa directa y honesta.
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación 8/10. Prosa limpia: voz activa, longitud de frase variable, cero buzzwords de LLM ("delve", "tapestry", "paramount"), honestidad estructural explícita ("The pattern is not a novel architectural invention"). La lista de Ronda 11 quedó cerrada y verificada: (a) introducciones `.md` byte-a-byte sincronizadas con sus `.tex` (`en/main.md:18` = `en/main.tex:28`; `es/main.md:16` = `es/main.tex:27`), eliminada la variante "proprietary stack"/"pila propietaria"; (b) `\Cref{fig:arch}` simétrico (`en/main.tex:36` y `es/main.tex:33`) y **cero** fugas de comandos LaTeX en los `.md` (`rg` sobre `\\|Cref|cite|includegraphics` sin resultados); (c) listas de Metodología renderizan como listas (no bloques de código) y la figura se referencia como `figures/invoker_executor.png` (PNG real 2550×3300, renderizable en GitHub). `Mäntylä` correcto en ambos `.md`. Residuos de estilo: repetición de hedges ("seemingly", "typically", "generally") concentrada en Results; aislarlos es señal de prosa evasiva más que de IA, pero debilita la concreción. Autenticidad metodológica: sin riesgo de fabricación — no hay cifras que inventar porque no hay cifras.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación 8/10. 17 entradas en `.bib`, todas citadas y resueltas EN/ES (17/17 `\bibitem` en ambos `.bbl`), rango IEEE 8–20 satisfecho, compilación con 0 errores. Cobertura correcta y vigente para el tema: Tiresias, Gandiva, AntMan, Salus, Optimus (2018–2022), Borg/Kubernetes, Ray, Firecracker, containerd, cgroups v2, Kata/gVisor, NVIDIA GPU Operator, MPS, Patterson (carbono), Garousi (encuadre de experiencia industrial). **Vacíos citables:** (1) no se cita Celery ni Docker Engine pese a ser los pilares del sistema (refs. de documentación oficial válidas); (2) ausencia de literatura reciente (2021–2024) de gestión de clústeres GPU: Pollux, Gavel, SLoPe, HiveMind — relevantes para matizar la afirmación "no mandate hard ephemeral containerization"; (3) falta una referencia de tolerancia a fallos / aislamiento por contenedores en entrenamiento distribuido (p.ej. estudio de crash-consistency en PyTorch DDP) para reforzar la sección Results. **Formato:** `gu2019tiresias` usa `journal={USENIX NSDI}` (es venue, no journal); los `.md` conservan espacio final tras "ultralytics" en la ref. [15] (residuo de Ronda 11, Modificación 4). Ninguna cita obsoleta.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación 5/10 — aquí se concentra la barrera de aceptación. **Debilidades verificadas directamente:**
+- `Results & Discussion` es 100% cualitativo. Cero números: no hay latencia medida de `docker run` vs `kubectl` vs microVM (afirmada como "noticeably higher", "measurable boot overhead", sin valores), no hay conteo de OOMs, tasa de fallo, MTBF, utilización GPU ni overhead de memoria del Invoker.
+- `booktabs` está cargado en el preámbulo (`en/main.tex:3`) pero **no existe ni una tabla** (`rg "tabular|table"` = 0) ni un gráfico con ejes etiquetados. Incumple AGENTS.md (tablas `booktabs`, charts vectoriales con ejes/unidades).
+- **Sin estudio de ablación** (requisito obligatorio del repositorio): no se demuestra qué pasa si se retira `mem_limit`/`nano_cpus`/`shm_size`.
+- **Reproducibilidad incompleta:** la sección Data & Code enlaza `wyoloservice2_production` pero sin un solo comando (`docker-compose up -d`, `celery worker`, etc.), exigido por AGENTS.md.
+- **Sección "Observational Design Study" minimalista:** un párrafo; falta la sección "Experimental Setup & Implementation Details" que AGENTS.md exige (entorno detallado + metodología de testeo).
+- Positivos: 14 días / ~1,500 tareas / 3 nodos RTX 4090 son una base real honesta; afirmaciones matizadas sin datos inventados; compilación limpia (EN 4 páginas / ES 3 páginas, rango 3–6); secciones en el orden obligatorio; `microtype`/`cleveref`/`\raggedbottom`/`booktabs` cargados; figura con `\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]`; licencia dual (PolyForm/AGPLv3) declarada.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- **Ronda 11 cerrada y verificada:** sincronía `.tex`↔`.md` byte-a-byte (EN y ES), `\Cref{fig:arch}` simétrico sin fugas LaTeX en `.md`, figura PNG renderizable en GitHub, `Mäntylä` correcto.
+- Integridad científica intachable: cero datos fabricados, encuadre honesto de reporte industrial, afirmaciones sin sobre-venta.
+- Bibliografía adecuada y vigente (17 refs., rango IEEE 8–20, resueltas EN/ES, 0 errores de compilación).
+- Estructura completa y compilación limpia (EN 4 / ES 3 páginas), paquetes de tipografía profesional (`microtype`, `cleveref`, `booktabs`, `\raggedbottom`).
+- Base observacional real (14 días / ~1,500 tareas / 3×RTX 4090) sobre la que construir evidencia medida.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Resultados sin evidencia cuantitativa:** toda la sección se sostiene en hedges cualitativos ("seemingly", "typically", "generally"); comparaciones con Ray/K8s/Kata/gVisor/Firecracker afirmadas, no medidas.
+- **CRÍTICO — Sin tablas ni gráficos** pese a `booktabs` cargado; incumple AGENTS.md (tablas `booktabs`, charts con ejes/unidades etiquetados).
+- **ALTO — Sin estudio de ablación** (requisito obligatorio del repositorio).
+- **ALTO — Reproducibilidad sin comandos explícitos**; falta la sección Experimental Setup & Implementation Details.
+- **MEDIO — Cobertura de estado del arte:** sin Celery/Docker, sin literatura 2021–2024 (Pollux, Gavel, SLoPe, HiveMind), sin ref. de tolerancia a fallos; `journal={USENIX NSDI}` impreciso en `gu2019tiresias`.
+- **BAJO — Espacio final tras "ultralytics"** en la ref. [15] de ambos `.md` (residuo de Ronda 11).
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+*(Instrucciones concretas paso a paso para elevar el paper al estándar de publicación IEEE)*
+- [ ] **Modificación 1 (Crítica — evidencia cuantitativa desde los logs ya existentes):** Extraer de los logs de cgroups/`dmesg` de la ventana de 14 días y ~1,500 tareas las cifras reales y reportarlas en `Results & Discussion`: nº de tareas OOMKilled (Exit 137), tasa de fallo %, nº de reinicios físicos evitados, latencia media de arranque del contenedor (`docker run` → primer step de entrenamiento) en ms, y overhead de memoria/RSS del proceso Invocador. Reemplazar "seemingly/typically/generally" por números.
+- [ ] **Modificación 2 (Crítica — tabla y gráfico con `booktabs`):** Añadir 1 tabla `booktabs` de comparación de runtimes (columna de latencia de arranque media, aislamiento, overhead medido) y 1 chart vectorial (matplotlib, exportado a `.pdf`/`.eps`) con ejes X/Y etiquetados y unidades (p.ej. memoria RSS del Invocador vs tiempo, o latencia de arranque por runtime) guardado en `figures/` y anclado con `\begin{figure}[htbp]` + `\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]`.
+- [ ] **Modificación 3 (Alta — estudio de ablación mínimo):** Añadir sección "Ablation Study": ejecutar N tareas sin `mem_limit` (o con `mem_limit` sobre-dimensionado) y mostrar que el host daemon se vuelve inestable, frente a N tareas con límites (fallo contenido, 0 caídas del Invocador). Una tabla `booktabs` de 2–3 filas basta.
+- [ ] **Modificación 4 (Alta — reproducibilidad explícita y Experimental Setup):** En Data & Code, dar comandos concretos de despliegue de `wyoloservice2_production` (p.ej. `docker-compose up -d`, arranque del Invoker con Celery, `docker run` del Executor) y ampliar "Observational Design Study" en una sección "Experimental Setup & Implementation Details" (drivers NVIDIA, versión de PyTorch/Ultralytics, topología de red, protocolo de registro de OOM).
+- [ ] **Modificación 5 (Media — estado del arte y formato bib):** Añadir citas de Celery y Docker Engine (documentación oficial), 2–3 trabajos 2021–2024 de gestión de clústeres GPU (Pollux, Gavel, SLoPe o HiveMind) y una referencia de tolerancia a fallos en entrenamiento distribuido; corregir `journal={USENIX NSDI}` → `booktitle={USENIX NSDI}` en `gu2019tiresias`; eliminar el espacio final tras "ultralytics" en la ref. [15] de ambos `.md`.
+- [ ] **Modificación 6 (verificación final — lista de cierre):** Tras aplicar las modificaciones, recompilar EN y ES con la secuencia de 4 pasos (`pdflatex`→`bibtex`→`pdflatex`→`pdflatex`), verificar (a) que `Results & Discussion` contiene ≥3 métricas numéricas reales, (b) ≥1 tabla `booktabs` y ≥1 chart vectorial con ejes etiquetados, (c) ablación presente, (d) comandos de despliegue en Data & Code, (e) sincronía `.tex`↔`.md` intacta y 0 errores en `main.log`. Con esta lista cerrada, el manuscrito cumple los criterios `revisor.md` y puede pasar a ACEPTADO (STATUS: APPROVED).
+

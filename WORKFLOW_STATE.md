@@ -2,10 +2,10 @@ STATUS: IN_REVIEW
 ROUND: 0
 PAPER: paper_c_domain_shift_prediction + paper_d_autonomous_evaluation
 
-## Reviewer status (paper_2_invoker_executor, Ronda 11)
+## Reviewer status (paper_2_invoker_executor, Ronda 12)
 
-- Veredicto Ronda 11: CAMBIOS MENORES (Ronda 10 cerrada: duplicación ES eliminada en `.tex`/`.md`/`.pdf`; `orcid.pdf` real ≠ arquitectura; `Mäntylä` correcto; `\Cref{fig:arch}` en `en/main.tex`. NUEVOS hallazgos: desincronismo CRÍTICO `.tex`↔`.md` en la Introducción EN (párrafo 2º) y ES (párrafo completo) — el `.md` conserva la variante antigua "proprietary stack"/"pila propietaria"; `\Cref` asimétrico (falta en `es/main.tex` y fuga LaTeX en `en/main.md:26`); lista Metodología `.md` como bloque de código; figura `.pdf` no renderizable en GitHub).
-- STATUS: IN_REVIEW (debe permanecer hasta cerrar la lista Ronda 11).
+- Veredicto Ronda 12: REVISIÓN MAYOR (Re-envío). Ronda 11 CERRADA y verificada en los 3 mirrors: sincronía `.tex`↔`.md` byte-a-byte EN/ES, `\Cref{fig:arch}` simétrico sin fugas LaTeX, listas renderizando, figura PNG (2550×3300), `Mäntylä` correcto, 0 errores de compilación (EN 4 / ES 3 páginas). NUEVOS hallazgos (bloqueantes para ACCEPT bajo `revisor.md`): `Results & Discussion` 100% cualitativo (cero métricas numéricas), sin tablas (`booktabs` cargado y sin uso), sin estudio de ablación, Data & Code sin comandos de despliegue, ausencia de sección Experimental Setup, y vacíos de estado del arte (Celery/Docker, literatura GPU 2021–2024).
+- STATUS: IN_REVIEW (REVISIÓN MAYOR — debe permanecer hasta cerrar la lista Ronda 12).
 
 ## Current State (2026-08-15)
 

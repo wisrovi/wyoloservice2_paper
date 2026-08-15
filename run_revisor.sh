@@ -27,7 +27,7 @@ if [ -z "$PAPER_DIR" ]; then
   exit 1
 fi
 
-tmp=$(mktemp "/tmp/prompt_XXXXXX.md")
+tmp=$(mktemp "./tmp/prompt_XXXXXX.md")
 sed "s|__PAPER_DIR__|${PAPER_DIR}|g; s|__PAPER_NAME__|${PAPER_NAME}|g" "$REVISOR_PROMPT" > "$tmp"
 
 echo "=================================================="
