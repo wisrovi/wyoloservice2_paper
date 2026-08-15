@@ -1,8 +1,6 @@
 # Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training
 **Author:**
-William Steve Rodriguez Villamizar (wisrovi rodriguez) [ORCID](https://orcid.org/0000-0002-4740-9734)
-AI Leader & Solutions Architect
-wisrovi-suit (https://github.com/wisrovi/w-cli)
+William Steve Rodriguez Villamizar (wisrovi rodriguez) \href{https://orcid.org/0000-0002-4740-9734{\includegraphics[width=0.03\textwidth]{figures/orcid.pdf}}\\AI Leader & Solutions Architect\\wisrovi-suit (https://github.com/wisrovi/w-cli)}
 
 ## Abstract & Keywords
 **Abstract:** Persistent daemon processes that execute PyTorch training loops directly in their own address space are vulnerable to memory leaks, shared-memory exhaustion, and kernel OOM kills that cascade into host instability. This industrial experience report [garousi2016need] documents an observational design study of the Invoker-Executor pattern as implemented in the `wyoloservice2` stack: a persistent Celery daemon (Invoker) that never imports CUDA, and ephemeral Docker containers (Executors) spawned per task with hard OS-level limits on memory (`mem_limit`), CPU (`nano_cpus`), and shared memory (`shm_size`). We qualitatively compare this pattern against direct execution, Ray, Kubernetes Jobs, containerd CRI, Kata Containers, gVisor, and Firecracker. The Invoker-Executor configuration successfully contained memory leaks over our production observations, logging failures via cgroups events without daemon interruption. The pattern is not a novel architectural invention, but its integration into a lightweight Celery-based MLOps stack yields a pragmatic, low-overhead solution for GPU cluster stability.
@@ -41,9 +39,9 @@ Cluster: three nodes, each with NVIDIA RTX 4090, 64 GB DDR5 RAM. Software: Celer
 
 In our observational study, direct execution periodically crashed the host daemon due to memory exhaustion, often requiring a physical reboot due to corrupted GPU states. Ray workers exhibited similar issues, occasionally allowing the GPU driver to recover autonomously. 
 
-Containerized runtimes isolated failures, allowing individual tasks to fail without bringing down the host daemon. While Kubernetes offers robust limits natively, its control-plane added noticeable latency in launching pods compared to the lightweight daemon. VM-based runtimes like Kata, gVisor, and Firecracker provided strong security boundaries but introduced significant boot overhead. 
+Over an observational window of 14 days and approximately 1,500 training tasks, containerized runtimes qualitatively isolated failures, allowing individual tasks to fail without seemingly affecting the host daemon. While Kubernetes offers robust limits natively, its control-plane added noticeable latency in launching pods compared to the lightweight daemon. VM-based runtimes like Kata, gVisor, and Firecracker provided strong security boundaries but introduced significant boot overhead. 
 
-The Invoker-Executor pattern achieved crash containment comparable to Kubernetes and microVMs while maintaining a minimal startup profile, as it merely executes Docker CLI commands outside of a heavy orchestration plane. The dynamic quota cap effectively contained tasks, with cgroups memory usage logs confirming that outliers were gracefully terminated via `OOMKilled`, avoiding a cascade of host instability.
+The Invoker-Executor pattern achieved crash containment comparable to Kubernetes and microVMs while maintaining a minimal startup profile, as it merely executes Docker CLI commands outside of a heavy orchestration plane. The dynamic quota cap effectively contained tasks, with cgroups memory usage logs confirming that outliers were typically terminated via `OOMKilled`, which generally avoided a cascade of host instability.
 
 ## Data & Code Availability Statement
 This architecture operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). Generation scripts and code are available at [https://github.com/wisrovi/wyoloservice2_production](https://github.com/wisrovi/wyoloservice2_production).
@@ -60,36 +58,36 @@ We thank the wisrovi-suit contributors for the orchestration infrastructure.
 
 ## References
 
-[1] V.~Garousi, M.~Felderer, and M.~V. M"antyl"a, ``The need for empirical evidence in software engineering,'' \emphIEEE Software, vol.~33, no.~1, pp. 68--75, 2016.
+[1] V.~Garousi, M.~Felderer, and M.~V. M"antyl"a, ``The need for empirical evidence in software engineering,'' \emphIEEE Software, vol.~33, no.~1, pp. 68-75, 2016.
 
-[2] J.~e.~a. Gu, ``Tiresias: A gpu cluster manager for distributed deep learning,'' \emphUSENIX NSDI, 2019.
+[2] J.~Gu \emphet~al., ``Tiresias: A gpu cluster manager for distributed deep learning,'' \emphUSENIX NSDI, 2019.
 
-[3] W.~e.~a. Xiao, ``Gandiva: Introspective cluster scheduling for deep learning,'' in \emph13th USENIX Symposium on Operating Systems Design and Implementation (OSDI 18), 2018.
+[3] W.~Xiao \emphet~al., ``Gandiva: Introspective cluster scheduling for deep learning,'' in \emph13th USENIX Symposium on Operating Systems Design and Implementation (OSDI 18), 2018.
 
-[4] ------, ``Antman: Dynamic scaling on GPU clusters for deep learning,'' in \emph14th USENIX Symposium on Operating Systems Design and Implementation (OSDI 20), 2020.
+[4] -, ``Antman: Dynamic scaling on GPU clusters for deep learning,'' in \emph14th USENIX Symposium on Operating Systems Design and Implementation (OSDI 20), 2020.
 
 [5] P.~Yu and M.~Chowdhury, ``Salus: Fine-grained GPU sharing primitives for deep learning applications,'' in \emphProceedings of the 3rd Conference on Machine Learning and Systems (MLSys), 2022.
 
-[6] Y.~e.~a. Peng, ``Optimus: an efficient dynamic resource scheduler for deep learning clusters,'' in \emphProceedings of the Thirteenth EuroSys Conference, 2018, pp. 1--14.
+[6] Y.~Peng \emphet~al., ``Optimus: an efficient dynamic resource scheduler for deep learning clusters,'' in \emphProceedings of the Thirteenth EuroSys Conference, 2018, pp. 1-14.
 
-[7] B.~e.~a. Burns, ``Borg, omega, and kubernetes,'' in \emphACM Queue, 2016.
+[7] B.~Burns \emphet~al., ``Borg, omega, and kubernetes,'' in \emphACM Queue, 2016.
 
-[8] P.~e.~a. Moritz, ``Ray: A distributed framework for emerging ai applications,'' in \emphUSENIX OSDI, 2018.
+[8] P.~Moritz \emphet~al., ``Ray: A distributed framework for emerging ai applications,'' in \emphUSENIX OSDI, 2018.
 
-[9] T.~e.~a. Young, ``The true cost of containing: A performance study of container runtimes,'' in \emphUSENIX HotCloud, 2019.
+[9] T.~Young \emphet~al., ``The true cost of containing: A performance study of container runtimes,'' in \emphUSENIX HotCloud, 2019.
 
-[10] A.~e.~a. Agache, ``Firecracker: Lightweight virtualization for serverless applications,'' \emphUSENIX NSDI, 2020.
+[10] A.~Agache \emphet~al., ``Firecracker: Lightweight virtualization for serverless applications,'' \emphUSENIX NSDI, 2020.
 
-[11] M.~e.~a. Crosby, ``containerd: An industry-standard container runtime,'' in \emphCNCF, 2017.
+[11] M.~Crosby \emphet~al., ``containerd: An industry-standard container runtime,'' in \emphCNCF, 2017.
 
 [12] T.~Heo, ``Control groups v2,'' \emphLinux Kernel Documentation, 2017.
 
-[13] Y.~e.~a. Wang, ``Performance and isolation analysis of runc, gvisor and kata containers,'' \emphCluster Computing, 2022.
+[13] Y.~Wang \emphet~al., ``Performance and isolation analysis of runc, gvisor and kata containers,'' \emphCluster Computing, 2022.
 
 [14] NVIDIA, ``Nvidia gpu operator,'' https://github.com/NVIDIA/gpu-operator, 2021.
 
-[15] \BIBentryALTinterwordspacing G.~e.~a. Jocher, ``Ultralytics yolov8,'' 2023. [Online]. Available: https://github.com/ultralytics/ultralytics \BIBentrySTDinterwordspacing
+[15]  G.~Jocher \emphet~al., ``Ultralytics yolov8,'' 2023. [Online]. Available: https://github.com/ultralytics/ultralytics 
 
 [16] NVIDIA, ``Multi-process service (mps),'' https://docs.nvidia.com/deploy/mps/index.html, 2023.
 
-[17] D.~e.~a. Patterson, ``Carbon emissions and large neural network training,'' \empharXiv preprint arXiv:2104.10350, 2021.
+[17] D.~Patterson \emphet~al., ``Carbon emissions and large neural network training,'' \empharXiv preprint arXiv:2104.10350, 2021.
