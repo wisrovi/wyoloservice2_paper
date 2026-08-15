@@ -13,20 +13,20 @@ wisrovi-suit (https://github.com/wisrovi/w-cli)
 Este informe fue desarrollado por William Steve Rodriguez Villamizar (wisrovi rodriguez), AI Leader & Solutions Architect para wisrovi-suit (https://github.com/wisrovi/w-cli).
 
 ## Introducción
-Este informe describe una solución estructural observada dentro de nuestra pila propietaria: desacoplar el consumidor de cola de larga duración de la rutina de entrenamiento de corta duración. El Invocador (demonio Celery) solo manipula metadatos; el Ejecutor (contenedor Docker) ejecuta el código PyTorch y hereda límites de recursos duros. Este estudio observacional resume la viabilidad de producción de este patrón.
+Los clústeres de aprendizaje profundo sufren porque el demonio de entrenamiento es un punto único de fallo. Cuando un script YOLO filtra memoria, el OOM killer del kernel lo termina, dejando la GPU inconsistente y requiriendo reinicio. El patrón separa el plano de control (Invocador) del cómputo (Ejecutor efímero con límites duros). Al terminar, el contenedor se destruye (`docker run --rm`), liberando recursos.
 
 ## Trabajo Relacionado y Líneas Base
 Tiresias [gu2019tiresias], Gandiva [xiao2018gandiva], AntMan [xiao2020antman] y Salus [yu2022salus] optimizan recursos GPU, pero no fuerzan contenedorización efímera por tarea para prevenir caídas de demonios. Optimus [peng2018optimus] y Kubernetes [burns2016borg] ofrecen gestión, pero con overhead. Ray [moritz2018ray] corre procesos persistentes. Las alternativas de runtimes de contenedores proporcionan garantías de aislamiento variables [young2019true]. Firecracker [agache2020firecracker] usa microVMs KVM para aislamiento fuerte. containerd [containerd] provee un runtime CRI. cgroups v2 [cgroups2017] permite un control de grano fino. Kata Containers y gVisor [wang2022performance] ofrecen aislamiento seguro a costa de latencia de arranque.  NVIDIA GPU Operator [nvidia2021gpuoperator] estandariza acceso.
 
 ## Arquitectura Propuesta / Metodología
-El demonio `wyoloservice2_invoker` corre en cada nodo. Al recibir tarea:
+La arquitectura se representa en la Figura 1. El demonio `wyoloservice2_invoker` corre en cada nodo. Al recibir tarea:
 
-    - Deserializa payload YAML.
-    - Calcula cuotas (`mem_limit`, `shm_size`).
-    - Ejecuta `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
-    - Captura código de salida y escribe en Redis.
+- Deserializa payload YAML.
+- Calcula cuotas (`mem_limit`, `shm_size`).
+- Ejecuta `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
+- Captura código de salida y escribe en Redis.
 
-![Invocador genera contenedores Ejecutor efímeros por tarea.](figures/invoker_executor.pdf)
+![Invocador genera contenedores Ejecutor efímeros por tarea.](figures/invoker_executor.png)
 
 ## Estudio Observacional de Diseño
 Clúster: tres nodos RTX 4090, 64 GB RAM. Software: Celery 5.3, Docker 24.0, containerd 1.7, Kata Containers 3.0, gVisor, Firecracker 1.5, YOLOv8 [ultralytics]. Multiplexación vía MPS [nvidia_mps]. OOMs cualitativamente registrados con `dmesg`/cgroups. 

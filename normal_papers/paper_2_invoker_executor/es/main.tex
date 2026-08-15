@@ -30,7 +30,7 @@ Los clústeres de aprendizaje profundo sufren porque el demonio de entrenamiento
 Tiresias \cite{gu2019tiresias}, Gandiva \cite{xiao2018gandiva}, AntMan \cite{xiao2020antman} y Salus \cite{yu2022salus} optimizan recursos GPU, pero no fuerzan contenedorización efímera por tarea para prevenir caídas de demonios. Optimus \cite{peng2018optimus} y Kubernetes \cite{burns2016borg} ofrecen gestión, pero con overhead. Ray \cite{moritz2018ray} corre procesos persistentes. Las alternativas de runtimes de contenedores proporcionan garantías de aislamiento variables \cite{young2019true}. Firecracker \cite{agache2020firecracker} usa microVMs KVM para aislamiento fuerte. containerd \cite{containerd} provee un runtime CRI. cgroups v2 \cite{cgroups2017} permite un control de grano fino. Kata Containers y gVisor \cite{wang2022performance} ofrecen aislamiento seguro a costa de latencia de arranque. NVIDIA GPU Operator \cite{nvidia2021gpuoperator} estandariza acceso.
 
 \section{Arquitectura Propuesta / Metodología}
-El demonio \texttt{wyoloservice2\_invoker} corre en cada nodo. Al recibir tarea:
+La arquitectura se representa en \Cref{fig:arch}. El demonio \texttt{wyoloservice2\_invoker} corre en cada nodo. Al recibir tarea:
 \begin{enumerate}
     \item Deserializa payload YAML.
     \item Calcula cuotas (\texttt{mem\_limit}, \texttt{shm\_size}).

@@ -15,7 +15,7 @@ This report was conceptualized and developed by William Steve Rodriguez Villamiz
 ## Introduction
 Distributed deep learning clusters suffer from a persistent operational failure mode: the training daemon itself becomes a single point of failure. In the conventional layout, a Celery worker (or Ray actor) imports PyTorch, initializes CUDA contexts, and runs the training loop in-process. When a YOLO script leaks memory, the process RSS grows until the kernel OOM killer terminates it. Because the daemon holds the CUDA context, the kill often leaves the GPU in an inconsistent state, requiring a full node reboot.
 
-This report describes a structural fix observed within our proprietary stack: decoupling the long-lived queue consumer from the short-lived training routine. The Invoker (Celery daemon) only manipulates metadata; the Executor (Docker container) runs the PyTorch code and inherits hard resource limits. This observational study summarizes the production viability of this pattern.
+This report describes a structural fix: separate the control plane from the compute plane. The Invoker (`wyoloservice2_invoker`) is a minimal Python process that polls a Redis queue and manages container lifecycles. It never imports `torch` or `ultralytics`. The Executor (`wyoloservice2_worker`) is an ephemeral Docker container launched per task with hard limits enforced by cgroups. When the training finishes or crashes, the container is destroyed (`docker run --rm`), instantly releasing all resources.
 
 ## Related Work and Baselines
 GPU cluster management with fault isolation has been studied extensively. Tiresias [gu2019tiresias], Gandiva [xiao2018gandiva], AntMan [xiao2020antman], and Salus [yu2022salus] optimize scheduling to reduce bottlenecks and provide fine-grained GPU sharing, but do not necessarily mandate hard ephemeral containerization per task to prevent daemon crashes. Optimus [peng2018optimus] introduces dynamic resource scaling. Kubernetes [burns2016borg] enforces container limits natively but its control-plane overhead adds startup latency. Ray [moritz2018ray] runs workers as long-lived processes, risking host instability.
@@ -23,15 +23,15 @@ GPU cluster management with fault isolation has been studied extensively. Tiresi
 Container runtime alternatives provide varying isolation guarantees [young2019true]. Firecracker [agache2020firecracker] uses KVM microVMs for strong isolation. containerd [containerd] provides a CRI runtime. cgroups v2 [cgroups2017] enables fine-grained control. Kata Containers and gVisor [wang2022performance] offer secure isolation at the cost of boot latency. NVIDIA GPU Operator [nvidia2021gpuoperator] standardizes GPU access. 
 
 ## Proposed Architecture / Methodology
-The architecture is depicted in \Cref{fig:arch}. The `wyoloservice2_invoker` daemon runs on each GPU node. On task receipt:
+The architecture is depicted in Figure 1. The `wyoloservice2_invoker` daemon runs on each GPU node. On task receipt:
 
-    - Deserialize payload (YAML config).
-    - Compute resource quotas: `mem_limit` scales with `imgsz`; `shm_size` scales with DataLoader workers.
-    - Execute `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
-    - Block on completion; capture exit code.
-    - Write results to Redis.
+- Deserialize payload (YAML config).
+- Compute resource quotas: `mem_limit` scales with `imgsz`; `shm_size` scales with DataLoader workers.
+- Execute `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
+- Block on completion; capture exit code.
+- Write results to Redis.
 
-![Invoker daemon spawns ephemeral Executor containers per task.](figures/invoker_executor.pdf)
+![Invoker daemon spawns ephemeral Executor containers per task.](figures/invoker_executor.png)
 
 ## Observational Design Study
 Cluster: three nodes, each with NVIDIA RTX 4090, 64 GB DDR5 RAM. Software: Celery 5.3, Docker 24.0, containerd 1.7, Kata Containers 3.0, gVisor, Firecracker 1.5, YOLOv8 [ultralytics]. GPU multiplexing uses NVIDIA MPS [nvidia_mps]. OOM events (Exit 137) were qualitatively registered via `dmesg` and cgroups kernel events during production usage.

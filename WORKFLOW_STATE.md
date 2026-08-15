@@ -2,10 +2,10 @@ STATUS: IN_REVIEW
 ROUND: 0
 PAPER: paper_c_domain_shift_prediction + paper_d_autonomous_evaluation
 
-## Reviewer status (paper_2_invoker_executor, Ronda 10)
+## Reviewer status (paper_2_invoker_executor, Ronda 11)
 
-- Veredicto Ronda 10: CAMBIOS MENORES (commit c68e579 restauró Introducción `.md` + References Markdown legible + aserción Kubernetes suavizada; PERO duplicación ES solo parchada en `.md` — `.tex` y `.pdf` ES siguen con "ofrecen aislamiento diverso"; `orcid.pdf` es copia de `invoker_executor.pdf`; `\Cref{fig:arch}` sin usar pese al mensaje del commit; residuo `M"antyl"a`).
-- STATUS: IN_REVIEW (debe permanecer hasta cerrar la lista Ronda 9/10).
+- Veredicto Ronda 11: CAMBIOS MENORES (Ronda 10 cerrada: duplicación ES eliminada en `.tex`/`.md`/`.pdf`; `orcid.pdf` real ≠ arquitectura; `Mäntylä` correcto; `\Cref{fig:arch}` en `en/main.tex`. NUEVOS hallazgos: desincronismo CRÍTICO `.tex`↔`.md` en la Introducción EN (párrafo 2º) y ES (párrafo completo) — el `.md` conserva la variante antigua "proprietary stack"/"pila propietaria"; `\Cref` asimétrico (falta en `es/main.tex` y fuga LaTeX en `en/main.md:26`); lista Metodología `.md` como bloque de código; figura `.pdf` no renderizable en GitHub).
+- STATUS: IN_REVIEW (debe permanecer hasta cerrar la lista Ronda 11).
 
 ## Current State (2026-08-15)
 
