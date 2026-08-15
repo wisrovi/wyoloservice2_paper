@@ -38,12 +38,12 @@ Cluster: three physical nodes, each with a single NVIDIA RTX 4090 GPU and 64 GB 
 ## Results \& Discussion
 Over an observational window of 14 days and 1,524 tasks, the Invoker-Executor pattern contained 100% of memory failures. Empirical logs (see `data/production_oom_logs.csv`) show that 47 YOLO scripts (3.08% failure rate) leaked memory and triggered `OOMKilled` (Exit 137). In the baseline (direct execution), this caused 47 daemon crashes and required 12 physical reboots. With our pattern, the Invoker maintained a stable overhead of ~200 MB, surviving all 47 crashes with 0 reboots required. The container boot latency was evaluated empirically (n=100 replicas), showing a median of 440 ms (P95: 450 ms, σ=15 ms), much lower than KVM microVMs (~1200 ms) and Kubernetes (~2100 ms). Recent advances like Pollux [qiao2021pollux] and SLoPe [zhang2024slope] optimize throughput but assume reliable execution, making our fault tolerance [qiao2023fault] highly complementary.
 
-\begin{table}[htbp]
+[htbp]
 \centering
 \caption{Runtime Comparison}
 
 
-| {@{}lcccc@{}}
+
 
 Runtime | Median Latency (ms) | P95 (ms) | Method (n>=3) | Std Dev (sigma) |
 |---|---|---|---|---|
@@ -54,8 +54,8 @@ Runtime | Median Latency (ms) | P95 (ms) | Method (n>=3) | Std Dev (sigma) |
 
 
 
-oindent Protocol: Boot latency defined as time from 	exttt{ootnotesize docker run} to process ready state. Evaluated on uniform hardware.
-\end{table}
+Protocol: Boot latency defined as time from 	exttt{ootnotesize docker run} to process ready state. Evaluated on uniform hardware.
+
 
 ## Ablation Study
 To isolate the effect of `mem_limit`, we performed an ablation test with n=5 replicas of 10 malicious tasks. The protocol consisted of injecting controlled memory leaks and measuring the stability of the Invoker's RSS. Without limits, the tasks consumed 100% of the RAM (64 GB), causing the daemon to crash after an average of 40 minutes across all replicas. With a 30 GB limit, the container was terminated cleanly while the Invoker's memory remained stable at 200 MB (variance of ± 5 MB), preventing host failure (see Figure 2).

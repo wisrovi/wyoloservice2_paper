@@ -33,12 +33,12 @@ Clúster: tres nodos físicos, cada uno con una GPU NVIDIA RTX 4090 y 64 GB de R
 ## Resultados y Discusión
 Durante una ventana observacional de 14 días y 1,524 tareas, el patrón Invocador-Ejecutor contuvo el 100% de los fallos de memoria. Los registros empíricos (ver `data/production_oom_logs.csv`) muestran que 47 scripts YOLO (tasa de fallo 3.08%) filtraron memoria y dispararon `OOMKilled` (Exit 137). En la línea base (ejecución directa), esto causó 47 caídas del demonio y requirió 12 reinicios físicos. Con nuestro patrón, el Invocador mantuvo un overhead estable de ~200 MB, sobreviviendo las 47 caídas con 0 reinicios requeridos. La latencia de arranque del contenedor fue evaluada empíricamente (n=100 réplicas), mostrando una mediana de 440 ms (P95: 450 ms, σ=15 ms), mucho menor que microVMs KVM (~1200 ms) y Kubernetes (~2100 ms). Avances recientes como Pollux [qiao2021pollux] y SLoPe [zhang2024slope] optimizan el throughput pero asumen ejecución confiable, haciendo nuestra tolerancia a fallos [qiao2023fault] altamente complementaria.
 
-\begin{table}[htbp]
+[htbp]
 \centering
 \caption{Comparación de Runtimes}
 
 
-| {@{}lcccc@{}}
+
 
 Runtime | Mediana Latencia (ms) | P95 (ms) | Método (n>=3) | Desv. Estándar (sigma) |
 |---|---|---|---|---|
@@ -49,8 +49,8 @@ Runtime | Mediana Latencia (ms) | P95 (ms) | Método (n>=3) | Desv. Estándar (s
 
 
 
-oindent Protocolo: Latencia definida como el tiempo desde 	exttt{ootnotesize docker run} hasta el proceso listo. Evaluado en hardware uniforme.
-\end{table}
+Protocolo: Latencia definida como el tiempo desde 	exttt{ootnotesize docker run} hasta el proceso listo. Evaluado en hardware uniforme.
+
 
 ## Estudio de Ablación
 Para aislar el efecto de `mem_limit`, realizamos una prueba de ablación con 10 tareas maliciosas. Sin límites, las tareas consumieron el 100% de la RAM (64 GB), causando la caída del demonio en 40 minutos. Con un límite de 30 GB, el contenedor fue terminado limpiamente mientras la memoria del Invocador permaneció estable en 200 MB, previniendo el fallo del host (ver Figura 2).
