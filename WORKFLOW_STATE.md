@@ -2,10 +2,14 @@ STATUS: IN_REVIEW
 ROUND: 0
 PAPER: paper_c_domain_shift_prediction + paper_d_autonomous_evaluation
 
-## Reviewer status (paper_2_invoker_executor, Ronda 12)
+## Reviewer status (paper_10_outlier_failure_analysis, Ronda 1)
 
-- Veredicto Ronda 12: REVISIÓN MAYOR (Re-envío). Ronda 11 CERRADA y verificada en los 3 mirrors: sincronía `.tex`↔`.md` byte-a-byte EN/ES, `\Cref{fig:arch}` simétrico sin fugas LaTeX, listas renderizando, figura PNG (2550×3300), `Mäntylä` correcto, 0 errores de compilación (EN 4 / ES 3 páginas). NUEVOS hallazgos (bloqueantes para ACCEPT bajo `revisor.md`): `Results & Discussion` 100% cualitativo (cero métricas numéricas), sin tablas (`booktabs` cargado y sin uso), sin estudio de ablación, Data & Code sin comandos de despliegue, ausencia de sección Experimental Setup, y vacíos de estado del arte (Celery/Docker, literatura GPU 2021–2024).
-- STATUS: IN_REVIEW (REVISIÓN MAYOR — debe permanecer hasta cerrar la lista Ronda 12).
+- Veredicto: REVISIÓN MAYOR / RE-ENVÍO. Paper de 1 página (mínimo IEEE 3-6) sin evidencia experimental (0 CSVs/scripts/figuras), 3 referencias (mínimo 8), sin Related Work/Experimental Setup/Conclusion/Data & Code, filiación con "eCaptureDtech" (prohibido) y sin `main.md` EN/ES (dualidad violada). Reporte completo en `IEEE_REVIEW_VERDICT.md` (sección `paper_10_outlier_failure_analysis`, 2026-08-16 02:17).
+
+## Reviewer status (paper_2_invoker_executor, Ronda 21)
+
+- Veredicto Ronda 21: ACEPTADO — el commit `a17fd51` (02:08) aplicó íntegramente las DOS ediciones mecánicas bloqueantes de la Ronda 20: (1) limpieza completa del `docker run` en `en/main.md:24`/`es/main.md:20` (`${mem_limit}`, `${nano_cpus}`, `${shm_size}` en Markdown plano); (2) proveniencia del CSV sincronizada en los 4 mirrors (`en/main.md:67`, `en/main.tex:85`, `es/main.md:62`, `es/main.tex:81`). Recompilación verificada por el revisor EN+ES (4 pasos): 0 errores, 0 undefined, 0 Overfull, 0 texto de control, 4 páginas/idioma; citas↔lista biunívoca 22=22; CSV verificado línea a línea (1,524 filas, 47 OOM/3.08%, memoria 10–64 GB, 14 días). Reporte completo en `IEEE_REVIEW_VERDICT.md` (Ronda 21, 2026-08-16 02:09:33). Mejoras restantes son opcionales (2 warnings bibtex por tipo `@article`→`@inproceedings`, contraste de `zhang2024slope`, muestra cruda de cgroups).
+- STATUS: APPROVED (ACEPTADO para publicación IEEE; ROUND lo gestiona `run_workflow.sh`).
 
 ## Current State (2026-08-15)
 

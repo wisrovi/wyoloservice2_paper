@@ -1,0 +1,4 @@
+stage,total_images,total_gt_objects,tp,fp,fn,fp_hc,tp_hc,hard_negatives_mined,fp_rate,fp_rate_hc,fn_rate,map50
+baseline,128,941,335,34,606,5,189,34,0.0921,0.0258,0.644,0.6011
+control_ft,128,941,462,82,479,18,317,34,0.1507,0.0537,0.509,0.7045
+treatment_hn,128,941,471,109,470,20,304,34,0.1879,0.0617,0.4995,0.7085
