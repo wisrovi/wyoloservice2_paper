@@ -17,7 +17,7 @@ La arquitectura se representa en Figura 1. El demonio `wyoloservice2_invoker` co
 
  1. Deserializa payload YAML.
  1. Calcula cuotas (`mem_limit`, `shm_size`).
- 1. Ejecuta `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\\{nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0}.
+ 1. Ejecuta `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
  1. Captura código de salida y escribe en Redis.
 
 

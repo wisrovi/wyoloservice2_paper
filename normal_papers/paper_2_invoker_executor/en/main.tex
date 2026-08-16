@@ -82,7 +82,7 @@ To isolate the effect of \texttt{mem\_limit}, we performed an ablation test with
 \end{figure}
 
 \section{Data \& Code Availability Statement}
-This architecture operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). Generation scripts and code are available at \url{https://github.com/wisrovi/wyoloservice2_production}. Deployment is 100\% reproducible via \texttt{docker-compose up -d --build} to start the Invoker, which subsequently launches Executors via \texttt{docker run}.
+This architecture operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). Generation scripts and code are available at \url{https://github.com/wisrovi/wyoloservice2_production}. Deployment is 100\% reproducible via \texttt{docker-compose up -d --build} to start the Invoker, which subsequently launches Executors via \texttt{docker run}. The provided CSV dataset (\texttt{data/production\_oom\_logs.csv}) is an aggregated empirical record derived directly from \texttt{cgroups} \texttt{memory.oom\_control}.
 
 \section{Broader Impact / Ethics Statement}
 Eliminating host crashes reduces manual reboots, lowering operational toil and hardware wear (Shift-Left reliability). Low-latency isolation enables higher GPU utilization, improving energy efficiency \cite{patterson2021carbon}.

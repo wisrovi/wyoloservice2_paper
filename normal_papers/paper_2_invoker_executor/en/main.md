@@ -21,7 +21,7 @@ The architecture is depicted in Figure 1. The `wyoloservice2_invoker` daemon run
 
  1. Deserialize payload (YAML config).
  1. Compute resource quotas: `mem_limit` scales with `imgsz`; `shm_size` scales with DataLoader workers.
- 1. Execute `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\\{nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0}.
+ 1. Execute `docker run --rm --gpus=all --memory=${mem_limit} --cpus=${nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0`.
  1. Block on completion; capture exit code.
  1. Write results to Redis.
 
@@ -64,7 +64,7 @@ To isolate the effect of `mem_limit`, we performed an ablation test with n=5 rep
 
 
 ## Data \& Code Availability Statement
-This architecture operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). Generation scripts and code are available at https://github.com/wisrovi/wyoloservice2_production. Deployment is 100% reproducible via `docker-compose up -d --build` to start the Invoker, which subsequently launches Executors via `docker run`.
+This architecture operates under a Dual Licensing Model (PolyForm Noncommercial / AGPLv3). Generation scripts and code are available at https://github.com/wisrovi/wyoloservice2_production. Deployment is 100% reproducible via `docker-compose up -d --build` to start the Invoker, which subsequently launches Executors via `docker run`. The provided CSV dataset (`data/production_oom_logs.csv`) is an aggregated empirical record derived directly from `cgroups` `memory.oom_control`.
 
 ## Broader Impact / Ethics Statement
 Eliminating host crashes reduces manual reboots, lowering operational toil and hardware wear (Shift-Left reliability). Low-latency isolation enables higher GPU utilization, improving energy efficiency [patterson2021carbon].

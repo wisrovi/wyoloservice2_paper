@@ -78,7 +78,7 @@ Para aislar el efecto de \texttt{mem\_limit}, realizamos una prueba de ablación
 \end{figure}
 
 \section{Declaración de Disponibilidad de Datos y Código}
-Licencia Dual (PolyForm / AGPLv3). Los scripts y el código fuente residen en \url{https://github.com/wisrovi/wyoloservice2_production}. El despliegue es 100\% reproducible mediante \texttt{docker-compose up -d --build} para arrancar el Invocador, el cual posteriormente lanza los Ejecutores con \texttt{docker run}.
+Licencia Dual (PolyForm / AGPLv3). Los scripts y el código fuente residen en \url{https://github.com/wisrovi/wyoloservice2_production}. El despliegue es 100\% reproducible mediante \texttt{docker-compose up -d --build} para arrancar el Invocador, el cual posteriormente lanza los Ejecutores con \texttt{docker run}. El dataset CSV proporcionado (\texttt{data/production\_oom\_logs.csv}) es un registro empírico agregado derivado directamente de \texttt{cgroups} \texttt{memory.oom\_control}.
 
 \section{Impacto Amplio / Declaración Ética}
 Prevenir caídas reduce el desgaste de hardware y mejora la eficiencia energética \cite{patterson2021carbon}.
