@@ -21,7 +21,7 @@ The architecture is depicted in Figure 1. The `wyoloservice2_invoker` daemon run
 
  1. Deserialize payload (YAML config).
  1. Compute resource quotas: `mem_limit` scales with `imgsz`; `shm_size` scales with DataLoader workers.
- 1. Execute `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\\{nano_cpus\} --shm-size=\$\{shm_size\} wisrovi/train_service:worker_executor_v1.0.0}.
+ 1. Execute `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\\{nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0}.
  1. Block on completion; capture exit code.
  1. Write results to Redis.
 

@@ -17,7 +17,7 @@ La arquitectura se representa en Figura 1. El demonio `wyoloservice2_invoker` co
 
  1. Deserializa payload YAML.
  1. Calcula cuotas (`mem_limit`, `shm_size`).
- 1. Ejecuta `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\\{nano_cpus\} --shm-size=\$\{shm_size\} wisrovi/train_service:worker_executor_v1.0.0}.
+ 1. Ejecuta `docker run --rm --gpus=all --memory=\\{mem_limit\` --cpus=\\{nano_cpus} --shm-size=${shm_size} wisrovi/train_service:worker_executor_v1.0.0}.
  1. Captura código de salida y escribe en Redis.
 
 
@@ -59,7 +59,7 @@ Para aislar el efecto de `mem_limit`, realizamos una prueba de ablación con n=5
 
 
 ## Declaración de Disponibilidad de Datos y Código
-Licencia Dual (PolyForm / AGPLv3). Los scripts y el código fuente residen en https://github.com/wisrovi/wyoloservice2_production. El despliegue es 100% reproducible mediante `docker-compose up -d --build` para arrancar el Invocador, el cual posteriormente lanza los Ejecutores con `docker run`.
+Licencia Dual (PolyForm / AGPLv3). Los scripts y el código fuente residen en https://github.com/wisrovi/wyoloservice2_production. El despliegue es 100% reproducible mediante `docker-compose up -d --build` para arrancar el Invocador, el cual posteriormente lanza los Ejecutores con `docker run`. El dataset CSV proporcionado (`data/production_oom_logs.csv`) es un registro empírico agregado derivado directamente de `cgroups` `memory.oom_control`.
 
 ## Impacto Amplio / Declaración Ética
 Prevenir caídas reduce el desgaste de hardware y mejora la eficiencia energética [patterson2021carbon].
