@@ -2,9 +2,10 @@ STATUS: IN_REVIEW
 ROUND: 0
 PAPER: paper_c_domain_shift_prediction + paper_d_autonomous_evaluation
 
-## Reviewer status (paper_10_outlier_failure_analysis, Ronda 1)
+## Reviewer status (paper_10_outlier_failure_analysis, Ronda 2)
 
-- Veredicto: REVISIÓN MAYOR / RE-ENVÍO. Paper de 1 página (mínimo IEEE 3-6) sin evidencia experimental (0 CSVs/scripts/figuras), 3 referencias (mínimo 8), sin Related Work/Experimental Setup/Conclusion/Data & Code, filiación con "eCaptureDtech" (prohibido) y sin `main.md` EN/ES (dualidad violada). Reporte completo en `IEEE_REVIEW_VERDICT.md` (sección `paper_10_outlier_failure_analysis`, 2026-08-16 02:17).
+- Veredicto Ronda 2: REVISIÓN MAYOR / RE-ENVÍO. La evidencia aportada (`benchmark_outlier_analysis.py`, `evidencias/*.csv`, seed=42) **contradice directamente el texto**: el paper afirma 12% FP / 450 hard-negatives / FP→3.5%, pero el CSV muestra baseline FP 9.21%, **34** HN minados y tratamiento FP **18.79% (PEOR que control 15.07% y baseline)**; además hay data leakage (val==train en COCO128 y en `ds.yaml`), sigue siendo 1 página (mínimo 3-6), 3 referencias (mínimo 8), filiación con "eCaptureDtech" (prohibido), sin `main.md` EN/ES ni figuras. Reporte completo en `IEEE_REVIEW_VERDICT.md` (sección `paper_10_outlier_failure_analysis` Ronda 2, 2026-08-16 04:13).
+- STATUS: IN_REVIEW (REVISIÓN MAYOR; ROUND lo gestiona `run_workflow.sh`).
 
 ## Reviewer status (paper_2_invoker_executor, Ronda 21)
 

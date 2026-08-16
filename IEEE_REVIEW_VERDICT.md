@@ -2319,3 +2319,62 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 - [ ] **Modificación 6:** Recompilar ambos idiomas (4 pasos), verificar 0 errores/undefined/Overfull y 3–6 páginas por idioma; reportar el estudio de ablación y el tamaño de muestra N en cada claim cuantitativo.
 
 ---
+
+---
+
+## IEEE Peer Review Report: paper_10_outlier_failure_analysis (Ronda 2)
+
+**Fecha y Hora:** 2026-08-16 04:13:02
+**Artículo evaluado:** `normal_papers/paper_10_outlier_failure_analysis` ("Outlier Failure Analysis: A Data-Centric Approach to Hard-Negative Mining in YOLO")
+**Revisor:** IEEE Senior Member / Area Editor
+**Historial:** Ronda 1 (2026-08-16 02:17:24) → REVISIÓN MAYOR. Nueva evidencia aportada en Ronda 2: `benchmark_outlier_analysis.py`, `evidencias/` (3 CSV), `runs/`, `datasets/coco128`.
+
+### 1. Resumen Ejecutivo y Veredicto Inicial (conciso)
+
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO
+- **Nivel de Innovación:** Bajo (hard-negative mining es técnica consolidada; aporte es de orquestación).
+- **Evaluación de Generación por IA / Autenticidad:** 4/10 — Esta ronda la evidencia YA existe, y **contradice directamente el texto**: el paper afirma 12% FP inicial / 450 hard-negatives / FP reducido a 3.5%, pero `outlier_results.csv` muestra FP baseline 9.21%, solo **34** hard-negatives minados y un brazo de tratamiento con FP rate **18.79% (PEOR que control 15.07% y baseline)**. Texto y datos no provienen del mismo proceso.
+- **Bibliografía:** CRÍTICO — 3 referencias (Redmon 2016, Jocher 2023, Ng 2021); mínimo IEEE 8; sin HNM/COCO/literatura 2021–2026; sin Related Work.
+- **Notas de mejora críticas:** (1) Reconciliar TEXTO↔CSV: corregir 12%/450/3.5% o reescribir el estudio con los resultados reales (incluida la degradación del brazo HN); (2) resolver el leakage val==train (COCO128 usa `images/train2017` como val) e introducir split de validación real; (3) eliminar `eCaptureDtech`, ampliar a 3–6 páginas (Related Work, Experimental Setup, Conclusion, Data & Code Availability) y generar `main.md` EN/ES.
+
+### 2. Análisis por Subagentes Especializados
+
+- **Agente A (Originalidad y Detección de IA):** Puntuación 4/10. La prosa sigue siendo sobria y activa (sin "delve", "tapestry" ni superlativos), y el ES es traducción genuina con `babel spanish`. Pero en esta ronda se hace evidente un comportamiento de *"texto no verificado contra datos"*: las cifras del manuscrito (`12\%`, `450`, `3.5\%`) son las mismas de la Ronda 1, y la evidencia empírica generada después (`evidencias/outlier_results.csv`) no las respalda. Un autor humano que hubiera ejecutado el benchmark habría ajustado el texto a los números reales o explicado la discrepancia. La afirmación de evaluación sobre un "custom industrial dataset" contradice el propio docstring del script (`benchmark_outlier_analysis.py:7`), que declara explícitamente el uso de COCO128 "no proprietary industrial data... available to the authors". El patrón "redactar primero, medir después" es el marcador de autenticidad más problemático del proceso. No se detecta plagio ni parafraseo automatizado.
+
+- **Agente B (Estado del Arte y Bibliografía):** Puntuación 2/10. Sin cambios respecto a la Ronda 1. El `.bib` mantiene **exactamente 3 entradas** (Redmon 2016, Jocher 2023, Ng 2021), muy por debajo del mínimo IEEE de 8 y del rango exigido de 8–20 efectivamente citadas. No existe sección Related Work: el único parafraseo del estado del arte son dos frases sin citas para HNM clásico (Felzenszwalb et al. 2010, Shrivastava et al. 2016), Data-Centric AI académico (solo se cita el sitio web de la competencia de Ng, fuente no peer-reviewed) ni Active Learning/MLOps 2021–2026. Se cita Redmon 2016 para justificar YOLOv8n (2023), un anacronismo; la referencia apropiada es `jocher2023yolo`. No se cita COCO (Lin et al. 2014) pese a que toda la evidencia experimental se ejecuta sobre COCO128. Ninguna referencia del dominio edge/outlier/continual learning. La entrada `ng2021datacentric` es un `@article` sin volumen/páginas (fuente web tratada como journal).
+
+- **Agente C (Rigor Técnico y Metodología):** Puntuación 3/10. Mejora parcial respecto a la Ronda 1 (ahora hay script + CSVs reproducibles con seed=42), pero con fallos críticos que invalidan las conclusiones:
+  - **Contradicción texto↔evidencia (integridad):** `outlier_results.csv` muestra: baseline FP 9.21% / 34 hard-negatives / control FP 15.07% / **tratamiento HN FP 18.79%** / map50 0.6011→0.7045→0.7085. El manuscrito afirma 12% → 450 muestras → 3.5% con reintegración. Las tres cifras del paper son falsas a la luz de la evidencia, y el resultado clave (el brazo con hard-negatives es PEOR en tasa de FP que el control) se oculta.
+  - **Data leakage (val==train):** `datasets/coco128/coco128.yaml` define `train: images/train2017` y `val: images/train2017` (las mismas 128 imágenes). El `ds.yaml` generado por `build_dataset()` (líneas 262–268) también apunta `val` a `images/train2017`. Todas las métricas `map50`/FP/TP se calculan sobre imágenes de entrenamiento, lo que infla sistemáticamente los resultados y viola el protocolo experimental.
+  - **Ablación incompleta y mal interpretada:** `ablation_iou_threshold.csv` varía el umbral IoU (0.4–0.7) sobre el baseline y muestra que un umbral más estricto incrementa FP/HN (monotónico esperable), pero no hay ablación del aporte real: sin-módulo vs con-módulo sobre un split de validación honesto, ni variación de la fracción de hard-negatives reintegrados, ni análisis de por qué el brazo HN degrada FP.
+  - **Estructura IEEE incompleta:** sigue siendo un paper de **1 página** (59 líneas de `main.tex`), sin figuras ni tablas (`booktabs` y `cleveref` cargados y sin uso), sin secciones Related Work, Experimental Setup, Conclusion & Future Work, Data & Code Availability, Acknowledgments ni Ablation Study. Broader Impact = una frase sin ética, carbono ni Shift-Left.
+  - **Filiación inválida:** `eCaptureDtech` permanece en `en/main.tex:22` y `es/main.tex:23` (prohibido por AGENTS.md); sin ORCID ni enlace `https://github.com/wisrovi/w-cli`.
+  - **Dualidad rota:** no existen `en/main.md` ni `es/main.md` (regla estricta .tex↔.md); no hay `figures/`.
+  - **Reproducibilidad parcial:** el script es ejecutable y seedeado, pero las rutas `MODEL_PATH`/`DATASET_YAML` dependen de la raíz del repo y el pipeline `train_service2` (paso 13) no está documentado (qué precede, cómo se decide la reintegración, fracción, rebalanceo); no hay Data & Code Availability con `wyoloservice2_production` ni licencia dual.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- El problema (hard-negative mining como feedback autónomo en MLOps continuos) es relevante y está encuadrado sin tono de venta.
+- Ronda 2 añade evidencia real y ejecutable (`benchmark_outlier_analysis.py`, seed=42, protocolo A/B control vs tratamiento, CSV persistentes en `evidencias/`), algo inexistente en la Ronda 1. La estructura del script es honesta sobre sus limitaciones de hardware/datos en el docstring.
+- Compila limpio (0 errores/undefined) en EN y ES con `microtype`/`cleveref`; prosa sobria y traducción ES genuina.
+- Los archivos de evidencia (CSV) existen y son auditablemente falsables — la comunidad puede verificar la contradicción, lo que permite una corrección dirigida.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Integridad de resultados:** el texto afirma 12% / 450 / 3.5% y la evidencia muestra 9.21% / 34 / 18.79% (empeoramiento). Los claims centrales del paper son refutados por sus propios datos.
+- **CRÍTICO — Data leakage:** validación sobre las mismas imágenes de entrenamiento (`val: images/train2017`) en COCO128 y en el `ds.yaml` generado; todas las métricas están sesgadas.
+- **CRÍTICO — Conclusión invertida:** el brazo de tratamiento (con hard-negatives) degrada la tasa de FP (18.79% vs control 15.07% vs baseline 9.21%); la narrativa del paper ("fewer catastrophic failures") no tiene soporte empírico.
+- **CRÍTICO — Estructura:** 1 página (mínimo 3–6); faltan Related Work, Experimental Setup, Conclusion, Data & Code Availability, Acknowledgments, Ablation Study y figuras/tablas.
+- **CRÍTICO — Bibliografía:** 3 referencias (mínimo 8), sin COCO ni HNM ni literatura 2021–2026.
+- **CRÍTICO — Cumplimiento del repo:** `eCaptureDtech` presente, sin ORCID/w-cli, sin `main.md` EN/ES, sin `figures/`.
+- Métricas sin definición operativa de "tasa de FP" y "alta confianza" en el manuscrito (aunque el script las define: conf≥0.75 para FP rate HC).
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+*(Instrucciones concretas paso a paso para elevar el paper al estándar de publicación IEEE)*
+- [ ] **Modificación 1 (Crítica — integridad texto↔datos):** Reescribir Results & Discussion usando **exclusivamente** los valores de `evidencias/outlier_results.csv` (baseline FP 9.21%, HN=34, control FP 15.07%, tratamiento FP 18.79%, map50 0.6011→0.7045→0.7085). Si el brazo HN degrada FP, o (a) reportar la degradación y discutir por qué (hipótesis: los crops HN a 320px sin rebalanceo introducen ruido de localización; N=34 insuficiente), o (b) rediseñar el experimento (mayor N, rebalanceo, crops de contexto completo) hasta obtener un resultado que la narrativa pueda defender. Prohibido dejar cifras "12%/450/3.5%" sin correspondencia CSV.
+- [ ] **Modificación 2 (Crítica — metodología/leakage):** Crear un split de validación real: apartar 20–25% de COCO128 (o usar `val2017` real) que NO participe en el fine-tune de control ni tratamiento; actualizar `coco128.yaml`/`ds.yaml` para que `val` apunte a imágenes no vistas; re-ejecutar el benchmark y regenerar los 3 CSV. Documentar hardware (CPU/GPU/RAM), imgsz, batch, epochs, optimizer, seeds.
+- [ ] **Modificación 3 (Crítica — estructura):** Ampliar a 3–6 páginas añadiendo: Related Work (HNM: Felzenszwalb 2010, Shrivastava 2016; Data-Centric AI; Active Learning; MLOps/continuous training), Experimental Setup, Results & Discussion con tabla `booktabs` y figuras vectoriales (matplotlib) de FP rate por brazo y curva IoU-threshold, Ablation Study (módulo ON/OFF sobre val real, variar umbral IoU y fracción de HN reintegrados), Conclusion & Future Work, y Broader Impact real (carbono por re-entrenamiento evitado, Shift-Left, dual-use).
+- [ ] **Modificación 4 (Crítica — bibliografía):** Ampliar el `.bib` a 8–20 referencias efectivamente citadas y compiladas: COCO (Lin 2014), YOLO vía `jocher2023yolo` (eliminar el anacronismo Redmon para YOLOv8n o relegarlo a contexto histórico), Felzenszwalb 2010, Shrivastava 2016, fuente académica de Data-Centric AI, y 4–6 referencias 2021–2026 (minería de outliers, OOD, continual/MLOps, edge). Verificar biunivocidad citas↔lista tras pdflatex→bibtex→pdflatex→pdflatex.
+- [ ] **Modificación 5 (Crítica — cumplimiento del repo):** Eliminar `eCaptureDtech` de `en/main.tex:22` y `es/main.tex:23`; añadir ORCID y `https://github.com/wisrovi/w-cli`. Añadir sección Data & Code Availability con `wyoloservice2_production`, comando reproducible verificado y licencia dual PolyForm/AGPLv3.
+- [ ] **Modificación 6 (sincronización):** Generar `en/main.md` y `es/main.md` fieles al `.tex`, crear `figures/` (diagrama de flujo del paso 13 y figura de resultados), alinear/eliminar el generador huérfano `generate_paper_10.py`, recompilar ambos idiomas (4 pasos) y verificar 0 errores/undefined/Overfull, 3–6 páginas por idioma y citas biunívocas.
