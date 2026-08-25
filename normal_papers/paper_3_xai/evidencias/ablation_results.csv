@@ -1,0 +1,5 @@
+Component_Configuration,Mean_Simulated_AUC
+Baseline (Random Noise),0.5
+Grad-CAM Deletion Only,0.18
+Grad-CAM Insertion Only,0.851
+Eigen-CAM Insertion,0.901

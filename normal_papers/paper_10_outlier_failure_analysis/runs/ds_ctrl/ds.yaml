@@ -1,6 +1,6 @@
 path: /home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/normal_papers/paper_10_outlier_failure_analysis/runs/ds_ctrl
 train: images/train
-val: /home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/datasets/coco128/images/train2017
+val: /home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/datasets/coco128/images/val2017
 names:
   0: person
   1: bicycle

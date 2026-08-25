@@ -2257,6 +2257,72 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 
 ---
 
+## IEEE Peer Review Report (paper_3_xai — Ronda 2 / Re-envío)
+
+**Fecha y Hora:** 2026-08-17 08:17:22
+**Artículo evaluado:** `normal_papers/paper_3_xai` ("Automated Explainable AI Pipeline for YOLO Models: From Grad-CAM to Quantitative Fidelity Validation")
+**Revisor:** IEEE Senior Member / Area Editor
+
+### 1. Resumen Ejecutivo y Veredicto Final
+
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (al borde del rechazo por integridad de datos)
+- **Nivel de Innovación:** Bajo-Moderado. Orquestación automatizada de técnicas XAI consolidadas (Eigen-CAM, Grad-CAM++, Deletion/Insertion AUC, t-SNE) sin contribución algorítmica o matemática propia; el único elemento novedoso (LlmAnalyzer/OpenCode) sigue siendo un prototipo no integrado y sin evaluación.
+- **Evaluación de Generación por IA / Autenticidad:** 5/10 — la prosa sigue siendo sobria y honesta (declara que el LLM es prototipo), pero la integridad de los datos permanece comprometida: el nuevo `benchmark_xai_fidelity.py` genera **datos sintéticos por `random.gauss()`** (su propio comentario dice "Micro-benchmark / simulación dirigida") y la sección Data & Code los sigue etiquetando como "strictly executed empirical CSV results".
+
+**Resumen de la ronda (cambios detectados vs Ronda 1):** el re-envío SÍ aplicó mejoras mecánicas — creó `benchmark_xai_fidelity.py` (antes inexistente), corrigió la ruta de `fix.py` a `paper_3_xai`, regeneró los CSV (de 500 filas cuantizadas a 2 decimales por `random.uniform` → 30 filas de precisión completa por `random.gauss`), añadió `ablation_results.csv` y corrigió el typo "penultimante"→"penultimate". **PERO** no resolvió el fallo de fondo: los datos siguen siendo simulados y presentados como empíricos; las cifras del texto siguen sin ser trazables; la bibliografía sigue en 4/15; y el documento sigue en 2 páginas sin figuras ni tablas.
+
+**Notas de mejora críticas:**
+1. La frase "strictly executed empirical CSV results" contradice directamente el script `benchmark_xai_fidelity.py` (generación `random.gauss(mu, sigma)` sin seed, no reproducible); el claim "92% de confianza" no solo no tiene respaldo, sino que **contradice los CSV** (máximo Insertion AUC real = 0.9038).
+2. Reemplazar las medias blend no trazables por estadísticas por método (grad/eigen/random), con N, IC bootstrap y test estadístico vs baseline aleatorio; definir y justificar la métrica de ablación.
+3. Ampliar a 3–6 páginas con figuras vectoriales y al menos una tabla `booktabs`; citar las 15 entradas del `.bib` (o reducir a 8–20 efectivas) añadiendo Eigen-CAM, YOLO y COCO; y sincronizar `main.md` EN/ES (aún con residuos LaTeX y sin listado de referencias).
+
+### 2. Análisis por Subagentes Especializados
+
+- **Agente A (Originalidad y Detección de IA):** Puntuación 5/10. La base prosaica sigue siendo auténtica y contenida: frases cortas, sin "delve/tapestry", honestidad estructural poco común (declara el LLM como prototipo y el aporte como metodológico). Sin embargo, persiste el patrón de **edición por scripts no regenerativos** y, sobre todo, de **redacción no contrastada con la evidencia**: se mantienen cifras redondas sin origen trazable ("92%", "35%", "0.70") que no se derivan de los CSV. Los `.md` de ambos idiomas siguen rotos por la conversión automática: `\IEEEoverridecommandlockouts` en línea 1, llave suelta `}` al final del título (línea 3 de ambos), bloque de autor huérfano con `\textit{...}` y `}` (líneas 5–8), escapes `\&` sin procesar en las cabeceras `## Results \& Discussion` / `## Data \& Code Availability` / `## Conclusion \& Future Work`, y citas eliminadas sin listado de referencias posterior — asimetría `.tex`↔`.md` que viola la regla estricta de sincronía del repositorio. No hay señales de plagio, pero el texto sigue narrando mediciones que el código adjunto demuestra que son simuladas.
+
+- **Agente B (Estado del Arte y Bibliografía):** Puntuación 3/10. **Fallos verificados por compilación:** el `.bib` tiene **15 entradas pero solo 4 se citan en el cuerpo** (Selvaraju 2017, Chattopadhay 2018, Petsiuk 2018, van der Maaten 2008); `main.bbl` confirma exactamente 4 `\bibitem` ("You've used 4 entries"). Las otras **11 entradas permanecen muertas** (Ribeiro, Lundberg, Zheng/MT-Bench, Touvron/Llama 2, Akiba/Optuna, Jocher/ultralytics, Redmon, Arya/AIX360, Guidotti, Papernot, Wang/Score-CAM), violando el rango IEEE de 8–20 referencias efectivas. **Eigen-CAM —central en título y metodología— no tiene cita alguna**; YOLO tampoco se cita (Redmon 2016 y Jocher 2023 están en el `.bib` sin uso); no se cita el dataset COCO. El estado del arte XAI sigue desactualizado para 2026: sin D-RISE, XGrad-CAM, ni benchmarks de fidelidad post-2021 para detectores. Las entradas citadas son correctas y reales (punto a favor frente a otros papers del repo), pero el marco teórico es insuficiente.
+
+- **Agente C (Rigor Técnico y Metodología):** Puntuación 2/10. **Los datos siguen siendo sintéticos y presentados como empíricos.** Análisis estadístico propio de los CSV regenerados:
+  - `benchmark_xai_fidelity.py` (29 líneas) es un generador de micro-benchmark: `random.gauss(0.18,0.02)` para Grad-CAM deletion, `random.gauss(0.85,0.02)` para insertion, etc. Sin seed fijada → **ni siquiera reproducible con el mismo script**. El comentario literal "Micro-benchmark / simulación dirigida" contradice la frase del paper "strictly executed empirical CSV results".
+  - **`results_tsne_clusters.csv` no lo genera ningún script** (el benchmark solo escribe deletion/insertion/ablation); la evidencia t-SNE queda sin código de reproducción.
+  - **Cifras del texto no trazables a los CSV:** "mean Deletion AUC 0.18 (IQR 0.14-0.22)" — real: Grad-CAM 0.1868 (IQR 0.1731–0.1997), Eigen-CAM 0.1419, pooled 0.1643; ningún método produce el IQR reclamado. "mean Insertion AUC 0.85 (IQR 0.81-0.89)" — real: Grad-CAM 0.8516 (IQR 0.8468–0.8597), pooled 0.8642. "Silhouette 0.70 (IQR 0.67-0.73)" — real: mean 0.6898, IQR 0.6748–0.7041 (límite superior 0.7041, no 0.73).
+  - **Claim "92% de confianza con 80% de fondo eliminado" falso respecto a los datos:** el máximo Insertion AUC de todos los CSV es **0.9038** (Eigen-CAM); Grad-CAM alcanza 0.8632. No hay 0.92 en ningún archivo ni curvas por paso de máscara que respalden un protocolo de borrado de fondo. Confluye Insertion AUC (revelar píxeles salientes) con borrado de fondo (Deletion).
+  - **Ablación sin rigor:** `ablation_results.csv` existe y coincide numéricamente (60→95 = +35 puntos absolutos, 58.3% relativo), pero "Fidelity_Reliability_Score" es una métrica **no definida** (sin unidades, sin protocolo, sin varianza, sin N), generada por el mismo script sintético; el paper reporta "35% improvement" como si fuera relativo y **no menciona el valor 98 del Full Pipeline**.
+  - **Baselines aleatorios presentes pero no reportados:** los CSV SÍ contienen Random (deletion mean 0.4951, insertion mean 0.5403) que demostrarían fidelidad (XAI ≪ baseline en deletion, ≫ en insertion), pero el paper nunca los cita ni ejecuta ningún test estadístico (sin CI, sin p-valor, sin N declarado).
+  - **Desajuste protocolo↔evidencia:** el texto declara "5 seeds (42-46) × 100 imágenes = 500" pero los CSV tienen 10 filas por método (deletion/insertion) y 5 filas (tsne); N no se declara en el paper.
+  - **Reproducibilidad nula:** Data & Code apunta al repo genérico `https://github.com/wisrovi/`, no al repo de producción `wyoloservice2_production`; comando `python benchmark_xai_fidelity.py` sí existe ahora, pero solo regenera la simulación.
+  - **Estructura IEEE incompleta:** PDF de **2 páginas** EN y ES (mínimo IEEE 3–6), **0 figuras, 0 tablas** (booktabs sin usar), sin sección Ablation Study dedicada, sin Acknowledgments, sin Experimental Setup (GPU/CPU/RAM, variante YOLO, imgsz, batch, versiones), filiación sin rol "AI Leader & Solutions Architect" ni ORCID. El ES `main.tex` es una traducción genuina y completa (punto a favor).
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Prosa sobria, honesta y sin florituras; declara explícitamente que el LLM es prototipo y el aporte metodológico, no de producción.
+- El re-envío demuestra capacidad de respuesta: `benchmark_xai_fidelity.py` creado, `fix.py` corregido, CSV regenerados con precisión completa y `ablation_results.csv` añadido.
+- Los CSV son internamente consistentes (baselines aleatorios presentes, 3 métodos × 10 filas) y la carpeta `evidencias/` refleja la intención de reproducibilidad.
+- La dirección —validación cuantitativa automatizada de fidelidad XAI post-entrenamiento— es relevante y demandada por la industria; el ES es una traducción genuina.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Integridad de datos:** datos generados por `random.gauss` (comentario "simulación dirigida") presentados como "strictly executed empirical CSV results"; sin seed, ni siquiera reproducibles.
+- **CRÍTICO — Claim "92%"/"80%" falso respecto a los datos** (máx. real 0.9038) y sin curvas por paso de máscara.
+- **CRÍTICO — Bibliografía:** 4 de 15 referencias compiladas (mínimo IEEE 8); Eigen-CAM, YOLO y COCO sin citar; estado del arte 2026 desactualizado.
+- Cifras del texto no trazables a los CSV (medias blend, IQR inexactos, silhouette 0.6898 reportada como 0.70); cero tests estadísticos; baselines aleatorios no reportados.
+- `results_tsne_clusters.csv` sin código generador; N del protocolo (500) desajustado con la evidencia (10 filas/método).
+- 2 páginas (mínimo 3–6), sin figuras ni tablas, sin Ablation Study, sin Experimental Setup (hardware/imgsz/batch/versiones), sin Acknowledgments.
+- `main.md` EN/ES rotos (residuos LaTeX, citas y referencias ausentes); filiación sin rol/ORCID/enlace wisrovi-suit; Data & Code al repo genérico; "OpenCode" descrito erróneamente como "local LLM".
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+*(Instrucciones concretas paso a paso para elevar el paper al estándar de publicación IEEE)*
+- [ ] **Modificación 1 (Crítica — integridad):** Reescribir `benchmark_xai_fidelity.py` para ejecutar inferencia real: cargar el modelo YOLO `.pt`, obtener heatmaps Grad-CAM++/Eigen-CAM de las capas penúltimas, aplicar el protocolo Deletion/Insertion por pasos de máscara (curvas de confianza por paso), fit de t-SNE sobre embeddings reales y regenerar los 4 CSV (incluido `results_tsne_clusters.csv`, hoy huérfano). Si la limitación de cómputo impide el experimento real, **etiquetar explícitamente los datos como micro-benchmark/simulación dirigida en el cuerpo y ELIMINAR la frase "strictly executed empirical CSV results"**; fijar `random.seed` para reproducibilidad.
+- [ ] **Modificación 2 (Crítica — estadística):** Reportar mediana/IQR **por método por separado** (Grad-CAM vs Eigen-CAM vs Random), N declarado, intervalos de confianza bootstrap y un test estadístico (p.ej., Wilcoxon emparejado) de cada método XAI contra el baseline aleatorio; reportar las curvas Deletion/Insertion por paso que justifiquen cualquier claim de retención de confianza; eliminar las medias blend y corregir "Silhouette 0.70 (IQR 0.67-0.73)" por 0.6898 (IQR 0.6748-0.7041) o regenerar los datos.
+- [ ] **Modificación 3 (Crítica — bibliografía):** Citar en el cuerpo las 11 entradas muertas del `.bib` o eliminarlas del mismo; añadir cita de Eigen-CAM (Muhammad & Yeasin 2020), YOLO (Jocher 2023 / Redmon 2016), COCO (Lin 2014) y referencias 2021–2026 de XAI para detección (D-RISE, XGrad-CAM, benchmarks de fidelidad). Alcanzar 8–20 referencias efectivamente compiladas (0 huérfanas, 0 muertas) en EN y ES.
+- [ ] **Modificación 4 (Crítica — estructura):** Ampliar a 3–6 páginas con: sección Ablation Study dedicada (definir operativamente "Fidelity_Reliability_Score", protocolo, CSV de evidencia y mencionar el Full Pipeline 98), figuras vectoriales matplotlib (heatmaps, curvas Deletion/Insertion, proyección t-SNE) y al menos una tabla `booktabs` con estadísticas por método incluido el baseline Random. Añadir Acknowledgments.
+- [ ] **Modificación 5 (Experimental Setup):** Especificar GPU/CPU/RAM, variante YOLO (n/s/m), imgsz, batch size, versiones de dependencias, seeds y dataset (clases usadas); describir el protocolo de clustering t-SNE (perplejidad, métricas, etiquetas de clase) y reconciliar el N declarado (5 seeds × 100 imágenes) con el número real de filas de los CSV.
+- [ ] **Modificación 6 (sincronización):** Corregir el generador de `main.md` (residuos `\IEEEoverridecommandlockouts`, `}`, `\textit`, `\&`) y añadir listado de referencias en Markdown biunívoco con el `.tex`; recompilar ambos idiomas con la secuencia pdflatex→bibtex→pdflatex→pdflatex y verificar 0 errores/undefined/Overfull y 3–6 páginas por idioma.
+- [ ] **Modificación 7 (filiación y código):** Completar la filiación (William Steve Rodriguez Villamizar — AI Leader & Solutions Architect, ORCID, enlace `https://github.com/wisrovi/w-cli`); apuntar Data & Code al repo de producción `wyoloservice2_production` con comando reproducible verificado y licencia dual (PolyForm/AGPLv3); aclarar que "OpenCode" es un agente/CLI de código abierto y no un "local Large Language Model".
+
+---
+
 ## IEEE Peer Review Report: paper_10_outlier_failure_analysis
 
 **Fecha y Hora:** 2026-08-16 02:17:24
@@ -2378,3 +2444,246 @@ El artículo cumple y excede los requisitos para su publicación inmediata.
 - [ ] **Modificación 4 (Crítica — bibliografía):** Ampliar el `.bib` a 8–20 referencias efectivamente citadas y compiladas: COCO (Lin 2014), YOLO vía `jocher2023yolo` (eliminar el anacronismo Redmon para YOLOv8n o relegarlo a contexto histórico), Felzenszwalb 2010, Shrivastava 2016, fuente académica de Data-Centric AI, y 4–6 referencias 2021–2026 (minería de outliers, OOD, continual/MLOps, edge). Verificar biunivocidad citas↔lista tras pdflatex→bibtex→pdflatex→pdflatex.
 - [ ] **Modificación 5 (Crítica — cumplimiento del repo):** Eliminar `eCaptureDtech` de `en/main.tex:22` y `es/main.tex:23`; añadir ORCID y `https://github.com/wisrovi/w-cli`. Añadir sección Data & Code Availability con `wyoloservice2_production`, comando reproducible verificado y licencia dual PolyForm/AGPLv3.
 - [ ] **Modificación 6 (sincronización):** Generar `en/main.md` y `es/main.md` fieles al `.tex`, crear `figures/` (diagrama de flujo del paso 13 y figura de resultados), alinear/eliminar el generador huérfano `generate_paper_10.py`, recompilar ambos idiomas (4 pasos) y verificar 0 errores/undefined/Overfull, 3–6 páginas por idioma y citas biunívocas.
+
+---
+
+## IEEE Peer Review Report: paper_10_outlier_failure_analysis (Ronda 3)
+
+**Fecha y Hora:** 2026-08-16 04:18:30
+**Artículo evaluado:** `normal_papers/paper_10_outlier_failure_analysis` ("Outlier Failure Analysis: A Data-Centric Approach to Hard-Negative Mining in YOLO")
+**Revisor:** IEEE Senior Member / Area Editor
+**Historial:** Ronda 1 (2026-08-16 02:17:24) → REVISIÓN MAYOR; Ronda 2 (2026-08-16 04:13:02) → REVISIÓN MAYOR. Ronda 3: verificación de si las modificaciones de Ronda 2 se aplicaron al manuscrito.
+
+### 1. Resumen Ejecutivo y Veredicto Inicial (conciso)
+
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO
+- **Nivel de Innovación:** Bajo (hard-negative mining es técnica consolidada; aporte de orquestación).
+- **Evaluación de Generación por IA / Autenticidad:** 4/10 — El manuscrito (`main.tex` EN/ES, 59/60 líneas) NO se modificó desde Ronda 1: sigue afirmando 12% FP / 450 hard-negatives / FP→3.5%, y la evidencia (`outlier_results.csv`) sigue mostrando baseline FP 9.21% / 34 HN minados / tratamiento FP 18.79% (PEOR que control 15.07%). Texto y datos siguen en contradicción total.
+- **Bibliografía:** CRÍTICO — 3 referencias (Redmon 2016, Jocher 2023, Ng 2021); mínimo IEEE 8; sin COCO/HNM/literatura 2021–2026; sin Related Work.
+- **Notas de mejora críticas:** (1) El `main.tex` no implementó NINGUNA de las 6 modificaciones de Ronda 2 — reescribir Results con los valores reales del CSV o rediseñar el experimento; (2) eliminar el data leakage (val==train) con un split de validación honesto; (3) quitar `eCaptureDtech`, ampliar a 3–6 páginas y generar `main.md` EN/ES + figuras.
+
+### 2. Análisis por Subagentes Especializados
+
+- **Agente A (Originalidad y Detección de IA):** Puntuación 4/10. La prosa sigue siendo sobria, activa y sin clichés LLM ("delve", "tapestry", superlativos vacíos); el ES es una traducción genuina con `babel spanish`. Pero el marcador de autenticidad más grave persiste: **el manuscrito no se actualizó** — las cifras `12\%`, `450`, `3.5\%` son las mismas de la Ronda 1, y la evidencia real (`outlier_results.csv`) las contradice en la misma medida que en Ronda 2. Un autor humano que hubiera ejecutado `benchmark_outlier_analysis.py` habría ajustado el texto a los números del CSV o justificado la discrepancia; el patrón "redactar primero, medir después, no reconciliar" es el sello de un proceso donde texto y datos no provienen del mismo flujo de trabajo. El manuscrito además dice evaluar un "custom industrial dataset", mientras el docstring del propio script (`benchmark_outlier_analysis.py:7`) declara COCO128 y ausencia de datos industriales. No hay plagio ni parafraseo automatizado detectado.
+
+- **Agente B (Estado del Arte y Bibliografía):** Puntuación 2/10. Sin cambios frente a Ronda 2 (verificado por compilación: `main.bbl` con exactamente 3 `\bibitem`: `redmon2016you`, `jocher2023yolo`, `ng2021datacentric`). Violación del rango IEEE de 8–20 referencias efectivas. Sin sección Related Work: el único parafraseo del estado del arte son dos frases sin citas para HNM clásico (Felzenszwalb 2010, Shrivastava 2016), sin fuente académica de Data-Centric AI (solo el sitio web de Ng tratado como `@article`), sin Active Learning/MLOps/Edge 2021–2026. Anacronismo: se cita Redmon 2016 para justificar YOLOv8n (2023); la referencia apropiada es únicamente `jocher2023yolo`. No se cita COCO (Lin 2014) pese a que toda la evidencia experimental se ejecuta sobre COCO128.
+
+- **Agente C (Rigor Técnico y Metodología):** Puntuación 3/10. La infraestructura de evidencia existe y es reproducible (script seedeado, 3 CSV, runs/ de fine-tune real CPU), pero el manuscrito no la utiliza:
+  - **Contradicción texto↔evidencia sin resolver (integridad):** `outlier_results.csv` (regenerado y verificado idéntico al commiteado) muestra baseline FP 9.21% / HN=34 / control FP 15.07% / **tratamiento FP 18.79%** / map50 0.6011→0.7045→0.7085. El texto afirma 12% → 450 → 3.5% con reintegración. Las tres cifras del paper siguen sin correspondencia CSV, y el resultado clave (el brazo con hard-negatives es PEOR en tasa de FP) sigue oculto en el manuscrito.
+  - **Data leakage intacto:** `datasets/coco128/coco128.yaml` define `train: images/train2017` y `val: images/train2017` (las mismas 128 imágenes). El `ds.yaml` generado por `build_dataset()` (línea 265) también apunta `val` a `images/train2017`. Todas las métricas `map50`/FP/TP se calculan sobre imágenes de entrenamiento → sesgo sistemático y protocolo inválido.
+  - **Ablación sin aporte demostrado:** `ablation_iou_threshold.csv` solo varía el umbral IoU (0.4–0.7) sobre el baseline (monotónico esperable); no hay ablación módulo ON/OFF sobre un val honesto, ni variación de la fracción de HN reintegrados, ni discusión de por qué el brazo HN degrada FP.
+  - **Estructura IEEE incompleta:** sigue siendo **1 página** (59 líneas EN / 60 ES); sin figuras ni tablas (`booktabs`/`cleveref` cargados y sin uso), sin Related Work, Experimental Setup, Conclusion & Future Work, Data & Code Availability, Acknowledgments ni Ablation Study. Broader Impact = una frase sin ética, carbono ni Shift-Left.
+  - **Filiación inválida:** `eCaptureDtech` permanece en `en/main.tex:22` y `es/main.tex:23` (prohibido por AGENTS.md); sin ORCID ni enlace `https://github.com/wisrovi/w-cli`.
+  - **Dualidad rota:** no existen `en/main.md` ni `es/main.md`; `figures/` está vacía (0 archivos en EN y ES).
+  - **Reproducibilidad parcial:** el script corre y es seedeado (seed=42, device=cpu), pero las rutas dependen de la raíz del repo; el paso 13 del pipeline `train_service2` no se documenta (fracción reintegrada, rebalanceo, precedencia); no hay sección Data & Code Availability con `wyoloservice2_production` ni licencia dual.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- El problema (hard-negative mining como feedback autónomo en MLOps continuos) sigue siendo relevante y está encuadrado sin tono de venta.
+- La infraestructura de evidencia (`benchmark_outlier_analysis.py` seed=42, protocolo A/B control vs tratamiento, 3 CSV en `evidencias/`, `runs/ab/*/results.csv` de fine-tune real en CPU) es ejecutable y auditablemente falsable.
+- Compila limpio en EN y ES (0 errores/undefined; 1 página por idioma) con `microtype`/`cleveref` en preámbulo; prosa sobria y traducción ES genuina.
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Cero avance del manuscrito:** `en/main.tex` y `es/main.tex` son bit a bit idénticos a los de Ronda 2 (verificado por diff). Ninguna de las 6 modificaciones de Ronda 2 se aplicó al texto.
+- **CRÍTICO — Integridad de resultados:** el texto afirma 12% / 450 / 3.5% y la evidencia muestra 9.21% / 34 / 18.79% (empeoramiento). Los claims centrales siguen refutados por los propios datos del repo.
+- **CRÍTICO — Data leakage:** validación sobre las mismas imágenes de entrenamiento en `coco128.yaml` y en el `ds.yaml` generado; todas las métricas están sesgadas.
+- **CRÍTICO — Conclusión invertida:** el brazo de tratamiento (con hard-negatives) degrada FP (18.79% vs control 15.07% vs baseline 9.21%); la narrativa "fewer catastrophic failures" no tiene soporte empírico.
+- **CRÍTICO — Estructura:** 1 página (mínimo 3–6); faltan Related Work, Experimental Setup, Conclusion, Data & Code Availability, Acknowledgments, Ablation Study, figuras y tablas.
+- **CRÍTICO — Bibliografía:** 3 referencias (mínimo 8), sin COCO ni HNM ni literatura 2021–2026.
+- **CRÍTICO — Cumplimiento del repo:** `eCaptureDtech` presente, sin ORCID/w-cli, sin `main.md` EN/ES, sin `figures/`.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+*(Instrucciones concretas paso a paso para elevar el paper al estándar de publicación IEEE)*
+- [ ] **Modificación 1 (Crítica — integrar evidencia en el texto):** Reescribir Results & Discussion usando **exclusivamente** los valores de `evidencias/outlier_results.csv` (baseline FP 9.21%, HN=34, control FP 15.07%, tratamiento FP 18.79%, map50 0.6011→0.7045→0.7085). Reportar explícitamente la degradación del brazo HN y formular una hipótesis mecánica (crops HN de 320 px sin rebalanceo introducen ruido de localización; N=34 insuficiente), o rediseñar el experimento (mayor N, rebalanceo, contexto completo) hasta obtener un resultado defendible. Prohibido mantener cifras "12%/450/3.5%" sin correspondencia CSV.
+- [ ] **Modificación 2 (Crítica — eliminar leakage):** Crear un split de validación real (apartar 20–25% de COCO128 que NO participe en el fine-tune, o usar `val2017`), actualizar `coco128.yaml`/`ds.yaml` para que `val` apunte a imágenes no vistas, re-ejecutar `benchmark_outlier_analysis.py` y regenerar los 3 CSV. Documentar hardware, imgsz, batch, epochs, optimizer y seeds en Experimental Setup.
+- [ ] **Modificación 3 (Crítica — estructura):** Ampliar a 3–6 páginas con Related Work (Felzenszwalb 2010, Shrivastava 2016, Data-Centric AI académico, Active Learning, MLOps/continuous training), Experimental Setup, Results & Discussion con tabla `booktabs` y figuras vectoriales (matplotlib), Ablation Study (módulo ON/OFF sobre val real, umbral IoU y fracción de HN), Conclusion & Future Work y Broader Impact real (carbono por re-entrenamiento evitado, Shift-Left, dual-use).
+- [ ] **Modificación 4 (Crítica — bibliografía):** Ampliar el `.bib` a 8–20 referencias efectivamente citadas y compiladas: COCO (Lin 2014), YOLOv8 vía `jocher2023yolo` (eliminar anacronismo Redmon o relegarlo a contexto histórico), Felzenszwalb 2010, Shrivastava 2016, Data-Centric AI académico y 4–6 referencias 2021–2026 (outlier mining, OOD, continual/MLOps, edge). Verificar biunivocidad citas↔lista tras pdflatex→bibtex→pdflatex→pdflatex.
+- [ ] **Modificación 5 (Crítica — cumplimiento del repo):** Eliminar `eCaptureDtech` de `en/main.tex:22` y `es/main.tex:23`; añadir ORCID y `https://github.com/wisrovi/w-cli`. Añadir Data & Code Availability con `wyoloservice2_production`, comando reproducible verificado y licencia dual PolyForm/AGPLv3.
+- [ ] **Modificación 6 (sincronización):** Generar `en/main.md` y `es/main.md` fieles al `.tex`, crear `figures/` (diagrama de flujo del paso 13 y figura de resultados), alinear/eliminar el generador huérfano `generate_paper_10.py`, recompilar ambos idiomas (4 pasos) y verificar 0 errores/undefined/Overfull, 3–6 páginas por idioma y citas biunívocas.
+
+---
+
+## IEEE Peer Review Report (paper_3_xai — Ronda 3 / Re-envío)
+
+**Fecha y Hora:** 2026-08-17 08:25:23
+**Artículo evaluado:** `normal_papers/paper_3_xai` ("Automated Explainable AI Pipeline for YOLO Models: From Grad-CAM to Quantitative Fidelity Validation")
+**Revisor:** IEEE Senior Member / Area Editor
+**Historial:** Ronda 1 (2026-08-16 02:14:00) → REVISIÓN MAYOR; Ronda 2 (2026-08-17 08:17:22) → REVISIÓN MAYOR. Ronda 3: re-envío con figuras, tabla de ablación y citas "biunívocas".
+
+### 1. Resumen Ejecutivo y Veredicto Final (conciso)
+
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (al borde del rechazo por integridad de datos)
+- **Nivel de Innovación:** Bajo-Moderado
+- **Evaluación de Generación por IA / Autenticidad:** 5/10 — el re-envío elimina la frase "strictly executed empirical CSV results" y etiqueta los datos como "micro-benchmark / simulación dirigida" (mejora de honestidad), pero la integridad sigue comprometida: los CSV se generan con `random.gauss()` sin seed (ni siquiera reproducibles), la sección Results cita cifras que son los parámetros del simulador, no los datos reales, y la figura `deletion_curve.pdf` es un PDF marcador de posición con el texto "Dummy Curve".
+- **Bibliografía:** MEJORADA pero con 3 entradas dudosas/fabricadas (`smith2022quantitative` con autores placeholder "J. Smith & A. Doe", `wang2023advances` vaga, `rodriguez2024pipeline` en "Journal of AI Systems"); 12=12 compiladas.
+- **Notas de mejora críticas:** (1) ejecutar inferencia real con YOLO (o declarar explícitamente "simulación" en TODA la sección Results y eliminar las cifras que imitan experimento); (2) reemplazar la figura dummy por una curva vectorial real; (3) sincronizar `main.md` EN/ES (aún con residuos LaTeX) y ampliar de 2 a 3–6 páginas.
+
+### 2. Análisis por Subagentes Especializados
+
+- **Agente A (Originalidad y Detección de IA):** Puntuación 5/10. La base prosaica sigue siendo sobria y honesta (frases cortas, sin "delve/tapestry", declara el LLM como prototipo y el aporte como metodológico). Mejoras de proceso: se eliminó "strictly executed empirical CSV results" y el caption de la figura declara "(Simulated)". **Sin embargo persisten fallos de autenticidad editorial:** (1) el EN `main.tex:25` y `main.tex:46` contienen el término español **"simulación dirigida"** mezclado en el texto inglés — residuo de traducción/conversión que delata un flujo no revisado por un hablante nativo; (2) los `.md` EN/ES siguen rotos por la conversión: `\IEEEoverridecommandlockouts` en línea 1, llave suelta `}` al final del título (línea 3), bloque de autor con `\textit{...}` y `}` huérfano (líneas 5–8), escapes `\&` sin procesar en `## Results \& Discussion` / `## Data \& Code Availability` / `## Conclusion \& Future Work`, y **sin listado de referencias** — la regla estricta `.tex`↔`.md` sigue violada pese a que `fix.py` se ejecutó (sus regex no limpian estos residuos); (3) los claim "Wilcoxon p<0.05" y "~90% de confianza" se narran como experimento sin que el script realice ningún test ni protocolo de borrado de fondo. No hay señales de plagio ni parafraseo automatizado.
+
+- **Agente B (Estado del Arte y Bibliografía):** Puntuación 4/10. Mejora sustancial frente a Ronda 2 (antes 4 de 15; hoy **12 de 12 entradas citadas y compiladas**, `main.bbl` verificado): ahora sí se citan Eigen-CAM (`muhammad2020eigencam`), YOLO (`redmon2016you`, `jocher2023yolov8`), COCO (`lin2014coco`), AIX360 (`arya2020aix360`) y RISE (`petsiuk2018rise`). **Falencias:** (1) **3 referencias son dudosas o aparentemente fabricadas** — `smith2022quantitative` ("J. Smith and A. Doe", CVPR 2022, título genérico "Quantitative Metrics for XAI") usa autores placeholder y no se encontró en el estado del arte real; `wang2023advances` ("X. Wang et al.", IEEE TNN, sin volumen/páginas/DOI) es inverificable; `rodriguez2024pipeline` ("Journal of AI Systems", autopublicación sin fuente peer-reviewed) no tiene DOI ni editorial identificable; (2) el Related Work sigue siendo 2 frases sin análisis crítico; (3) estado del arte 2026 desactualizado: sin D-RISE, XGrad-CAM, Score-CAM, Integrated Gradients, LIME/SHAP para detectores, ni benchmarks de fidelidad post-2021 (p.ej., la revisión de Arya et al. de 2020 es la más reciente en el marco teórico); (4) el rango IEEE 8–20 se cumple en cantidad (12) pero no en solvencia de fuentes. Entradas reales y bien formateadas (Selvaraju, Chattopadhay, Petsiuk, van der Maaten, Muhammad, Redmon, Jocher, Lin) como punto a favor.
+
+- **Agente C (Rigor Técnico y Metodología):** Puntuación 2/10. El fallo de fondo persiste: **los datos son sintéticos y las cifras del texto son los parámetros del simulador, no mediciones.** Verificación estadística propia sobre los CSV regenerados:
+  - `benchmark_xai_fidelity.py` genera todo con `random.gauss(mu, sigma)` con medias elegidas a mano (deletion 0.18/0.15/0.50; insertion 0.85/0.90/0.50; silhouette 0.6898) y **sin `random.seed`** → ni siquiera reproducible con el mismo script; **no ejecuta YOLO, no carga imágenes, no usa GPU, no fija seeds 42–46 ni 100 imágenes por seed**, pese a que Experimental Setup (`main.tex:46`) describe exactamente ese protocolo. El texto y el código describen experimentos distintos.
+  - **Cifras del texto = parámetros del generador, no datos:** "Silhouette 0.6898 (IQR 0.6748–0.7041)" es literalmente `random.gauss(0.6898, 0.02)`; los datos reales dan pooled mean 0.6872 (IQR 0.6725–0.7058), Layer1 0.6934, Layer2 0.6809. "mean Deletion AUC 0.18 (IQR 0.14–0.22)" no corresponde a ningún método (Grad-CAM real: mean 0.1907, IQR 0.1679–0.2081; Eigen-CAM: 0.1535, IQR 0.1428–0.1689) — es un blend no trazable. "mean Insertion AUC 0.85 (IQR 0.81–0.89)": la media sí cuadra (0.8504) pero el IQR real es 0.8274–0.8759, no 0.81–0.89. "Eigen-CAM ~0.90": real 0.8870.
+  - **Claim "~90% de confianza" / "retain confidence when background pixels removed" mal planteado y sin respaldo:** confluye Insertion AUC (revelar píxeles salientes, máx. real 0.9242 Eigen-CAM / 0.8832 Grad-CAM) con un protocolo de borrado de fondo que ningún CSV ni script implementa; no hay curvas por paso de máscara.
+  - **"Wilcoxon signed-rank test (p < 0.05)" fabricado:** ningún script lo calcula, no se reporta p-valor, N, ni estadístico; no hay emparejamiento definido (¿imagen? ¿semilla?).
+  - **Ablación sin rigor:** `ablation_results.csv` existe y los valores 50/60/95/98 son hardcodeados en el script; "Fidelity Reliability Score" no tiene definición operativa, unidades, varianza ni N; el paper reporta "35% improvement" (en realidad +35 puntos absolutos = +58.3% relativo) y **omite el Full Pipeline = 98**.
+  - **Figura falsa:** `figures/deletion_curve.pdf` es un PDF escrito a mano por el script con el texto "Dummy Curve" (líneas 38–39 de `benchmark_xai_fidelity.py`) — no es una curva Deletion; el caption la presenta como resultado.
+  - **N declarado vs evidencia:** el paper declara 5 seeds × 100 imágenes = 500 mediciones; los CSV tienen 10 filas/método (deletion/insertion) y 10/layer (tsne). Sin correspondencia.
+  - **Estructura IEEE incompleta:** PDF de **2 páginas** EN y ES (mínimo 3–6); sin `\raggedbottom` en el preámbulo (exigido por AGENTS.md); filiación sin "AI Leader & Solutions Architect" ni ORCID; Data & Code sí menciona `w-cli`, `wyoloservice2_production` y licencia dual (mejora); "OpenCode" sigue descrito como "local Large Language Model" (es un agente/CLI de código abierto). Punto a favor: el ES `main.tex` es una traducción genuina y el preámbulo usa `microtype`/`cleveref`/`booktabs`.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Honestidad estructural en aumento: elimina "strictly executed empirical CSV results", etiqueta los datos como micro-benchmark/simulación y declara el LLM como prototipo no integrado.
+- Capacidad de respuesta del autor: figura, tabla `booktabs`, citas 12=12 compiladas y `fix.py` re-ejecutado en cada ronda.
+- La dirección (validación cuantitativa automatizada de fidelidad XAI post-entrenamiento) sigue siendo relevante y demandada; el ES es traducción genuina y completa.
+- Los CSV contienen baselines aleatorios (deletion mean 0.5176, insertion mean 0.4908) que, si se reportaran con un test estadístico real, demostrarían fidelidad (XAI ≪ Random en deletion, ≫ en insertion).
+
+**Puntos Débiles / Falencias:**
+- **CRÍTICO — Integridad de datos:** datos `random.gauss` sin seed presentados con IQRs y p-valores (Wilcoxon) que ningún script calcula; las cifras del texto son los parámetros del simulador, no mediciones (Silhouette 0.6898 es `gauss(0.6898,0.02)`).
+- **CRÍTICO — Figura falsa:** `deletion_curve.pdf` contiene el texto "Dummy Curve"; no es una curva de resultados.
+- **CRÍTICO — Desajuste protocolo↔evidencia:** Experimental Setup (GPU, 5 seeds, 100 imágenes, imgsz 640, batch 16) describe experimentos que `benchmark_xai_fidelity.py` no ejecuta.
+- **CRÍTICO — Bibliografía con 3 fuentes dudosas/fabricadas** (Smith & Doe, Wang et al. vaga, "Journal of AI Systems"); estado del arte 2026 desactualizado.
+- "simulación dirigida" (español) filtrado en el texto y el abstract EN; `.md` EN/ES con residuos LaTeX y sin referencias; 2 páginas (mínimo 3–6); sin `\raggedbottom`; sin rol/ORCID en la filiación.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+*(Instrucciones concretas paso a paso para elevar el paper al estándar de publicación IEEE)*
+- [ ] **Modificación 1 (Crítica — integridad/evidencia real):** Reescribir `benchmark_xai_fidelity.py` para ejecutar inferencia real: cargar un YOLOv8 `.pt`, extraer heatmaps Grad-CAM++/Eigen-CAM de la penúltima capa, aplicar Deletion/Insertion por pasos de máscara (guardando las curvas por paso), fit de t-SNE sobre embeddings reales y generar los 4 CSV con `random.seed(42)`; regenerar TODAS las cifras del texto desde los datos. Si no hay GPU/datos disponibles, ejecutar sobre COCO128 (como en otros papers del repo) y declararlo; en cualquier caso, **o bien los datos son empíricos y los números salen de los CSV, o bien etiquetar TODO Results como "simulación dirigida" y eliminar IQRs/p-valores/figura como si fueran experimento.**
+- [ ] **Modificación 2 (Crítica — figura):** Sustituir `figures/deletion_curve.pdf` (PDF dummy "Dummy Curve") por una curva real generada con matplotlib: Deletion AUC (confianza media vs fracción de píxeles eliminados) por método Grad-CAM/Eigen-CAM/Random, con ejes X/Y etiquetados, leyenda y unidades; exportar vectorial (.pdf/.eps) con `\includegraphics[width=\linewidth,height=0.3\textheight,keepaspectratio]`.
+- [ ] **Modificación 3 (Crítica — estadística):** Reportar estadísticas **por método por separado** (Grad-CAM vs Eigen-CAM vs Random) con N declarado, IC bootstrap y un test estadístico real (Wilcoxon emparejado por imagen/semilla) que reporte el p-valor concreto; incluir el baseline Random en tabla y discusión; eliminar las medias blend ("0.18 IQR 0.14–0.22") y corregir "Silhouette 0.6898" a los valores reales de los CSV; eliminar el claim "~90% de confianza" o reformularlo según las curvas de inserción reales; justificar la ablación con una métrica definida operativamente (y reportar el Full Pipeline=98).
+- [ ] **Modificación 4 (Crítica — bibliografía):** Sustituir o verificar `smith2022quantitative`, `wang2023advances` y `rodriguez2024pipeline` por fuentes reales y verificables (con DOI/arXiV); ampliar el estado del arte 2021–2026 de XAI para detección (D-RISE, XGrad-CAM, Score-CAM, Integrated Gradients, benchmarks de fidelidad) y un Related Work analítico (3+ párrafos); mantener 8–20 referencias efectivamente citadas y compiladas en EN y ES.
+- [ ] **Modificación 5 (Crítica — estructura):** Ampliar a 3–6 páginas con: Experimental Setup que describa EXACTAMENTE lo que el script ejecuta (no al revés), Results & Discussion con tabla `booktabs` por método (incluido Random) y curvas reales, sección Ablation Study dedicada con protocolo y evidencia, y Conclusion con impacto; añadir `\raggedbottom` al preámbulo.
+- [ ] **Modificación 6 (sincronización y filiación):** Corregir `fix.py`/`tex_to_md` para que `main.md` EN/ES no arrastren `\IEEEoverridecommandlockouts`, `}`, `\textit`, `\&` y añada el listado de referencias biunívoco con el `.tex`; eliminar el término español "simulación dirigida" del texto EN; completar la filiación (William Steve Rodriguez Villamizar — AI Leader & Solutions Architect, ORCID, `https://github.com/wisrovi/w-cli`); aclarar que "OpenCode" es un agente/CLI de código abierto, no un "local LLM"; recompilar ambos idiomas con pdflatex→bibtex→pdflatex→pdflatex y verificar 0 errores/undefined/Overfull y 3–6 páginas por idioma.
+
+## IEEE Peer Review Report (paper_3_xai — Ronda 4 / Re-envío)
+
+**Fecha y Hora:** 2026-08-17 08:35:55
+**Artículo evaluado:** `normal_papers/paper_3_xai` ("Automated Explainable AI Pipeline for YOLO Models: From Grad-CAM to Quantitative Fidelity Validation")
+**Revisor:** IEEE Senior Member / Area Editor
+**Historial:** Ronda 1 (2026-08-16 02:14:00) → REVISIÓN MAYOR; Ronda 2 (2026-08-17 08:17:22) → REVISIÓN MAYOR; Ronda 3 (2026-08-17 08:25:23) → REVISIÓN MAYOR. Ronda 4: re-envío con figura vectorial real, honestidad de simulación plena, bibliografía saneada (12/12 reales) y 3 páginas/idioma.
+
+### 1. Resumen Ejecutivo y Veredicto Final (conciso)
+
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (progreso sustancial; aún no publicable por integridad de datos parcial)
+- **Nivel de Innovación:** Moderado
+- **Evaluación de Generación por IA / Autenticidad:** 7/10 — texto sobrio, sin clichés de LLM, honestidad plena (declara "directed simulation" en abstract, intro, setup, resultados y conclusión); sin residuos "simulación dirigida" en inglés; autenticidad metodológica aceptable aunque el claim "~90% de confianza al borrar fondo" sigue mal planteado.
+- **Bibliografía:** 12/12 referencias reales y verificables (Selvaraju, Chattopadhay, Petsiuk, Fu, Wang, Muhammad, van der Maaten, Arya, Redmon, Jocher, Lin); eliminadas las 3 fuentes fabricadas de Ronda 3; estado del arte 2021–2026 aún ausente.
+- **Notas de mejora críticas:** (1) alinear `Experimental Setup` (5 seeds 42–46 × 100 iteraciones = 500) con el script real (sin `random.seed`, 10 muestras/método) y corregir el Silhouette (texto 0.6932 vs CSV 0.6907); (2) regenerar `main.md` EN/ES sin residuos LaTeX (`$p=0.0020$`, `\hskip...\relax`, `\end{thebibliography}`) y sincronizar figura/tabla; (3) completar filiación (AI Leader & Solutions Architect, ORCID) y corregir "OpenCode" como LLM local.
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación **7/10**. Texto sobrio y sin clichés de LLM: no hay "delve/tapestry/realm", las frases varían en longitud, voz activa y pragmatismo ("We introduce", "We do not execute real YOLO inference"). La honestidad es ahora plena: "directed simulation (micro-benchmark)" se declara en abstract, intro (`main.tex:36`), Experimental Setup, Results y Conclusion, y desapareció por completo el residuo español "simulación dirigida" del texto EN (verificado: 0 apariciones). Se eliminaron las 3 referencias fabricadas y la frase "strictly executed empirical CSV results". **Falencias menores de autenticidad:** (1) el claim del abstract "the generated explanations retain ~90% confidence when background pixels are removed" sigue conceptualmente confuso: los datos reportados son Insertion AUC (revelar píxeles salientes: 0.8491/0.8945), no un protocolo de borrado de fondo, y el "~90%" es redondeo de una media simulada; (2) repetición excesiva de "directed simulation" (9 veces en el tex EN) y "simulated" (12+) — correcto como disclaimer pero resta fluidez; (3) filiación incompleta (falta "AI Leader & Solutions Architect", ORCID y el enlace w-cli en el bloque de autor). Sin señales de plagio ni parafraseo automatizado; el ES es una traducción genuina y completa.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación **8/10**. Mejora crítica: las 3 fuentes dudosas/fabricadas de Ronda 3 (Smith & Doe, Wang et al. IEEE TNN, "Journal of AI Systems") fueron ELIMINADAS. Las 12 entradas de `references.bib` son obras reales y canónicas del estado del arte XAI/CV: Grad-CAM (Selvaraju 2017), Grad-CAM++ (Chattopadhay 2018), RISE (Petsiuk 2018), D-RISE (Petsiuk 2021), XGrad-CAM (Fu 2020), Score-CAM (Wang 2020), Eigen-CAM (Muhammad 2020), t-SNE (van der Maaten 2008), AIX360 (Arya 2020), YOLO (Redmon 2016, Jocher 2023), COCO (Lin 2014). 12=12 citadas y compiladas (0 undefined, 0 overfull en el `.log`), dentro del rango IEEE 8–20. **Falencias:** (1) Related Work de solo 2 párrafos, esencialmente un catálogo sin análisis crítico ni posicionamiento frente a frameworks de evaluación de fidelidad (ROAD, Pointing Game, faithfulness benchmarks); (2) estado del arte 2021–2026 ausente: sin LIME/SHAP para detectores, sin Integrated Gradients, sin benchmarks de fidelidad post-2021 ni surveys recientes de XAI para object detection; (3) `jocher2023yolov8` está catalogada como `@article` con `journal="URL: ..."` — tipo incorrecto (debe ser `@misc`/`@online`) y sin URL formal. Formato BibTeX correcto en las 11 restantes.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación **5.5/10**. Progreso real y verificable respecto a Ronda 3, con fallos de integridad parciales que impiden aceptar:
+- **Los números principales SÍ trazan a los CSV** (verificación independiente con percentiles de interpolación lineal): Deletion Grad-CAM mean 0.1821 (IQR 0.1735–0.1948) ✓; Insertion Grad-CAM 0.8491 (IQR 0.8401–0.8535) ✓; Insertion Eigen-CAM 0.8945 ✓. **Wilcoxon p=0.0020 para ambos** ✓ — ahora SÍ reproducible desde los datos (test exacto n=10: 2/2^10 = 0.00195).
+- **La figura `figures/deletion_curve.pdf` es ahora un PDF vectorial real** de matplotlib (creado 2026-08-17 08:29:41), con ejes X/Y etiquetados (Perturbation Fraction / Confidence), leyenda (Grad-CAM vs Random) y título; el "Dummy Curve" de Ronda 3 fue eliminado.
+- **Fallos persistentes:** (1) **Silhouette no trazable**: el texto afirma mean 0.6932 (IQR 0.6828–0.7014) pero el CSV pooled da 0.6907 (IQR 0.6816–0.7019) — el desajuste prueba que las cifras provienen de runs distintos del generador sin seed; (2) **protocolo↔evidencia**: `Experimental Setup` (`main.tex:51`) declara "5 seeds (42–46) con 100 iteraciones por seed" = 500 mediciones, pero `benchmark_xai_fidelity.py` NO fija ningún `random.seed` y genera solo 10 muestras/método — el texto describe un experimento que el script no ejecuta; (3) **irreproducible**: al no haber seed, `python benchmark_xai_fidelity.py` produce números distintos en cada ejecución; (4) la "deletion curve" es una **rampa lineal** (`np.linspace(1, mean, 10)`), no una curva real de confianza vs fracción eliminada derivada de pasos de máscara; (5) la tabla de ablación mantiene valores **hardcodeados** (50/60/95/98) sin definición operativa de "Fidelity Reliability Score", sin varianza ni N; (6) n=10 por método, sin reportar el baseline Random (deletion ~0.51, insertion ~0.49) ni IC de confianza; (7) no hay inferencia YOLO, heatmaps, t-SNE ni protocolo Deletion/Insertion reales — todo es `random.gauss`; (8) "OpenCode" sigue descrito como "local Large Language Model" (es un agente/CLI de código abierto); (9) 3 páginas EN y 3 ES ✓ (dentro de 3–6), `\raggedbottom`, `microtype`, `cleveref`, `booktabs` presentes ✓.
+- **Sincronización .tex↔.md:** `fix.py` mejoró (ya no arrastra `\IEEEoverridecommandlockouts`, llaves sueltas ni `\textit`), pero `en/main.md` y `es/main.md` aún contienen residuos LaTeX: `$p = 0.0020$`, `$\sim$90\%`, escapes `\hskip 1em plus 0.5em minus 0.4em\relax`, comillas LaTeX `````''``, `11\,443`, `Doll{\'a}r`, `et~al.` y un `\end{thebibliography}` colgante al final; además la md **omite la figura y la tabla** (fix.py las elimina), violando la regla de identidad estricta `.tex`↔`.md`.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Honestidad plena: "directed simulation" declarado en abstract, intro, setup, resultados y conclusión; desaparece la falsa etiqueta de datos empíricos y el residuo español del texto EN.
+- Bibliografía saneada: 12/12 referencias reales y canónicas, 0 undefined, 0 overfull, dentro del rango IEEE 8–20.
+- Trazabilidad parcial: los números principales (Deletion/Insertion AUC, Wilcoxon p=0.0020) coinciden exactamente con los CSV publicados en `evidencias/`.
+- Figura vectorial real con ejes/leyenda/título (eliminado el "Dummy Curve").
+- 3 páginas EN + 3 páginas ES (cumple 3–6), `\raggedbottom`, `microtype`, `cleveref`, `booktabs` presentes.
+- El ES es traducción genuina y sincronizada.
+
+**Puntos Débiles / Falencias:**
+- Desajuste protocolo↔evidencia: el texto declara 5 seeds × 100 iteraciones (500); el script no fija seeds y genera 10 muestras/método.
+- Silhouette 0.6932 (texto) no trazable al CSV (0.6907) — integridad de datos parcial.
+- Irreproducible: `random.gauss` sin `random.seed`; el comando de reproducción no regenera los mismos números.
+- La "deletion curve" es una rampa lineal sintética, no una curva real.
+- Ablación hardcodeada (50/60/95/98) sin definición operativa ni varianza.
+- `main.md` EN/ES con residuos LaTeX (`\end{thebibliography}`, `\hskip...\relax`, `$p=0.0020$`) y sin figura/tabla (identidad tex↔md violada).
+- Filiación incompleta (sin rol/ORCID/enlace w-cli); "OpenCode" mal caracterizado como "local LLM".
+- Claim "~90% confidence when background pixels are removed" mal planteado (es Insertion AUC, no borrado de fondo).
+- Related Work de 2 párrafos sin análisis crítico; estado del arte 2021–2026 ausente.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+*(Instrucciones concretas paso a paso para elevar el paper al estándar de publicación IEEE)*
+- [ ] **Modificación 1 (Crítica — protocolo↔evidencia):** Alinear `Experimental Setup` con el script: o bien implementar realmente 5 seeds (42–46) × 100 iteraciones con `random.seed(seed)` en `benchmark_xai_fidelity.py`, o bien reescribir el texto para describir exactamente 10 muestras/método sin seeds. En ambos casos, fijar `random.seed` para que la reproducción sea determinista.
+- [ ] **Modificación 2 (Crítica — trazabilidad Silhouette y datos):** Regenerar TODAS las cifras del texto desde un único run congelado con seed: corregir el Silhouette a los valores reales del CSV (mean 0.6907, IQR 0.6816–0.7019) o, si se cambia la seed, actualizar simultáneamente texto + CSV + figura en la misma ejecución. Verificar que cada métrica del texto aparece en el CSV correspondiente.
+- [ ] **Modificación 3 (Crítica — figura):** Sustituir la rampa lineal por una curva Deletion real (confianza media vs fracción de píxeles eliminados) derivada de pasos de máscara; si se mantiene la simulación pura, eliminar la figura o etiquetarla explícitamente como "schematic illustration" en lugar de presentarla como resultado medido.
+- [ ] **Modificación 4 (Importante — sincronización md):** Corregir `fix.py`/`tex_to_md` para eliminar todos los residuos LaTeX de `main.md` EN/ES (`\hskip...\relax`, `~`, `````''``, `\end{thebibliography}`, `$...$` como `$p=0.0020$`, `$\sim$90\%`) e incluir la figura y la tabla en la md (o declarar explícitamente que la md es una vista simplificada); recompilar con pdflatex→bibtex→pdflatex→pdflatex y verificar 0 errores/undefined/Overfull y 3–6 páginas.
+- [ ] **Modificación 5 (Importante — filiación y OpenCode):** Completar la filiación con "William Steve Rodriguez Villamizar — AI Leader & Solutions Architect", ORCID y `https://github.com/wisrovi/w-cli`; cambiar "local Large Language Model (OpenCode)" por "open-source coding agent (OpenCode)" en abstract y Metodología.
+- [ ] **Modificación 6 (Importante — estado del arte):** Ampliar Related Work a 3+ párrafos con análisis crítico y citas 2021–2026 (faithfulness benchmarks, LIME/SHAP/Integrated Gradients, surveys de XAI para detección); corregir `jocher2023yolov8` a `@misc` con URL; mantener 8–20 referencias efectivamente citadas.
+- [ ] **Modificación 7 (Importante — claims):** Reformular el abstract "retain ~90% confidence when background pixels are removed" por el dato real: "Insertion AUC 0.85–0.89 (Grad-CAM/Eigen-CAM) frente a 0.50 del baseline aleatorio"; definir operativamente "Fidelity Reliability Score" de la ablación o eliminarla hasta tener una métrica con varianza y N.
+- [ ] **Modificación 8 (Opcional — rigor estadístico):** Reportar en Results el baseline Random (deletion ~0.51, insertion ~0.49), el N por método (10), y añadir IC de confianza o error estándar a las medias. Para una aceptación sin reservas, reemplazar la simulación por un micro-benchmark real sobre COCO128 con YOLOv8n.ci.pt.
+
+---
+
+## IEEE Peer Review Report (paper_3_xai — Ronda 5 / Re-envío)
+
+**Fecha y Hora:** 2026-08-17 08:52:30
+**Artículo evaluado:** `normal_papers/paper_3_xai` ("Automated Explainable AI Pipeline for YOLO Models: From Grad-CAM to Quantitative Fidelity Validation")
+**Revisor:** IEEE Senior Member / Area Editor
+**Historial:** Ronda 1 (2026-08-16 02:14:00) → REVISIÓN MAYOR; Ronda 2 (2026-08-17 08:17:22) → REVISIÓN MAYOR; Ronda 3 (2026-08-17 08:25:23) → REVISIÓN MAYOR; Ronda 4 (2026-08-17 08:35:55) → REVISIÓN MAYOR. Ronda 5: re-envío con trazabilidad numérica total (seed fija 42, N=500), filiación completada y md con figura/tabla, pero con un bug crítico nuevo de integridad lingüística en el abstract EN.
+
+### 1. Resumen Ejecutivo y Veredicto Final (conciso)
+
+- **Veredicto:** REVISIÓN MAYOR / RE-ENVÍO (progreso sustancial en trazabilidad; aún no publicable por fallo crítico de lenguaje y desajuste protocolo↔evidencia persistente)
+- **Nivel de Innovación:** Moderado
+- **Evaluación de Generación por IA / Autenticidad:** 7.5/10 — texto sobrio y honesto ("directed simulation" declarado); sin embargo, el abstract EN contiene un fragmento en español copiado de la recomendación previa ("frente a 0.50 del baseline aleatorio") y un claim conceptualmente incorrecto ("when background pixels are removed"), y el ORCID es un placeholder.
+- **Bibliografía:** 12/12 referencias reales y canónicas; `jocher2023yolov8` sigue mal tipada (`@article` con `journal="URL: ..."`); el claim "2021-2026" del Related Work no tiene ni una cita posterior a 2021.
+- **Notas de mejora críticas:** (1) corregir el abstract EN eliminando el español y reformulando el claim de borrado de fondo (es Insertion AUC sobre píxeles salientes); (2) alinear el texto "5 seeds (42-46) × 100" con el script que usa una sola seed (42) y 500 muestras directas; (3) alinear la Silhouette del texto con el CSV publicado (pooled 0.6894 vs Layer1 0.6900) y regenerar/eliminar el `ablation_results.csv` huérfano.
+
+### 2. Análisis por Subagentes Especializados
+
+**Agente A (Originalidad y Detección de IA):** Puntuación **7.5/10**. El texto sigue siendo sobrio y sin clichés de LLM (0 apariciones de "delve/tapestry/realm"), con voz activa, frases de longitud variada y honestidad plena: "directed simulation (micro-benchmark)" se declara en abstract, intro (`main.tex:37`), Experimental Setup, Results y Conclusion, y el ES es una traducción genuina y sincronizada. Se corrigieron dos fallos de la Ronda 4: la filiación ya incluye "William Steve Rodriguez Villamizar (wisrovi rodriguez) --- AI Leader \& Solutions Architect", email, wisrovi-suit, ubicación y ORCID, y "OpenCode" pasó de "local Large Language Model" a "open-source coding agent (OpenCode)" en abstract y Metodología. **Falencias de autenticidad:** (1) **BUG CRÍTICO NUEVO — contaminación lingüística del abstract EN** (`main.tex:27`): la frase "Insertion AUC 0.85-0.89 (Grad-CAM/Eigen-CAM) **frente a 0.50 del baseline aleatorio** when background pixels are removed" contiene un fragmento íntegro en español ("frente a 0.50 del baseline aleatorio") que el autor copió textualmente de la recomendación de la Ronda 4 (Modificación 7); es un fallo de integridad de idioma en la oración más visible del paper; (2) el claim "when background pixels are removed" sigue conceptualmente confuso: Insertion AUC **revela/inserta píxeles salientes**, no borra fondo; (3) ORCID es un placeholder (0000-0000-0000-0000), no un identificador real; (4) repetición mecánica de "directed simulation"/"simulated" (12+ ocurrencias) que, aunque honesta, resta fluidez. Sin señales de plagio ni parafraseo automatizado.
+
+**Agente B (Estado del Arte y Bibliografía):** Puntuación **7/10**. Las 12 entradas de `references.bib` son obras reales y canónicas (Selvaraju 2017, Chattopadhay 2018, Petsiuk 2018/2021, Fu 2020, Wang 2020, Muhammad 2020, van der Maaten 2008, Arya 2020, Redmon 2016, Jocher 2023, Lin 2014); 12=12 citadas y compiladas sin undefined ni overfull, dentro del rango IEEE 8-20. Related Work creció a 3 párrafos con mención explícita de LIME/SHAP/Integrated Gradients y "faithfulness benchmarks". **Falencias:** (1) el párrafo "Recent advancements (2021-2026)" NO está respaldado por ninguna cita posterior a 2021 (la única entrada 2021+ es `petsiuk2021drise` citada en el párrafo 1) — el claim de estado del arte reciente es retórica sin evidencia bibliográfica; (2) `jocher2023yolov8` sigue catalogada como `@article` con `journal="URL: https://github.com/ultralytics/ultralytics"` — tipo incorrecto (debe ser `@misc`/`@online` con campo `howpublished`/`url`), pese a haberse solicitado en la Ronda 4; (3) sigue sin análisis crítico de benchmarks de fidelidad (ROAD, Pointing Game) ni surveys 2022-2026 de XAI para detección de objetos.
+
+**Agente C (Rigor Técnico y Metodología):** Puntuación **7/10** (era 5.5 en Ronda 4). Progreso determinante, con dos fallos de integridad que aún bloquean la aceptación:
+- **TRAZABILIDAD NUMÉRICA TOTAL ALCANZADA (verificación independiente):** ejecutado `benchmark_xai_fidelity.py` en sandbox con el intérprete `.plotenv` → las salidas coinciden EXACTAMENTE con el texto: Deletion Grad-CAM 0.1808 (IQR 0.1677–0.1935) ✓; Insertion Grad-CAM 0.8498 (IQR 0.8356–0.8636) ✓; Eigen-CAM Insertion 0.9005 ✓; Silhouette 0.6900 (IQR 0.6779–0.7029) ✓; Wilcoxon p<0.0001 (script imprime 0.0000 con N=500) ✓. Los CSV publicados también cuadran (deletion/insertion: 500 filas/método, medias idénticas a las del texto).
+- **DETERMINISMO CORREGIDO:** el script ahora fija `random.seed(42)` y `np.random.seed(42)` (`benchmark_xai_fidelity.py:11-12`); la reproducción (`python benchmark_xai_fidelity.py`) regenera los mismos números.
+- **Ablación saneada:** la tabla del tex ya no usa los valores hardcodeados 50/60/95/98; reporta medias de AUC trazables (0.500/0.181/0.850/0.901).
+- **Figura:** `figures/deletion_curve.pdf` es PDF vectorial real, ahora con decaimiento exponencial (`np.exp(-3x)+mean*0.1`) en vez de la rampa lineal; título "Simulated Deletion AUC Curve" y caption honestos. **Falencias de la figura:** (a) es una fórmula, no datos de la CSV; (b) la curva Random parte de Confidence≈1.0 en fracción 0, semánticamente incoherente (un mapa aleatorio en perturbación 0 no debería tener confianza máxima); (c) el eje parte en ~1.018 para Grad-CAM en x=0.
+- **Fallos persistentes de integridad:** (1) **protocolo↔evidencia:** `main.tex:54` declara "5 seeds (42-46) with 100 iterations per seed, totaling N = 500", pero el script usa UNA sola seed (42) y genera 500 muestras directamente en un solo bloque (`random.gauss(0.18, 0.02) for _ in range(N)`) — no existe el bucle por semillas; el protocolo descrito sigue sin ejecutarse en el código; (2) **Silhouette parcialmente no trazable desde el CSV publicado:** el texto usa las estadísticas solo de Layer1 (0.6900) que imprime el script, pero `results_tsne_clusters.csv` publica Layer1+Layer2 pooled (1000 filas), cuyo mean es 0.6894 (IQR 0.6762–0.7030) — un lector que calcule desde el CSV no obtiene 0.6900; el script ni siquiera imprime las stats de Layer2; (3) **`ablation_results.csv` huérfano:** sigue conteniendo los valores hardcodeados antiguos (Fidelity_Reliability_Score 50/60/95/98) que ya no corresponden a la tabla del paper; (4) el p-valor p<0.0001 es correcto pero no se reporta N ni el baseline Random como comparación (solo está en la figura).
+- **Sincronización .tex↔.md:** `fix.py` mejora: `main.md` EN/ES ya incluyen figura y tabla, y desaparecieron `\hskip...\relax`, `\end{thebibliography}`, `$p<0.0001$`, `$\sim$90\%`. **Pero persisten residuos LaTeX:** `$N = 500$` en Experimental Setup de ambos mds (`main.md:35`), comillas `````''`` y `~`/`\,` en la sección References (`11\,443`, `vol.~9`, `J.~Redmon`, `et~al.`, `Doll{\'a}r`, `\textit`→`*...*` bien), y `\\` en el bloque de autor (`*wisrovi-suit*\\`). `fix.py` no limpia `~`, `\,`, `{\'a}`, `\\` ni `$N = 500$`.
+- **Formato:** 3 páginas EN + 3 ES ✓ (3-6), `\raggedbottom`, `microtype`, `cleveref` (importado pero sin uso real de `\Cref`), `booktabs` ✓; log de compilación limpio (0 undefined, 0 Overfull, 0 citation warnings) en ambos idiomas.
+
+### 3. Fortalezas y Puntos Débiles (Pros & Cons)
+
+**Fortalezas:**
+- Trazabilidad numérica TOTAL y verificable: script determinista con `random.seed(42)`; todas las cifras del texto coinciden con las salidas del script y los CSV publicados (verificación independiente del revisor).
+- Honestidad plena de simulación ("directed simulation") declarada en abstract, intro, setup, resultados y conclusión.
+- Reproducibilidad: `python benchmark_xai_fidelity.py` regenera exactamente los mismos números y CSVs.
+- Ablación saneada con valores trazables (0.500/0.181/0.850/0.901) en vez de los hardcodeados 50/60/95/98.
+- Filiación completada (rol, wisrovi-suit, email, ubicación, ORCID); "OpenCode" correctamente caracterizado como agente de codificación open-source.
+- `main.md` EN/ES ya incluyen figura y tabla; eliminados los residuos LaTeX principales de Rondas 3-4.
+- Figura vectorial real con ejes/leyenda/título y etiquetado honesto como simulación.
+- 3 páginas EN + 3 ES; compilación limpia (0 undefined/Overfull/warnings) en ambos idiomas.
+
+**Puntos Débiles / Falencias:**
+- **BUG CRÍTICO de idioma:** el abstract EN contiene español ("frente a 0.50 del baseline aleatorio"), copiado de la recomendación de la Ronda 4.
+- Claim conceptualmente incorrecto: Insertion AUC no es un protocolo de borrado de fondo ("when background pixels are removed"); confunde inserción de píxeles salientes con eliminación de fondo.
+- Protocolo↔evidencia persistente: el texto declara 5 seeds (42-46) × 100 iteraciones; el script usa una sola seed (42) con 500 muestras directas.
+- Silhouette 0.6900 no reproducible desde el CSV publicado (pooled 0.6894); `ablation_results.csv` huérfano con valores hardcodeados obsoletos.
+- ORCID placeholder (0000-0000-0000-0000).
+- `jocher2023yolov8` mal tipada (`@article` con journal=URL); sin cita posterior a 2021 pese al claim "2021-2026".
+- Figura: fórmula sintética no derivada de los datos; curva Random incoherente (Confidence≈1.0 en perturbación 0).
+- `main.md` EN/ES con residuos LaTeX en References (`11\,443`, `~`, `{\'a}`, comillas `````''``, `\\`) y `$N = 500$` en Experimental Setup.
+- Sin N explícito ni baseline Random reportado numéricamente en Results; sin IC de confianza.
+
+### 4. Plan de Acción y Notas de Mejora para el Autor
+
+*(Instrucciones concretas paso a paso para elevar el paper al estándar de publicación IEEE)*
+- [ ] **Modificación 1 (CRÍTICA — idioma del abstract):** Reescribir `main.tex:27` eliminando TODO el español: sustituir "Insertion AUC 0.85-0.89 (Grad-CAM/Eigen-CAM) frente a 0.50 del baseline aleatorio when background pixels are removed" por "an Insertion AUC of 0.85-0.89 (Grad-CAM/Eigen-CAM) versus 0.50 for a random baseline, confirming that inserting the most salient pixels sustains high confidence". Regenerar el abstract ES como traducción fiel y sincronizar `main.md` EN/ES.
+- [ ] **Modificación 2 (CRÍTICA — claim conceptual):** Reformular en abstract, Results y figura el verbo de la métrica: Insertion AUC revela píxeles salientes (alta confianza = explicación fiel); Deletion AUC los elimina (baja confianza). No usar "background pixels removed" para describir Insertion AUC.
+- [ ] **Modificación 3 (CRÍTICA — protocolo↔evidencia):** Alinear `main.tex:54` con el código: o bien (a) reescribir el texto a "a single fixed seed (42) generating N = 500 samples per distribution", o bien (b) implementar el bucle real de 5 seeds (42-46) × 100 en `benchmark_xai_fidelity.py`. Cualquiera de las dos opciones, con `random.seed(seed)` por seed y regenerando CSVs + texto en la misma ejecución.
+- [ ] **Modificación 4 (Importante — trazabilidad Silhouette):** Publicar en `results_tsne_clusters.csv` solo los datos que reporta el texto (Layer1, 500 filas) o calcular y reportar las stats pooled (0.6894, IQR 0.6762–0.7030); hacer que el script imprima ambas y que el texto use el valor del CSV publicado. Idem: regenerar `ablation_results.csv` con las medias de la tabla (0.500/0.181/0.850/0.901) o eliminar el archivo.
+- [ ] **Modificación 5 (Importante — ORCID):** Sustituir el placeholder por el ORCID real de William Steve Rodriguez Villamizar.
+- [ ] **Modificación 6 (Importante — estado del arte):** Respaldar el claim "2021-2026" con citas reales post-2021 (p.ej., surveys de XAI 2022-2025, benchmarks de faithfulness como ROAD/Pointing Game, LIME/SHAP para detección) y corregir `jocher2023yolov8` a `@misc{...}` con `howpublished={URL}`.
+- [ ] **Modificación 7 (Importante — md y figura):** Ampliar `fix.py` para limpiar `~`, `\,`, `{\'a}`, comillas `````''``, `\\` y `$...$` del md (incluyendo `$N = 500$`); regenerar `main.md` EN/ES; corregir la figura para que la curva Random parta de la confianza del baseline (≈0.5) en fracción 0 y, si es posible, derivarla de los datos de la CSV en vez de una fórmula.
+- [ ] **Modificación 8 (Opcional — rigor estadístico):** Reportar en Results el N (500/método), el baseline Random numérico (deletion ≈0.50, insertion ≈0.50) y un intervalo de confianza o error estándar de las medias. Para una aceptación sin reservas, reemplazar la simulación por un micro-benchmark real sobre COCO128 con YOLOv8n.ci.pt.
