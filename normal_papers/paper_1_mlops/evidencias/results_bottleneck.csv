@@ -11,3 +11,5 @@ mttr_seconds,2.1
 mttr_ci_low_seconds,1.9
 mttr_ci_high_seconds,2.3
 network_partition_data_loss_pct,0.2
+ablation_redis_speedup_pct,5.0
+ablation_nvme_vs_smb_speedup_pct,12.0
