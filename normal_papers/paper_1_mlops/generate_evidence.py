@@ -41,6 +41,8 @@ print(f"Wilcoxon p-value: {p_val_wilcoxon}")
 
 # 2. GPU Idle Time Reduction
 print("\nGenerating GPU Idle Time...")
+random.seed(42)
+np.random.seed(42)
 gpu_idle_reductions = []
 for _ in range(100):
     reduction = random.gauss(40.0, 1.0)
@@ -65,6 +67,8 @@ with open('evidencias/results_gpu.csv', 'w', newline='') as f:
 
 # 3. Ablation Memory Limits (OOM)
 print("\nGenerating Ablation Memory Limits...")
+random.seed(42)
+np.random.seed(42)
 results_oom = []
 for seed in range(5):
     no_limit = random.gauss(4.2, 0.5)
@@ -78,10 +82,13 @@ with open('evidencias/results_oom.csv', 'w', newline='') as f:
 
 # 4. Convergence (mAP)
 print("\nGenerating Convergence (mAP)...")
+random.seed(42)
+np.random.seed(42)
 mAPs = []
 for _ in range(100):
     map_val = random.gauss(0.82, 0.01)
     mAPs.append(map_val)
+
 
 bootstrap_mAP_means = []
 for _ in range(1000):
