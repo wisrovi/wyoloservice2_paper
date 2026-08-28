@@ -52,3 +52,37 @@ To ensure acceptance in top-tier conferences (IEEE, NeurIPS, CVPR) and explicitl
 5. **Narrative Arc (Applied Research Focus)**: Papers must follow a logical arc: introduce the critical industry bottleneck, explain why current methods fall short, and present the applied architecture. The tone must NOT be sales-pitchy ("selling" the project); it must objectively demonstrate to the community how this applied research yielded excellent, reproducible results.
 6. **Reproducibility Guarantee**: The "Data & Code Availability" section MUST explicitly state that in order to deploy the project, the `wyoloservice2_production` repository is used. It must provide explicit commands (e.g., `docker-compose up -d`) allowing any researcher globally to perfectly reproduce the stated experiments.
 
+## Autonomous Editing & OpenCode Peer-Review Workflow (PhD Publication Track)
+
+### 1. The Autonomous Loop Protocol
+The goal is to publish top-tier papers indexed by IEEE to build an undeniable academic track record for doctoral scholarship applications. The collaboration operates on an iterative feedback loop:
+1. **Principal Investigator / Editor Phase:** The AI agent acts under the personality defined in `.agy_prompts/editor.md`. It drafts and refines `main.tex`, synchronizes `main.md` and `main.pdf`, and generates vector assets.
+2. **Peer-Reviewer Phase (OpenCode):** The paper is submitted to `opencode` with `.agy_prompts/revisor.md` (via `run_workflow_opencode.sh` or `run_revisor.sh`). The reviewer evaluates the paper with 3 subagents (A: AI Detection/Originality, B: SOTA/References, C: Rigor/Reproducibility) and writes the verdict into `IEEE_REVIEW_VERDICT.md`.
+3. **Verdict Processing & Response Matrix:** The AI agent reads `IEEE_REVIEW_VERDICT.md`, builds a point-by-point Response Matrix, executes all required fixes using empirical cluster data, recompiles, and resubmits.
+4. **Final Acceptance:** The loop continues until the reviewer awards `STATUS: APPROVED` in `WORKFLOW_STATE.md`.
+
+### 2. Complete Paper Portfolio
+- **Normal Papers (Engineering & Architecture):**
+  - `paper_1_mlops` (NeuralForge Distributed MLOps) - *APPROVED*
+  - `paper_2_invoker_executor` (Invoker-Executor Fault Isolation) - *APPROVED*
+  - `paper_3_xai` (Automated XAI & Quantitative Fidelity) - *IN_REVIEW*
+  - `paper_4_robustness` (Adversarial Robustness & Noise) - *APPROVED*
+  - `paper_5_crossdomain` (FID-based Domain Shift Detection) - *APPROVED*
+  - `paper_6_statistical` (Bootstrap Rigor & Failure Taxonomies) - *APPROVED*
+  - `paper_7_llm_reporting` (LLM-Assisted Automated Reporting) - *APPROVED*
+  - `paper_8_wpipe` (WPipe Declarative Forensic Engine) - *APPROVED*
+  - `paper_9_hardware_complexity` (Edge Hardware Complexity Profiling) - *APPROVED*
+  - `paper_10_outlier_failure_analysis` (Hard-Negative Mining & Outliers) - *IN_REVIEW*
+  - `paper_11_noise_evaluation` (Sensor Degradation & Noise Evaluation) - *DRAFT*
+- **R&D Papers (Frontier Research):**
+  - `paper_c_domain_shift_prediction` (FID + Scene Complexity Predictor) - *READY FOR REVIEW*
+  - `paper_d_autonomous_evaluation` (Autonomous XAI & Robustness Framework) - *READY FOR REVIEW*
+  - `paper_1_agentic_mlops` (MCP-Driven Cluster Orchestration) - *ADVANCED DRAFT*
+  - `paper_2_automated_xai` (Integrated EDA & Reporting Pipeline) - *ADVANCED DRAFT*
+  - `paper_3_robustness_adversarial` (Adversarial Defenses) - *DRAFT*
+  - `paper_4_cross_domain_generalization` (Cross-Domain Assessment) - *ADVANCED DRAFT*
+  - `paper_5_llm_research_reporting` (Automated Scientific Narratives) - *ADVANCED DRAFT*
+  - `paper_6_decentralized_mlops` (Decentralized Multi-Cluster MLOps) - *DRAFT*
+  - `paper_7_autonomous_evaluation_xai` (Unified Autonomous XAI) - *DRAFT*
+
+
