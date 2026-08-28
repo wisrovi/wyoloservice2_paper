@@ -52,16 +52,23 @@ To ensure acceptance in top-tier conferences (IEEE, NeurIPS, CVPR) and explicitl
 5. **Narrative Arc (Applied Research Focus)**: Papers must follow a logical arc: introduce the critical industry bottleneck, explain why current methods fall short, and present the applied architecture. The tone must NOT be sales-pitchy ("selling" the project); it must objectively demonstrate to the community how this applied research yielded excellent, reproducible results.
 6. **Reproducibility Guarantee**: The "Data & Code Availability" section MUST explicitly state that in order to deploy the project, the `wyoloservice2_production` repository is used. It must provide explicit commands (e.g., `docker-compose up -d`) allowing any researcher globally to perfectly reproduce the stated experiments.
 
-### 1. Strict Separation of Roles (Zero Self-Review Rule)
-- **Antigravity / Main Agent:** Acts **EXCLUSIVELY as the Principal Investigator & Senior Architect Editor** (`editor.md`). The main agent **MUST NEVER** review, evaluate, or approve its own papers, nor simulate the reviewer's verdict.
-- **OpenCode:** Acts **EXCLUSIVELY as the IEEE Senior Peer Reviewer** (`revisor.md`). All evaluation verdicts and status transitions (`STATUS: APPROVED` / `STATUS: IN_REVIEW`) MUST be generated externally and autonomously by running `opencode` (via `run_workflow_opencode.sh` or `run_revisor.sh`).
+### 1. Strict Separation of Roles & Subagent Delegation
+- **Antigravity (Main AI Assistant - Sole Academic Drafter):** Acts **EXCLUSIVELY as the Senior Drafter & Principal Investigator** (`editor.md`). The main agent focuses **ONLY on drafting and refining the high-density academic English LaTeX (`en/main.tex`)**. It **NEVER self-reviews, never simulates the reviewer, and MUST delegate all compilation, translation, and Markdown conversion to subagents**.
+- **Mandatory Delegation via Subagents (`invoke_subagent`):** The main agent delegates all mechanical tasks:
+  1. Compiling LaTeX to PDF via the 4-step sequence (`pdflatex` -> `bibtex` -> `pdflatex` -> `pdflatex`).
+  2. Converting and synchronizing LaTeX into Markdown (`main.md`).
+  3. Translating and synchronizing the full Spanish mirror (`es/main.tex`, `es/main.md`, `es/main.pdf`).
+  4. Generating and rendering vector figures in `figures/`.
+- **OpenCode (Exclusive IEEE Peer Reviewer):** Acts **EXCLUSIVELY as the IEEE Senior Peer Reviewer** (`revisor.md`). All evaluation verdicts and status transitions (`STATUS: APPROVED` / `STATUS: IN_REVIEW`) MUST be generated externally and autonomously by running `opencode` (via `run_workflow_opencode.sh` or `run_revisor.sh`).
 
 ### 2. The Autonomous Loop Protocol
 The goal is to publish top-tier papers indexed by IEEE to build an undeniable academic track record for doctoral scholarship applications. The collaboration operates on an iterative feedback loop:
-1. **Principal Investigator / Editor Phase (Antigravity):** Drafts and refines `main.tex`, synchronizes `main.md` and `main.pdf`, and generates vector assets according to `.agy_prompts/editor.md`.
-2. **Peer-Reviewer Phase (OpenCode ONLY):** The paper is submitted to `opencode` with `.agy_prompts/revisor.md` (via `run_workflow_opencode.sh` or `run_revisor.sh`). OpenCode evaluates the paper with 3 subagents (A: AI Detection/Originality, B: SOTA/References, C: Rigor/Reproducibility) and writes the verdict into `IEEE_REVIEW_VERDICT.md`.
-3. **Verdict Processing & Response Matrix (Antigravity):** Reads `IEEE_REVIEW_VERDICT.md`, builds a point-by-point Response Matrix, executes all required fixes using empirical cluster data, recompiles, and resubmits to `opencode`.
-4. **Final Acceptance:** The loop continues until `opencode` awards `STATUS: APPROVED` in `WORKFLOW_STATE.md`.
+1. **Principal Investigator / Editor Phase (Antigravity Main Agent):** Drafts and refines `main.tex` according to `.agy_prompts/editor.md`.
+2. **Subagent Delegation Phase (Subagents):** Specialized subagents handle PDF compilation, Markdown synchronization, Spanish translation, and figure generation.
+3. **Peer-Reviewer Phase (OpenCode ONLY):** The paper is submitted to `opencode` with `.agy_prompts/revisor.md` (via `run_workflow_opencode.sh` or `run_revisor.sh`). OpenCode evaluates the paper with 3 subagents (A: AI Detection/Originality, B: SOTA/References, C: Rigor/Reproducibility) and writes the verdict into `IEEE_REVIEW_VERDICT.md`.
+4. **Verdict Processing & Response Matrix (Antigravity Main Agent + Subagents):** Antigravity reads `IEEE_REVIEW_VERDICT.md`, builds the Response Matrix, updates the LaTeX text with real empirical cluster data, subagents update the mirrors/PDFs, and the paper is re-submitted to `opencode`.
+5. **Final Acceptance:** The loop continues until `opencode` awards `STATUS: APPROVED` in `WORKFLOW_STATE.md`.
+
 
 
 ### 2. Complete Paper Portfolio & 7-Phase Execution Order
