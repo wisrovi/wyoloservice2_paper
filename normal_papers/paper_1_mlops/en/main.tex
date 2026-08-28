@@ -27,8 +27,9 @@ wisrovi.rodriguez@gmail.com\\ wisrovi-suit (https://github.com/wisrovi/w-cli)}
 \maketitle
 
 \begin{abstract}
-Scaling hyperparameter optimization (HPO) for computer vision models across heterogeneous GPU clusters introduces critical industry bottlenecks in state isolation and task routing. Current methods like Ray Tune and Kubeflow introduce significant containerization overhead, while native distributed Optuna lacks hardware isolation. We present NeuralForge, a distributed MLOps framework bridging this gap with an Invoker-Executor pattern that distributes Optuna trials across GPU worker nodes using Celery. By decoupling execution into ephemeral Docker containers, NeuralForge prevents OOM-driven host failures. Micro-benchmark simulations on a 3-node GPU cluster demonstrate median task dispatch latency of 0.80ms ($p < 0.0001$, Wilcoxon signed-rank test), moderate fault tolerance, and a 40.0\% reduction in idle GPU time (95\% Bootstrap CI [39.80, 40.15]). NeuralForge achieves an optimal HPO best mAP of 0.82 on COCO \cite{lin2014microsoft} with a YOLOv8n model \cite{jocher2023yolov8} (input resolution 640x640, batch size 16, 95\% CI [0.818, 0.823]). Scalability to 30 nodes is strictly a theoretical projection via M/M/c queueing models, not an empirical result.
+Scaling hyperparameter optimization (HPO) for computer vision models across heterogeneous GPU clusters introduces critical industry bottlenecks in state isolation and task routing. Current methods like Ray Tune and Kubeflow introduce significant containerization overhead, while native distributed Optuna lacks hardware isolation. We present NeuralForge, a distributed MLOps framework bridging this gap with an Invoker-Executor pattern that distributes Optuna trials across GPU worker nodes using Celery. By decoupling execution into ephemeral Docker containers, NeuralForge prevents OOM-driven host failures. Micro-benchmark simulations on a 3-node GPU cluster demonstrate median task dispatch latency of 0.80ms ($p < 0.0001$, Wilcoxon signed-rank test), moderate fault tolerance, and a 40.0\% reduction in idle GPU time (95\% Bootstrap CI [39.80, 40.15]). Under micro-benchmark simulation settings, NeuralForge achieves a simulated HPO best mAP convergence of 0.82 on COCO \cite{lin2014microsoft} with a YOLOv8n model \cite{jocher2023yolov8} (input resolution 640x640, batch size 16, 95\% CI [0.818, 0.823]). Scalability to 30 nodes is strictly a theoretical projection via M/M/c queueing models, not an empirical result.
 \end{abstract}
+
 
 
 \begin{IEEEkeywords}
@@ -85,7 +86,8 @@ Distributed Stack & Celery 5.3.4, Optuna 3.3.0, PostgreSQL 15.4, Redis 7.2.1 \\
 
 \section{Results and Discussion}
 \subsection{Performance Metrics and SoA Comparison}
-Evaluated via simulated micro-benchmarks over a run of N=1000 dispatch events (fixed seed 42) representing different data initialization conditions, NeuralForge achieved a median task dispatch latency of 0.80ms (IQR of 0.07ms), significantly outperforming Ray Tune (12.4ms) and Kubeflow (450ms) ($p < 0.0001$, Wilcoxon signed-rank test). Idle GPU time was reduced by 40.0\% (Bootstrap 95\% CI [39.80, 40.15]). In terms of HPO quality (Best mAP@50-95 on COCO), NeuralForge and Optuna-Native converged to 0.82 $\pm$ 0.01 (95\% CI [0.818, 0.823]).
+Evaluated via simulated micro-benchmarks over a run of N=1000 dispatch events (fixed seed 42) representing different data initialization conditions, NeuralForge achieved a median task dispatch latency of 0.80ms (IQR of 0.07ms), significantly outperforming Ray Tune (12.4ms) and Kubeflow (450ms) ($p < 0.0001$, Wilcoxon signed-rank test). Idle GPU time was reduced by 40.0\% (Bootstrap 95\% CI [39.80, 40.15]). In terms of HPO quality under our simulation model (Best mAP@50-95 on COCO), NeuralForge and Optuna-Native converged to a simulated median of 0.82 $\pm$ 0.01 (95\% CI [0.818, 0.823]).
+
 
 \begin{table}[htbp]
 \centering
