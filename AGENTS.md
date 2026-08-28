@@ -61,28 +61,35 @@ The goal is to publish top-tier papers indexed by IEEE to build an undeniable ac
 3. **Verdict Processing & Response Matrix:** The AI agent reads `IEEE_REVIEW_VERDICT.md`, builds a point-by-point Response Matrix, executes all required fixes using empirical cluster data, recompiles, and resubmits.
 4. **Final Acceptance:** The loop continues until the reviewer awards `STATUS: APPROVED` in `WORKFLOW_STATE.md`.
 
-### 2. Complete Paper Portfolio
-- **Normal Papers (Engineering & Architecture):**
-  - `paper_1_mlops` (NeuralForge Distributed MLOps) - *APPROVED*
-  - `paper_2_invoker_executor` (Invoker-Executor Fault Isolation) - *APPROVED*
-  - `paper_3_xai` (Automated XAI & Quantitative Fidelity) - *IN_REVIEW*
-  - `paper_4_robustness` (Adversarial Robustness & Noise) - *APPROVED*
-  - `paper_5_crossdomain` (FID-based Domain Shift Detection) - *APPROVED*
-  - `paper_6_statistical` (Bootstrap Rigor & Failure Taxonomies) - *APPROVED*
-  - `paper_7_llm_reporting` (LLM-Assisted Automated Reporting) - *APPROVED*
-  - `paper_8_wpipe` (WPipe Declarative Forensic Engine) - *APPROVED*
-  - `paper_9_hardware_complexity` (Edge Hardware Complexity Profiling) - *APPROVED*
-  - `paper_10_outlier_failure_analysis` (Hard-Negative Mining & Outliers) - *IN_REVIEW*
-  - `paper_11_noise_evaluation` (Sensor Degradation & Noise Evaluation) - *DRAFT*
-- **R&D Papers (Frontier Research):**
-  - `paper_c_domain_shift_prediction` (FID + Scene Complexity Predictor) - *READY FOR REVIEW*
-  - `paper_d_autonomous_evaluation` (Autonomous XAI & Robustness Framework) - *READY FOR REVIEW*
-  - `paper_1_agentic_mlops` (MCP-Driven Cluster Orchestration) - *ADVANCED DRAFT*
-  - `paper_2_automated_xai` (Integrated EDA & Reporting Pipeline) - *ADVANCED DRAFT*
-  - `paper_3_robustness_adversarial` (Adversarial Defenses) - *DRAFT*
-  - `paper_4_cross_domain_generalization` (Cross-Domain Assessment) - *ADVANCED DRAFT*
-  - `paper_5_llm_research_reporting` (Automated Scientific Narratives) - *ADVANCED DRAFT*
-  - `paper_6_decentralized_mlops` (Decentralized Multi-Cluster MLOps) - *DRAFT*
-  - `paper_7_autonomous_evaluation_xai` (Unified Autonomous XAI) - *DRAFT*
+### 2. Complete Paper Portfolio & 7-Phase Execution Order
+When executing the full portfolio review/publication loop, papers follow a strict 7-phase dependency order:
+- **Phase 1: Foundation & MLOps Infrastructure**
+  - `paper_1_mlops` (NeuralForge Distributed MLOps)
+  - `paper_2_invoker_executor` (Invoker-Executor Fault Isolation)
+  - `paper_8_wpipe` (WPipe Declarative Forensic Engine)
+- **Phase 2: Data-Centric AI & Edge Hardware Profiling**
+  - `paper_10_outlier_failure_analysis` (Hard-Negative Mining & Outlier Analysis)
+  - `paper_9_hardware_complexity` (Edge Hardware Complexity Profiling)
+- **Phase 3: Quantitative Explainable AI (XAI)**
+  - `paper_3_xai` (Automated Explainable AI & Quantitative Fidelity)
+- **Phase 4: Robustness, Noise & Statistical Rigor**
+  - `paper_4_robustness` (Adversarial Robustness & Uncertainty Estimation)
+  - `paper_11_noise_evaluation` (Sensor Degradation & Noise Evaluation)
+  - `paper_6_statistical` (Bootstrap 95% CI Rigor & Failure Taxonomies)
+- **Phase 5: Cross-Domain Generalization**
+  - `paper_5_crossdomain` (FID-Based Domain Shift Quantification)
+- **Phase 6: Agentic MLOps & LLM Research Reporting**
+  - `paper_7_llm_reporting` (LLM-Assisted Automated Reporting)
+  - `paper_1_agentic_mlops` (MCP-Driven Cluster Orchestration)
+  - `paper_2_automated_xai` (Integrated EDA & Reporting Pipeline)
+  - `paper_4_cross_domain_generalization` (Cross-Domain Assessment)
+  - `paper_5_llm_research_reporting` (Automated Scientific Narratives)
+- **Phase 7: Consolidated High-Density Frontier Publications (R&D Master Papers)**
+  - `paper_c_domain_shift_prediction` (FID + Scene Complexity Predictor)
+  - `paper_d_autonomous_evaluation` (Autonomous XAI & Robustness Framework)
+
+### 3. Inter-Phase Execution Cadence Rule
+- **Mandatory 1-Hour Phase Pause:** After all papers in a given phase have been drafted, reviewed, corrected, and approved (`STATUS: APPROVED`), the agent MUST pause and wait for exactly **1 hour (3600 seconds)** before starting work on the next phase. Use the `schedule` tool with `DurationSeconds=3600` to schedule the transition timer.
+
 
 
