@@ -64,13 +64,13 @@ The framework includes three layers (\Cref{fig:arch}):
 
 
 \section{Experimental Setup}
-Simulated micro-benchmark measurements were captured on a cluster of N=3 GPU nodes. To separate empirical data from theoretical limits, the 30-node scalability claim is strictly projected via analytical queueing theory models (M/M/c), not empirical validation. We compare against real implementations of Ray Tune (TorchTrainer, \texttt{resources\_per\_trial=\{"gpu": 1\}}, \texttt{--memory=16g --shm-size=8g}), Kubeflow (PyTorchJob, \texttt{resources.limits.memory: 16Gi}, \texttt{shared-memory: 8Gi}), and Optuna distributed (RDBStorage multi-worker). Hardware is detailed in \Cref{tab:specs}.
+Simulated micro-benchmark measurements are modeled using parameters derived from a 3-node GPU cluster. To separate projected simulation data from theoretical scaling limits, the 30-node scalability claim is strictly projected via analytical queueing theory models (M/M/c). We compare against simulated baselines modeled after Ray Tune (TorchTrainer, \texttt{resources\_per\_trial=\{"gpu": 1\}}, \texttt{--memory=16g --shm-size=8g}), Kubeflow (PyTorchJob, \texttt{resources.limits.memory: 16Gi}, \texttt{shared-memory: 8Gi}), and Optuna distributed (RDBStorage multi-worker), initialized with seed 42. Hardware parameters are detailed in \Cref{tab:specs}.
 
 \begin{table}[htbp]
 \centering
 \caption{Software \& Hardware Environment}
 \label{tab:specs}
-\resizebox{\columnwidth}{!}{
+\small
 \begin{tabular}{@{}ll@{}}
 \toprule
 \textbf{Component} & \textbf{Specification} \\
@@ -83,8 +83,8 @@ ML Frameworks & PyTorch 2.1.0, CUDA 11.8, cuDNN 8.7, Ultralytics YOLO 8.0 \\
 Distributed Stack & Celery 5.3.4, Optuna 3.3.0, PostgreSQL 15.4, Redis 7.2.1 \\
 \bottomrule
 \end{tabular}
-}
 \end{table}
+
 
 \section{Results and Discussion}
 \subsection{Performance Metrics and SoA Comparison}
