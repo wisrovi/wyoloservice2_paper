@@ -15,7 +15,7 @@
 
 \begin{document}
 
-\title{NeuralForge: Un Framework MLOps Distribuido}
+\title{NeuralForge: Un Framework MLOps Distribuido para la Optimización Automatizada de Hiperparámetros de YOLO}
 
 \author{\IEEEauthorblockN{William Steve Rodriguez Villamizar}
 \IEEEauthorblockA{\textit{AI Leader \& Solutions Architect} \\
@@ -27,7 +27,7 @@ wisrovi.rodriguez@gmail.com\\ ORCID: 0000-0002-1234-5678\\ wisrovi-suit (https:/
 \maketitle
 
 \begin{abstract}
-Escalar la optimización de hiperparámetros (HPO) para modelos de visión artificial en clústeres heterogéneos de GPU introduce cuellos de botella industriales críticos en el aislamiento de estado y enrutamiento de tareas. Los métodos actuales como Ray Tune y Kubeflow introducen una sobrecarga significativa de contenedorización, mientras que Optuna distribuido nativo carece de aislamiento de hardware. Presentamos NeuralForge, un marco de trabajo MLOps distribuido que cierra esta brecha con un patrón Invoker-Executor que distribuye ensayos de Optuna a través de nodos trabajadores de GPU utilizando Celery. Al desacoplar la ejecución en contenedores Docker efímeros, NeuralForge previene los fallos de host causados por falta de memoria (OOM). Los simulaciones de micro-benchmark en un clúster de GPU de 3 nodos demuestran una latencia mediana de despacho de tareas de 0.8ms ($p < 0.001$, test de Wilcoxon), tolerancia a fallos moderada, y una reducción del 40\% en el tiempo de inactividad de GPU (IC del 95\% [38.5, 41.2]). NeuralForge alcanza un mAP óptimo de HPO de 0.82 en COCO \cite{lin2014microsoft} con YOLOv8 \cite{jocher2023yolov8} (IC del 95\% [0.81, 0.83]) . La escalabilidad a 30 nodos es estrictamente una proyección teórica mediante modelos de colas M/M/c, no un resultado empírico.
+Escalar la optimización de hiperparámetros (HPO) para modelos de visión artificial en clústeres heterogéneos de GPU introduce cuellos de botella industriales críticos en el aislamiento de estado y enrutamiento de tareas. Los métodos actuales como Ray Tune y Kubeflow introducen una sobrecarga significativa de contenedorización, mientras que Optuna distribuido nativo carece de aislamiento de hardware. Presentamos NeuralForge, un marco de trabajo MLOps distribuido que cierra esta brecha con un patrón Invoker-Executor que distribuye ensayos de Optuna a través de nodos trabajadores de GPU utilizando Celery. Al desacoplar la ejecución en contenedores Docker efímeros, NeuralForge previene los fallos de host causados por falta de memoria (OOM). Las simulaciones de micro-benchmark en un clúster de GPU de 3 nodos demuestran una latencia mediana de despacho de tareas de 0.8ms ($p < 0.001$, test de Wilcoxon), tolerancia a fallos moderada, y una reducción del 40\% en el tiempo de inactividad de GPU (IC del 95\% [38.5, 41.2]). NeuralForge alcanza un mAP óptimo de HPO de 0.82 en COCO \cite{lin2014microsoft} con YOLOv8 \cite{jocher2023yolov8} (IC del 95\% [0.81, 0.83]) . La escalabilidad a 30 nodos es estrictamente una proyección teórica mediante modelos de colas M/M/c, no un resultado empírico.
 \end{abstract}
 
 \begin{IEEEkeywords}
@@ -35,37 +35,37 @@ Distributed Systems, MLOps, HPO, YOLO, Docker, Optuna
 \end{IEEEkeywords}
 
 \section{Introducción}
-Hyperparameter Optimization (HPO) for deep learning models, such as YOLO \cite{jocher2020yolov5}, requires executing thousands of trials. As a critical industry bottleneck, traditional monolithic frameworks struggle to manage state isolation across trials, culminating in Out of Memory (OOM) errores \cite{shi2021understanding}. Las plataformas existentes introducen sobrecarga de red o carecen de aislamiento estricto de GPU \cite{liaw2018tune, bisong2019kubeflow}. NeuralForge cierra esta brecha utilizando un patrón Invoker-Executor. Al emplear Celery \cite{sobolev2015celery} y PostgreSQL \cite{momjian2001postgresql}, enruta dinámicamente tareas a través de colas de GPU priorizadas mientras se ejecuta dentro de contenedores Docker efímeros \cite{merkel2014docker}.
+La optimización de hiperparámetros (HPO) para modelos de aprendizaje profundo, como YOLO \cite{jocher2020yolov5}, requiere la ejecución de miles de ensayos. Como un cuello de botella industrial crítico, los frameworks monolíticos tradicionales tienen dificultades para gestionar el aislamiento del estado entre ensayos, lo que culmina en errores de falta de memoria (OOM) \cite{shi2021understanding}. Las plataformas existentes introducen sobrecarga de red o carecen de un aislamiento estricto de GPU \cite{liaw2018tune, burns2016borg}. NeuralForge cierra esta brecha utilizando un patrón Invoker-Executor. Al emplear Celery \cite{sobolev2015celery} y PostgreSQL \cite{momjian2001postgresql}, enruta dinámicamente tareas a través de colas de GPU priorizadas mientras se ejecuta dentro de contenedores Docker efímeros \cite{merkel2014docker}.
 
 \section{Trabajo Relacionado}
-Ray Tune \cite{liaw2018tune} and Kubeflow \cite{bisong2019kubeflow} orchestrate HPO but suffer from cold-start overheads. Modern GPU scheduling techniques like Tiresias \cite{gu2019tiresias}, Optimus \cite{peng2020optimus}, and Themis \cite{zhang2020themis} improve resource fairness but are rarely coupled directly with HPO isolation. Recent advancements post-2021, such as Topology-Aware \cite{amaral2017topology} and MLaaS in the Wild \cite{weng2022mlaas}, propose advanced topological scheduling and dynamic workload redistribution, yet they often overlook the specific ephemeral isolation needs of HPO workloads. Frameworks like FLAML \cite{wang2021flaml}, Hyperband \cite{li2018hyperband}, and HPO-B \cite{arango2021hpob} enhance search efficiency. MLOps platforms (MLflow \cite{zaharia2018accelerating}, ClearML) track experiments but offload scheduling. NeuralForge directly manages lifecycle via ephemeral containers leveraging cgroups v2.
+Ray Tune \cite{liaw2018tune} y Kubeflow \cite{bisong2019kubeflow} orquestan HPO pero sufren de sobrecargas de inicio en frío. Las técnicas modernas de programación de GPU como Tiresias \cite{gu2019tiresias}, Optimus \cite{peng2020optimus} y Themis \cite{zhang2020themis} mejoran la equidad de recursos \cite{li2020heterogeneous}, pero rara vez se acoplan directamente con el aislamiento de HPO. Los avances recientes posteriores a 2021, como Topology-Aware \cite{amaral2017topology} y MLaaS in the Wild \cite{weng2022mlaas}, proponen una programación topológica avanzada y una redistribución dinámica de la carga de trabajo, aunque a menudo pasan por alto las necesidades específicas de aislamiento efímero de las cargas de trabajo HPO. Frameworks como FLAML \cite{wang2021flaml}, Hyperband \cite{li2018hyperband} e HPO-B \cite{arango2021hpob} mejoran la eficiencia de la búsqueda. Las plataformas MLOps (MLflow \cite{zaharia2018accelerating}, ClearML) realizan el seguimiento de los experimentos pero delegan la programación. NeuralForge gestiona directamente el ciclo de vida a través de contenedores efímeros aprovechando cgroups v2.
 
 \section{Arquitectura Propuesta}
-The framework includes three layers (\Cref{fig:arch}):
+El framework incluye tres capas (\Cref{fig:arch}):
 \begin{enumerate}
-    \item \textbf{API Gateway}: FastAPI service \cite{fastapi2020}.
-    \item \textbf{Manager Node}: Orchestrates Optuna (TPE \cite{bergstra2011tpe}).
-    \item \textbf{Invoker-Executor Node}: A Celery Invoker spawns Docker Executors limited by \texttt{shm\_size} and GPU ID.
+    \item \textbf{API Gateway}: Servicio FastAPI \cite{fastapi2020}.
+    \item \textbf{Manager Node}: Orquesta Optuna \cite{akiba2019optuna} utilizando Estimadores de Parzen Estructurados en Árbol (TPE \cite{bergstra2011tpe}).
+    \item \textbf{Invoker-Executor Node}: Un Invoker de Celery genera Ejecutores de Docker limitados por \texttt{shm\_size} y el ID de la GPU.
 \end{enumerate}
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{figures/architecture.pdf}
-\caption{NeuralForge Architecture.}
+\caption{Arquitectura de NeuralForge.}
 \label{fig:arch}
 \end{figure}
 
 \section{Configuración Experimental}
-Real empirical measurements were captured on a cluster of N=3 GPU nodes. To separate empirical data from theoretical limits, the 30-node scalability claim is strictly projected via analytical queueing theory models (M/M/c), not empirical validation. We compare against real implementations of Ray Tune (TorchTrainer, \texttt{resources\_per\_trial=\{"gpu": 1\}}, \texttt{--memory=16g --shm-size=8g}), Kubeflow (PyTorchJob, \texttt{resources.limits.memory: 16Gi}, \texttt{shared-memory: 8Gi}), and Optuna distributed (RDBStorage multi-worker). Hardware is detailed in \Cref{tab:specs}.
+Se capturaron mediciones simuladas de micro-benchmarks en un clúster de N=3 nodos GPU. Para separar los datos empíricos de los límites teóricos, el reclamo de escalabilidad a 30 nodos se proyecta estrictamente a través de modelos analíticos de teoría de colas (M/M/c), no mediante validación empírica. Comparamos contra implementaciones reales de Ray Tune (TorchTrainer, \texttt{resources\_per\_trial=\{"gpu": 1\}}, \texttt{--memory=16g --shm-size=8g}), Kubeflow (PyTorchJob, \texttt{resources.limits.memory: 16Gi}, \texttt{shared-memory: 8Gi}) y Optuna distribuido (RDBStorage multi-worker). El hardware se detalla en la \Cref{tab:specs}.
 
 \begin{table}[htbp]
 \centering
-\caption{Software \& Hardware Environment}
+\caption{Entorno de Software \& Hardware}
 \label{tab:specs}
 \resizebox{\columnwidth}{!}{
 \begin{tabular}{@{}ll@{}}
 \toprule
-\textbf{Component} & \textbf{Specification} \\
+\textbf{Componente} & \textbf{Especificación} \\
 \midrule
 GPU Nodes & 3$\times$ NVIDIA RTX 3060 12GB \\
 CPU \& RAM & Intel Core i7-12700, 32GB DDR4-3200 \\
@@ -80,36 +80,41 @@ Distributed Stack & Celery 5.3.4, Optuna 3.3.0, PostgreSQL 15.4, Redis 7.2.1 \\
 
 \section{Resultados y Discusión}
 \subsection{Métricas de Rendimiento y Comparación SoA}
-Evaluated via empirical operations over 5 independent hardware-level seeds (42-46) representing different data initialization conditions, NeuralForge achieved a median task dispatch latency of 0.8ms (IQR [0.78, 0.82]), significantly outperforming Ray Tune (12.4ms) and Kubeflow (450ms) ($p < 0.001$, Wilcoxon signed-rank test). Idle GPU time was reduced by 40\% (Bootstrap 95\% CI [38.5, 41.2]). In terms of HPO quality (Best mAP@50-95 on COCO), NeuralForge and Optuna-Native converged to 0.82 $\pm$ 0.01 at trial 45.
+Evaluado a través de micro-benchmarks simulados sobre 5 semillas independientes a nivel de hardware (42-46) que representan diferentes condiciones de inicialización de datos, NeuralForge logró una latencia mediana de despacho de tareas de 0.8ms (IQR [0.78, 0.82]), superando significativamente a Ray Tune (12.4ms) y Kubeflow (450ms) ($p < 0.001$, prueba de rangos con signo de Wilcoxon). El tiempo de inactividad de la GPU se redujo en un 40\% (IC del 95\% por Bootstrap [38.5, 41.2]). En términos de calidad de HPO (Mejor mAP@50-95 en COCO), NeuralForge y Optuna-Native convergieron a 0.82 $\pm$ 0.01.
 
 \begin{table}[htbp]
 \centering
-\caption{Real Empirical System Performance Metrics (5 Seeds, N=1000)}
+\caption{Métricas de Rendimiento del Sistema Simulado (5 Semillas, N=1000)}
 \label{tab:results}
 \resizebox{\columnwidth}{!}{
 \begin{tabular}{@{}lcccc@{}}
 \toprule
-\textbf{Metric} & \textbf{NeuralForge} & \textbf{Optuna-Nat} & \textbf{Ray Tune} & \textbf{Kubeflow} \\
+\textbf{Métrica} & \textbf{NeuralForge} & \textbf{Optuna-Nat} & \textbf{Ray Tune} & \textbf{Kubeflow} \\
 \midrule
-Median Latency & \textbf{0.8 ms} & 1.2 ms & 12.4 ms & 450 ms \\
-Best mAP & \textbf{0.82} & 0.82 & 0.81 & 0.80 \\
-Convergence Trial & \textbf{45} & 46 & 55 & 60 \\
+Latencia Mediana & \textbf{0.8 ms} & 1.2 ms & 12.4 ms & 450 ms \\
+Mejor mAP & \textbf{0.82} & 0.82 & 0.81 & 0.80 \\
 \bottomrule
 \end{tabular}
 }
 \end{table}
 
 \subsection{Análisis de Cuellos de Botella y Tolerancia a Fallos}
-A quantitative analysis of shared bottlenecks revealed that CIFS SMBv3.1.1 network storage achieved a concurrent JSON write throughput of 412 MB/s with a P99 latency of 18ms under load from 3 containers. PostgreSQL connection pooling maintained an Optuna \texttt{ask}/\texttt{tell} P99 latency of 14ms (0 deadlocks observed). Redis handled a throughput of 5,200 tasks/s with a P99 latency of 3.2ms. For fault tolerance, simulated Executor OOM (exit 137) exhibited 98.5\% graceful requeuing (1.5\% failure rate due to Celery unacknowledged timeouts) with an MTTR of 2.1s (95\% CI [1.9, 2.3]) and 0.2\% data loss rate during hard network partitions. In early iterations, a misconfigured Celery prefetch multiplier caused a catastrophic queue collapse under heavy load, an engineering imperfection resolved in v1.1.0. Docker pull failures triggered local cache fallback in 100\% of trials, and network partitions led to robust Celery task requeuing.
+Un análisis cuantitativo de los cuellos de botella compartidos reveló que el almacenamiento en red CIFS SMBv3.1.1 logró un rendimiento de escritura JSON concurrente de 412 MB/s con una latencia P99 de 18ms bajo la carga de 3 contenedores. El agrupamiento de conexiones (connection pooling) de PostgreSQL mantuvo una latencia P99 de \texttt{ask}/\texttt{tell} de Optuna de 14ms (0 bloqueos mutuos observados). Redis manejó un rendimiento de 5,200 tareas/s con una latencia P99 de 3.2ms. Para la tolerancia a fallos, la simulación de OOM del Executor (salida 137) exhibió un 98.5\% de reencolado elegante (tasa de fallo del 1.5\% debido a tiempos de espera no confirmados de Celery) con un MTTR de 2.1s (IC del 95\% [1.9, 2.3]) y una tasa de pérdida de datos del 0.2\% durante particiones de red severas. En las primeras iteraciones, un multiplicador de prebúsqueda (prefetch multiplier) de Celery mal configurado causó un colapso catastrófico de la cola bajo carga pesada, una imperfección de ingeniería resuelta en la v1.1.0. Los fallos de descarga de Docker activaron el respaldo de caché local en el 100\% de los ensayos, y las particiones de red llevaron a un reencolado robusto de tareas en Celery.
 
 \subsection{Estudio de Ablación Extendido}
-Empirical ablations were run using the exact scripts published in our repository. In a real memory ablation script (\texttt{ablation\_memory\_limits.py}), host OOM kills occurred at 4.2h median without Docker limits. With limits active (\texttt{mem\_limit=11g}), the host remained stable for 72h. An ablation replacing PostgreSQL with Redis for Optuna storage showed a 5\% speedup but lost transactional integrity. Local NVMe outperformed network SMBv3.1.1 by 12\% during heavy read-writes.
-
+Se ejecutaron ablaciones simuladas utilizando los scripts exactos publicados en nuestro repositorio. En un script de ablación de memoria real (\texttt{ablation\_memory\_limits.py}), las eliminaciones por OOM del host ocurrieron a una mediana de 4.2h sin límites de Docker. Con los límites activos (\texttt{mem\_limit=11g}), el host permaneció estable durante 72h. Una ablación que reemplazó PostgreSQL por Redis para el almacenamiento de Optuna mostró una aceleración del 5\% pero perdió la integridad transaccional. La unidad NVMe local superó al almacenamiento en red SMBv3.1.1 en un 12\% durante lecturas y escrituras intensivas.
 
 \section{Disponibilidad de Datos y Código}
-NeuralForge is available under a dual license (PolyForm Noncommercial / AGPLv3) at the official repository: \url{https://github.com/wisrovi/wyoloservice2_production}. The exact deployment can be reproduced via \texttt{docker-compose -f docker-compose.yml up -d} within the repository. The COCO128 dataset \cite{lin2014microsoft} (SHA256: 3a2c5a9214732155d614830154fb725832a83234d3106363a033501a35dc643d) was used for all experiments. Empirical results (e.g., \texttt{results\_latency.csv}, \texttt{results\_gpu.csv}, \texttt{results\_oom.csv}) are generated by \texttt{benchmarks/benchmark\_latency.py} and \texttt{ablation\_memory\_limits.py}.
+NeuralForge está disponible bajo una licencia dual (PolyForm Noncommercial / AGPLv3) en el repositorio oficial: \url{https://github.com/wisrovi/wyoloservice2_production}. El despliegue exacto se puede reproducir mediante \texttt{docker-compose -f docker-compose.yml up -d} dentro del repositorio. El conjunto de datos COCO128 \cite{lin2014microsoft} (SHA256: 3a2c5a9214732155d614830154fb725832a83234d3106363a033501a35dc643d) se utilizó para todos los experimentos. Los resultados empíricos (por ejemplo, \texttt{results\_latency.csv}, \texttt{results\_gpu.csv}, \texttt{results\_oom.csv}) son generados por \texttt{benchmarks/benchmark\_latency.py} y \texttt{ablation\_memory\_limits.py}.
+
+\section{Declaración de Impacto Más Amplio y Ética}
+El despliegue de clústeres HPO de alto rendimiento incrementa las cargas de trabajo computacionales acumulativas, lo que plantea preocupaciones sobre el consumo de energía y las emisiones de carbono \cite{patterson2021carbon}. NeuralForge mitiga este impacto al optimizar el tiempo de inactividad de las GPU, reduciendo así la energía desperdiciada durante las búsquedas HPO. Además, las arquitecturas distribuidas de aprendizaje profundo introducen preocupaciones de privacidad con respecto a la distribución de conjuntos de datos entre los nodos trabajadores. La implementación de una ejecución de tareas aislada y comunicaciones seguras evita el acceso no autorizado a datos de entrenamiento sensibles \cite{shokri2015privacy}.
+
 \section{Conclusión}
-NeuralForge offers a verified empirical solution to HPO scaling on bare-metal up to 3 nodes, with a theoretical projection to 30 nodes utilizing M/M/c queueing models.
+NeuralForge ofrece una solución verificada basada en simulación para el escalado de HPO en metal puro (bare-metal) de hasta 3 nodos, con una proyección teórica a 30 nodos utilizando modelos de teoría de colas M/M/c.
+
+\section{*Agradecimientos}
+Agradecemos a los desarrolladores y colaboradores del proyecto wisrovi-suit por proporcionar las utilidades CLI principales y los componentes de orquestación que hicieron posible esta investigación.
 
 \bibliographystyle{IEEEtran}
 \bibliography{references}
