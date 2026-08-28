@@ -53,5 +53,7 @@ def tex_to_md(tex_file, md_file):
     with open(md_file, 'w') as f:
         f.write(content.strip())
 
-tex_to_md('/home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/normal_papers/paper_1_mlops/en/main.tex', '/home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/normal_papers/paper_1_mlops/en/main.md')
-tex_to_md('/home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/normal_papers/paper_1_mlops/es/main.tex', '/home/william.rodriguez/Documents/w_libraries/train_service2/wyoloservice2_paper/normal_papers/paper_1_mlops/es/main.md')
+script_dir = os.path.dirname(os.path.abspath(__file__))
+tex_to_md(os.path.join(script_dir, 'en/main.tex'), os.path.join(script_dir, 'en/main.md'))
+tex_to_md(os.path.join(script_dir, 'es/main.tex'), os.path.join(script_dir, 'es/main.md'))
+
