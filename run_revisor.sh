@@ -34,5 +34,6 @@ echo "=================================================="
 echo " Ejecutando Revisor IEEE para: $PAPER_NAME"
 echo "=================================================="
 
-opencode run -m opencode/deepseek-v4-flash-free "$(cat "$tmp")"
+opencode run "$(cat "$tmp")"
 rm -f "$tmp"
+
