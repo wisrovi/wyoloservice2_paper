@@ -88,7 +88,7 @@ Distributed Stack & Celery 5.3.4, Optuna 3.3.0, PostgreSQL 15.4, Redis 7.2.1 \\
 
 \section{Results and Discussion}
 \subsection{Performance Metrics and SoA Comparison}
-Evaluated via simulated micro-benchmarks over a run of N=1000 dispatch events (fixed seed 42) representing different data initialization conditions, NeuralForge achieved a median task dispatch latency of 0.80ms (IQR of 0.07ms), significantly outperforming Ray Tune (12.4ms) and Kubeflow (450ms) ($p < 0.0001$, Wilcoxon signed-rank test). Idle GPU time was reduced by 40.1\% (Bootstrap 95\% CI [39.88, 40.23]). In terms of HPO quality under our simulation model (Best mAP@50-95 on COCO), NeuralForge and Optuna-Native converged to a simulated median of 0.82 $\pm$ 0.01 (95\% CI [0.819, 0.822]).
+Evaluated via simulated micro-benchmarks over a run of N=1000 dispatch events (fixed seed 42) representing different data initialization conditions, NeuralForge achieved a median task dispatch latency of 0.80ms (IQR of 0.07ms), significantly outperforming Ray Tune (12.3ms) and Kubeflow (450ms) ($p < 0.0001$, Wilcoxon signed-rank test). Idle GPU time was reduced by 40.1\% (Bootstrap 95\% CI [39.88, 40.23]). In terms of HPO quality under our simulation model (Best mAP@50-95 on COCO), NeuralForge and Optuna-Native converged to a simulated median of 0.82 $\pm$ 0.01 (95\% CI [0.819, 0.822]).
 
 
 
@@ -96,17 +96,16 @@ Evaluated via simulated micro-benchmarks over a run of N=1000 dispatch events (f
 \centering
 \caption{Simulated System Performance Metrics (single run, N=1000)}
 \label{tab:results}
-\resizebox{\columnwidth}{!}{
+\small
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 \textbf{Metric} & \textbf{NeuralForge} & \textbf{Optuna-Nat} & \textbf{Ray Tune} & \textbf{Kubeflow} \\
 \midrule
-Median Latency & \textbf{0.80 ms} & 1.2 ms & 12.4 ms & 450 ms \\
+Median Latency & \textbf{0.80 ms} & 1.2 ms & 12.3 ms & 450 ms \\
 Best mAP & \textbf{0.82} & 0.82 & 0.81 & 0.80 \\
 
 \bottomrule
 \end{tabular}
-}
 \end{table}
 
 
