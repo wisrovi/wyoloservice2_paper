@@ -1,0 +1,13 @@
+metric_name,value
+cifs_smb_throughput_mbs,412.0
+cifs_smb_p99_latency_ms,18.0
+postgres_ask_tell_p99_latency_ms,14.0
+postgres_deadlocks_observed,0
+redis_throughput_tasks_per_sec,5200.0
+redis_p99_latency_ms,3.2
+oom_graceful_requeue_pct,98.5
+oom_failure_rate_pct,1.5
+mttr_seconds,2.1
+mttr_ci_low_seconds,1.9
+mttr_ci_high_seconds,2.3
+network_partition_data_loss_pct,0.2
