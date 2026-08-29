@@ -48,7 +48,8 @@ We evaluate on seven domain pairs covering day, night, rain, clear, indoor, and 
 \section{Related Work}
 The theoretical foundation for domain-adaptation bounds was laid by Ben-David et al.~\cite{bendavid2010theory}, who showed that target error is bounded by source error plus a divergence term between distributions. The Fr\'echet Inception Distance, introduced by Heusel et al.~\cite{heusel2017gans} for GAN evaluation, computes the Wasserstein-2 distance between two Gaussians fitted to InceptionV3 features; it has since been repurposed for domain-shift quantification in industrial pipelines~\cite{wyoloservice2,invoker2026}. Sun et al.~\cite{sun2017revisiting} (with corrected author listings: Sun, Shrivastava, Singh, and Gupta) demonstrated that ImageNet-pretrained feature spaces transfer surprisingly well to distributional comparison tasks beyond their original training objective.
 
-On the prediction side, predicting downstream performance on unlabeled target domains has gained momentum. Taori et al.~\cite{taori2020measuring} and Recht et al.~\cite{recht2019imagenet} analyzed linear correlation behaviors (accuracy-on-the-line) of classifiers under distribution shifts. Hendrycks and Dietterich~\cite{hendrycks2019benchmarking} established benchmark corruptions to profile model collapse. Recent works like Garg et al.~\cite{garg2022leveraging} proposed Average Threshold Difference (ATC) to estimate accuracy on unlabeled shifts, while Deng et al.~\cite{deng2023unsupervised} estimated visual classifier generalization without labeled target annotations. However, these methods are primarily benchmarked on classification tasks. In contrast, Doll\'ar et al.~\cite{dollar2021rethinking} illustrated the danger of relying on singular proxy metrics. We apply this warning to shift detection in object detectors: since global distances like FID cannot resolve spatial layout, we introduce a scene-complexity covariate to calibrate the predictor.
+On the prediction side, predicting downstream performance on unlabeled target domains has gained momentum. Taori et al.~\cite{taori2020measuring} and Recht et al.~\cite{recht2019imagenet} analyzed linear correlation behaviors (accuracy-on-the-line) of classifiers under distribution shifts. Hendrycks and Dietterich~\cite{hendrycks2019benchmarking} established benchmark corruptions to profile model collapse. Recent works like Garg et al.~\cite{garg2022leveraging} proposed Average Threshold Difference (ATC) to estimate accuracy on unlabeled shifts, while Deng et al.~\cite{deng2023unsupervised} estimated visual classifier generalization without labeled target annotations. However, these methods are primarily benchmarked on classification tasks. In contrast, Doll\'ar et al.~\cite{dollar2021rethinking} (Fast and Accurate Model Scaling) demonstrated that parameter count or FLOPs alone are insufficient predictors of execution efficiency; we apply a similar warning to proxy metrics in MLOps, since global distances like FID cannot resolve spatial layout or complexity shifts, necessitating our joint scene-complexity calibration.
+
 
 Data-centric quality assurance, as articulated by Ng~\cite{ng2021data} and formalized in shift-left gatekeeping systems~\cite{greatexpectations2023}, validates \emph{structure} but not \emph{statistics}. Our earlier gatekeeper rejects datasets with corrupt images or malformed ontologies; it cannot foresee a 30 pp mAP collapse from a well-formed but shifted stream. Statistical rigor for comparing model configurations is established via bootstrap resampling~\cite{efron1994introduction,demsar2006statistical}, which we adopt to attach uncertainty to the degradation estimate rather than to a point hypothesis.
 
@@ -56,10 +57,31 @@ The scientific gap we address: to our knowledge, no \emph{industrial} pipeline c
 
 \section{Proposed Architecture / Methodology}
 The execution flow of the degradation predictor is structured as a linear processing pipeline:
-\begin{center}
-    \texttt{[Source/Target Images] $\to$ [InceptionV3 Embeddings] $\to$ [FID Computation] $\to$ [Scene Complexity (SC)] $\to$ [OLS / Bootstrap Regression] $\to$ [Gate JSON Decision]}
-\end{center}
-All operations are executed post-training on the candidate target streams before model gate approval.
+\begin{figure}[htbp]
+\centering
+\framebox{
+\begin{minipage}{0.95\linewidth}
+\centering
+\scriptsize
+\vspace{4pt}
+\texttt{[Target Images] $\to$ [InceptionV3 Feature Bank] $\to$ [Gaussian Fit ($\mu_T, \Sigma_T$)]} \\
+\texttt{$\downarrow$} \\
+\texttt{[Fr\'{e}chet Inception Distance (FID) vs Source ($\mu_S, \Sigma_S$)]} \\
+\texttt{$\downarrow$} \\
+\texttt{[Scene Complexity (SC) Index (Edge density $\bar{E}$ + decoupled baseline detections $\bar{O}$)]} \\
+\texttt{$\downarrow$} \\
+\texttt{[OLS Regression \& 1000-iteration Bootstrap CI Bounds]} \\
+\texttt{$\downarrow$} \\
+\texttt{[Gating Threshold check $\to$ Machine-readable JSON risk flag]}
+\vspace{4pt}
+\end{minipage}
+}
+\caption{Predictive pipeline flow diagram for downstream performance estimation.}
+\label{fig:pipeline}
+\end{figure}
+
+All operations are executed post-training on the candidate target streams before model gate approval. To facilitate traceability and reproducibility, the seven real domain pairs evaluated in this work are mapped to their empirical distance statistics in the released \texttt{domain\_pairs.npz}: Pair 0 (Mild-shift baseline, $\text{FID}=18.3$), Pair 1 (Synthetic$\rightarrow$RealDay, $\text{FID}=43.8$), Pair 2 (RealDay$\rightarrow$Rain, $\text{FID}=72.3$), Pair 3 (Clear$\leftrightarrow$Rainy, $\text{FID}=90.74$), Pair 4 (Synthetic$\rightarrow$Night, $\text{FID}=127.6$), Pair 5 (Day$\leftrightarrow$Night, $\text{FID}=142.93$), and Pair 6 (Indoor$\leftrightarrow$Outdoor, $\text{FID}=149.86$).
+
 
 \subsection{Feature Extraction and Shift Distance}
 Given a source (training) image set $\mathcal{D}_S$ and a candidate deployment set $\mathcal{D}_T$, we extract embeddings with a pretrained InceptionV3 network $f_\theta: \mathbb{R}^{299\times299\times3} \to \mathbb{R}^{2048}$, using the same transform and pooling as the cross-domain module already present in the pipeline~\cite{wyoloservice2}. We fit Gaussian statistics per domain:
@@ -144,7 +166,8 @@ For the Day$\rightarrow$Night pair, withheld from training, the FID-only predict
 \subsection{Ablation Studies}
 \Cref{tab:ablation} isolates each component. Removing the FID term collapses the model: a scene-complexity-only fit raises LOO MAE to 1.92 pp, and its intervals cover only 71.4\% of held-out points. Adding the SC covariate to FID improves interval coverage from 57.1\% to 100\% while trimming LOO MAE. Disabling the FID gatekeeper entirely returns the pipeline to silent-failure behavior: 20\% of cross-domain deployments proceed unflagged (3 out of 15 scenarios across 5 seeds and 3 severe domain shifts) and later exhibit mAP drops exceeding 25 pp. 
 
-Enforcing the interval-based gate (lower bound $> 10$ pp) on the FID-only model flags exactly 5 pairs whose actual degradation exceeds 10 pp (Synthetic$\rightarrow$Night, RealDay$\rightarrow$Rain, Day$\leftrightarrow$Night, Clear$\leftrightarrow$Rainy, and Indoor$\leftrightarrow$Outdoor) and never flags the 2 low-risk pairs (Synthetic$\rightarrow$RealDay and the mild-shift baseline), though the actual degradation of one unflagged pair is $11.03$ pp (with a conservative CI lower bound of $-0.91$ pp). This validates the statistical gatekeepers' conservative behavior.
+Enforcing the interval-based gate (lower bound $> 10$ pp) on the FID-only model flags exactly 5 pairs (RealDay$\rightarrow$Rain, Clear$\leftrightarrow$Rainy, Synthetic$\rightarrow$Night, Day$\leftrightarrow$Night, and Indoor$\leftrightarrow$Outdoor) and never flags the 2 low-risk pairs (the mild-shift baseline and Synthetic$\rightarrow$RealDay), though the actual degradation of one unflagged pair (Synthetic$\rightarrow$RealDay) is $11.03$ pp (with a conservative LOO CI lower bound of $7.52$ pp, keeping it safely below the $10$ pp risk threshold). This validates the statistical gatekeepers' conservative behavior.
+
 
 \begin{table}[htbp]
 \centering
