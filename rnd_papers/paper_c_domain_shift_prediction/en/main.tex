@@ -31,7 +31,8 @@ A YOLOv8n trained on factory-floor imagery reaches $94.2\%$ mAP$_{50}$ on its he
 
 This is the standard failure story of covariate shift, well characterized in theory~\cite{bendavid2010theory} yet almost universally ignored at deployment time. The dominant practice in MLOps is to measure in-distribution metrics, gate the model, and ship it. When the field data diverges---new lighting, weather, sensor, or geography---the model fails silently, and the operator learns about it from a quality-control incident report.
 
-Existing approaches to this problem fall into two camps that rarely meet. Unsupervised domain adaptation~\cite{xu2020domain,chen2022domain} tries to \emph{repair} the model by aligning feature distributions, but requires access to the target domain during training---an assumption that fails when the deployment environment is unknown at training time. Shift-left data validation~\cite{ng2021data} catches structural corruption (missing labels, malformed YAML) but is blind to statistical divergence: a perfectly labeled nighttime dataset passes every structural check and still breaks the model.
+Existing approaches to this problem fall into two camps that rarely meet. Unsupervised domain adaptation~\cite{xu2020domain,zhang2021domain} tries to \emph{repair} the model by aligning feature distributions, but requires access to the target domain during training---an assumption that fails when the deployment environment is unknown at training time. Shift-left data validation~\cite{ng2021data} catches structural corruption (missing labels, malformed YAML) but is blind to statistical divergence: a perfectly labeled nighttime dataset passes every structural check and still breaks the model.
+
 
 What is missing is a \emph{predictor}: a function that takes a candidate deployment stream, computes cheap distribution statistics against the training distribution, and returns a calibrated estimate of the degradation the model will suffer---with a confidence interval---before the model is ever pointed at production traffic.
 
@@ -114,7 +115,8 @@ We fit the linear model on $N$ observed domain pairs:
 \begin{equation}
     \Delta mAP_i = \beta_0 + \beta_1\,\text{FID}_i + \varepsilon_i
 \end{equation}
-with ordinary least squares as the default, and optionally the two-covariate form $\Delta mAP_i = \beta_0 + \beta_1\,\text{FID}_i + \beta_2\,\text{SC}_i + \varepsilon_i$ as the conservative high-certainty variant. To assess the significance of the SC covariate, we compute the p-value of $\beta_2$ under OLS assumptions, ensuring that scene complexity adds statistically valid explanation ($p < 0.05$).
+with ordinary least squares as the default, and optionally the two-covariate form $\Delta mAP_i = \beta_0 + \beta_1\,\text{FID}_i + \beta_2\,\text{SC}_i + \varepsilon_i$ as the conservative high-certainty variant. To assess the significance of the SC covariate, we compute the p-value of $\beta_2$ under OLS assumptions to test whether scene complexity adds statistically valid explanation, noting that on small datasets like our $N=7$ set the coefficient may only be marginally significant ($p=0.0713$) due to multicollinearity but still assists in stabilizing bootstrap coverage.
+
 To attach uncertainty to a new prediction $\hat{y} = \mathbf{x}^T \hat{\beta}$, we draw $B = 1000$ bootstrap resamples of the observed pairs, refit $\hat{\beta}^{(b)}$, and take the empirical 2.5th and 97.5th percentiles of $\mathbf{x}^T \hat{\beta}^{(b)}$ as the 95\% confidence interval. We report both point estimates and interval coverage on held-out pairs.
 
 \subsection{Integration}
