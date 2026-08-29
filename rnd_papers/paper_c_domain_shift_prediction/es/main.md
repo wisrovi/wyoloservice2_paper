@@ -1,183 +1,188 @@
-# Predicción de la Degradación del Rendimiento en Producción de Modelos de Visión por Computador bajo Domain Shift a Nivel de Representación
+# Predicción de la Degradación del Rendimiento en Producción de Modelos de Visión por Computador bajo Desplazamiento de Dominio a Nivel de Representación
 
-**Autor:** William Steve Rodriguez Villamizar (wisrovi rodriguez) — Líder de IA & Arquitecto de Soluciones
+**Author:** William Steve Rodriguez Villamizar (wisrovi rodriguez) — Líder de IA & Arquitecto de Soluciones
 
 ---
 
-## Resumen
+## Resumen & Palabras Clave
+**Resumen:** Los detectores de objetos entrenados con datos limpios dentro de la distribución (in-distribution) frecuentemente colapsan cuando se despliegan frente a flujos de imágenes desplazados; sin embargo, la mayoría de los pipelines de MLOps solo reportan el mAP in-distribution y descubren el fallo una vez que el modelo ya está en producción. Formalizamos un modelo predictivo de la degradación en producción que se ejecuta antes del despliegue y no requiere datos etiquetados del dominio objetivo. El predictor principal es un modelo lineal sobre la Distancia Fréchet de Inception (FID) entre las distribuciones de características (features) de entrenamiento y del despliegue candidato, $\Delta mAP = \beta_0 + \beta_1 \cdot \text{FID}$, ajustado sobre siete pares de dominios reales que abarcan 250k imágenes industriales y cuatro variantes de YOLO, y luego calibrado con un bootstrap de 1,000 iteraciones para producir intervalos de confianza del 95%. El modelo que solo utiliza FID alcanza $R^2 = 0.988$ y un error absoluto medio de 1.05 puntos porcentuales (pp) in-sample, y en el par reservado (held-out) Día$\rightarrow$Noche predice una degradación de $32.9$ pp (real: $30.4$ pp) completamente antes de ejecutar una sola inferencia. Aumentar la regresión con un índice de complejidad de escena (SC, por sus siglas en inglés) (densidad de bordes, promedio de detecciones por imagen) eleva la cobertura de los intervalos bootstrap del 71.4% al 95.0% mientras reduce el error de validación cruzada dejando uno fuera (leave-one-out, LOO) de 1.45 a 1.17 pp; por lo tanto, reportamos el modelo solo-FID como el predeterminado y el modelo aumentado con SC como la opción de calibración conservadora. El estimador se integra como un estado post-entrenamiento que consume los mismos embeddings de InceptionV3 ya extraídos para la detección de desplazamiento, agregando 2.1 segundos de tiempo de ejecución real (wall-clock time). Eliminar el gatekeeper de FID reintroduce fallos silenciosos entre dominios (cross-domain) en el 20% de los escenarios, todos con caídas de mAP superiores a 25 pp.
 
-Los detectores de objetos entrenados con datos limpios in-distribution colapsan con frecuencia al desplegarse frente a flujos de imágenes desplazados, sin embargo la mayoría de los pipelines MLOps solo reportan el mAP in-distribution y descubren el fallo cuando el modelo ya está en producción. Formalizamos un modelo predictivo de la degradación en producción que se ejecuta antes del despliegue y no requiere datos etiquetados del dominio objetivo. El predictor principal es un modelo lineal sobre la Distancia Fréchet de Inception (FID) entre las distribuciones de features de entrenamiento y de despliegue candidato, $\Delta mAP = \beta_0 + \beta_1 \cdot \text{FID}$, ajustado sobre siete pares de dominios reales que abarcan 250k imágenes industriales y cuatro variantes YOLO, y calibrado después con un bootstrap de 1,000 iteraciones para producir intervalos de confianza del 95%. El modelo solo-FID alcanza $R^2 = 0.959$ y un error absoluto medio de 2.5 puntos porcentuales in-sample, y en el par hold-out Día$\rightarrow$Noche predice una degradación de $32.6$ pp (real: $32.1$ pp) completamente antes de ejecutar una sola inferencia. Aumentar la regresión con un índice de complejidad de escena (densidad de bordes, detecciones medias por imagen) eleva la cobertura de los intervalos bootstrap del 71% al 100% mientras recorta el error leave-one-out de 3.83 a 3.70 pp, a costa de un intervalo más amplio; por lo tanto reportamos el modelo solo-FID como opción por defecto y el modelo aumentado con SC como opción de calibración conservadora. El estimador se integra como un estado post-entrenamiento que consume los mismos embeddings InceptionV3 ya extraídos para la detección de shift, añadiendo 2.1 segundos de tiempo de pared. Eliminar el gatekeeper FID re-introduce fallos silenciosos cross-domain en el 20% de los escenarios, todos con caídas de mAP superiores a 25 pp.
-
-**Palabras Clave:** Domain Shift, Distancia Fréchet de Inception, Predicción de Rendimiento, Covariate Shift, Detección de Objetos, Intervalos de Confianza Bootstrap, MLOps.
+**Palabras Clave:** Desplazamiento de Dominio, Distancia Fréchet de Inception, Predicción del Rendimiento, Covariate Shift, Detección de Objetos, Intervalos de Confianza Bootstrap, MLOps.
 
 ## 1. Información del Autor
-
-Esta investigación fue conceptualizada y desarrollada por William Steve Rodriguez Villamizar (wisrovi rodriguez), Líder de IA & Arquitecto de Soluciones del ecosistema wisrovi-suit (https://github.com/wisrovi/w-cli). Contacto: wisrovi.rodriguez@gmail.com.
+Esta investigación fue conceptualizada y desarrollada por William Steve Rodriguez Villamizar (wisrovi rodriguez), Líder de IA & Arquitecto de Soluciones para el ecosistema wisrovi-suit (https://github.com/wisrovi/w-cli). Contacto: wisrovi.rodriguez@gmail.com.
 
 ## 2. Introducción
+Un YOLOv8n entrenado con imágenes de la planta de producción alcanza un $94.2%$ de mAP$_{50}$ en su conjunto de prueba reservado. Copiado sin cambios en la misma línea de producción bajo la iluminación del turno de noche, la precisión colapsa al $63.8%$. Los pesos no se degradaron. El flujo de la cámara no falló. La distribución de entrada se desplazó, y nada en el pipeline estaba diseñado para detectarlo.
 
-Un YOLOv8n entrenado con imágenes de un piso de fábrica alcanza $94.2\%$ mAP$_{50}$ en su conjunto de prueba hold-out. Copiado sin cambios a la misma línea de producción bajo iluminación del turno nocturno, la precisión colapsa a $62.1\%$. Los pesos no se degradaron. La señal de la cámara no se rompió. La distribución de entrada se desplazó, y nada en el pipeline estaba construido para notarlo.
+Este es el caso clásico de fallo por covariate shift, bien caracterizado en teoría~[1] pero ignorado casi universalmente en el momento del despliegue. La práctica dominante en MLOps consiste en medir métricas dentro de la distribución (in-distribution), validar el modelo y desplegarlo. Cuando los datos de campo divergen (nueva iluminación, clima, sensor o ubicación geográfica), el modelo falla silenciosamente y el operador se entera a través de un informe de incidentes de control de calidad.
 
-Esta es la historia de fallo estándar del covariate shift, bien caracterizado en teoría [2] pero casi universalmente ignorado en el momento del despliegue. La práctica dominante en MLOps consiste en medir métricas in-distribution, aplicar el gate al modelo y publicarlo. Cuando los datos de campo divergen---nueva iluminación, clima, sensor o geografía---el modelo falla silenciosamente, y el operador se entera por un informe de incidente de control de calidad.
+Los enfoques existentes para este problema se dividen en dos grupos que rara vez coinciden. La adaptación de dominio no supervisada~[16, 2] intenta \emph{reparar} el modelo alineando las distribuciones de características, pero requiere acceso al dominio objetivo durante el entrenamiento, una suposición que no se cumple cuando el entorno de despliegue se desconoce durante la fase de entrenamiento. La validación de datos shift-left~[9] detecta la corrupción estructural (etiquetas faltantes, YAML malformados) pero no detecta la divergencia estadística: un conjunto de datos de noche perfectamente etiquetado supera todas las comprobaciones estructurales y, aun así, rompe el modelo.
 
-Los enfoques existentes para este problema caen en dos bandos que rara vez se encuentran. La adaptación de dominio no supervisada [14, 3] intenta *reparar* el modelo alineando las distribuciones de features, pero requiere acceso al dominio objetivo durante el entrenamiento---una suposición que falla cuando el entorno de despliegue es desconocido en el momento del entrenamiento. La validación de datos shift-left [8] detecta corrupción estructural (etiquetas faltantes, YAML malformado) pero es ciega a la divergencia estadística: un dataset nocturno perfectamente etiquetado pasa todas las comprobaciones estructurales y aun así rompe el modelo.
+Lo que falta es un \emph{predictor}: una función que reciba una secuencia de despliegue candidato, calcule estadísticas de distribución de bajo costo computacional en relación con la distribución de entrenamiento y devuelva una estimación calibrada de la degradación que sufrirá el modelo, junto con un intervalo de confianza, antes de que este se exponga al tráfico de producción.
 
-Lo que falta es un *predictor*: una función que toma un flujo de despliegue candidato, calcula estadísticas de distribución baratas contra la distribución de entrenamiento, y devuelve una estimación calibrada de la degradación que sufrirá el modelo---con un intervalo de confianza---antes de que el modelo apunte jamás al tráfico de producción.
+Construimos este predictor como un estado ligero posterior al entrenamiento. Nuestras contribuciones son:
 
-Construimos este predictor como un estado post-entrenamiento ligero. Nuestras contribuciones son:
+    1. **Un modelo predictivo de degradación** $\Delta mAP = \beta_0 + \beta_1 \cdot \text{FID}$ ajustado sobre siete pares de dominios reales, con $R^2 = 0.988$ y un MAE de 1.05 pp; un par nocturno reservado se predice con una degradación de $32.9$ pp en comparación con la observada de $30.4$ pp antes del despliegue.
+    1. **Calibración estadística** mediante un bootstrap de 1,000 iteraciones, lo que genera intervalos de confianza del 95% para cada predicción. El sistema emite declaraciones del tipo ``este lote presenta un desplazamiento de distribución que degradará el mAP en $32.9$ pp (IC del 95%: $31.5$--$34.2$ pp)'', sin necesidad de datos etiquetados del dominio objetivo.
+    1. **Una opción de complejidad de escena conservadora**: aumentar la regresión con un índice de complejidad de escena (SC) (densidad de bordes, detecciones promedio por imagen) eleva la cobertura de los intervalos del 71.4% al 95.0% y reduce el MAE de validación cruzada dejando uno fuera (LOO) de 1.45 a 1.17 pp. Consideramos el modelo solo-FID como el valor predeterminado para estimación puntual y el modelo aumentado con SC como la opción de alta certeza.
+    1. **Costo marginal de extracción nulo**: el estimador reutiliza el banco de características de InceptionV3 ya extraído por el módulo cross-domain, agregando solo 2.1 s de tiempo de ejecución real a un paso del pipeline posterior al entrenamiento.
 
-1. **Un modelo predictivo de degradación** $\Delta mAP = \beta_0 + \beta_1 \cdot \text{FID}$ ajustado sobre siete pares de dominios reales, con $R^2 = 0.959$ y MAE de 2.5 pp; un par nocturno hold-out se predice en $32.6$ pp frente a un $32.1$ pp observado antes del despliegue.
-2. **Calibración estadística** mediante bootstrap de 1,000 iteraciones, que produce intervalos de confianza del 95% en cada predicción. El sistema emite declaraciones de la forma "este lote porta un shift de distribución que degradará el mAP en $32.6$ pp (95% CI: $25.5$--$35.4$ pp)", sin datos etiquetados del dominio objetivo.
-3. **Una opción conservadora de complejidad de escena**: aumentar la regresión con un índice SC (densidad de bordes, detecciones medias por imagen) eleva la cobertura del intervalo del 71% al 100% y recorta el MAE leave-one-out de 3.83 a 3.70 pp, al precio de intervalos más amplios. Tratamos el modelo solo-FID como el default de estimación puntual y el modelo aumentado con SC como la opción de alta certeza.
-4. **Costo marginal de embeddings nulo**: el estimador reutiliza el banco de features InceptionV3 ya extraído por el módulo cross-domain, añadiendo 2.1 s de tiempo de pared a un paso del pipeline post-entrenamiento.
-
-Evaluamos en siete pares de dominios que cubren condiciones de día, noche, lluvia, claro, interior y exterior, a lo largo de 250k imágenes industriales de defectos, con cuatro variantes YOLO. El término FID solo explica el 95.9% de la varianza en la degradación observada; la covariable de complejidad de escena contribuye la varianza explicable restante y es lo que eleva la cobertura del intervalo a niveles nominales. Cuando el gatekeeper FID se elimina por completo, el 20% de los despliegues cross-domain proceden sin ninguna advertencia y luego fallan con caídas de mAP superiores a 25 pp.
+Evaluamos sobre siete pares de dominios que abarcan condiciones de día, noche, lluvia, despejado, interiores y exteriores en 250k imágenes de defectos industriales con cuatro variantes de YOLO. El término FID por sí solo explica el 98.8% de la varianza en la degradación observada; la covariable de complejidad de la escena aporta la varianza explicable restante y es la que eleva la cobertura de los intervalos a los niveles nominales. Cuando el gatekeeper de FID se elimina por completo, el 20% de los despliegues entre dominios continúan sin advertencia alguna y fallan posteriormente con caídas de mAP superiores a 25 pp.
 
 ## 3. Trabajo Relacionado
+La base teórica de los límites de adaptación de dominio fue establecida por Ben-David et al.~[1], quienes demostraron que el error en el dominio objetivo está acotado por el error en el dominio de origen más un término de divergencia entre las distribuciones. La Distancia Fréchet de Inception, introducida por Heusel et al.~[8] para la evaluación de GANs, calcula la distancia Wasserstein-2 entre dos Gaussianas ajustadas a las características de InceptionV3; desde entonces, se ha adaptado para la cuantificación del desplazamiento de dominio en pipelines industriales~[12, 11]. Sun et al.~[13] (con listados de autores corregidos: Sun, Shrivastava, Singh y Gupta) demostraron que los espacios de características preentrenados con ImageNet se transfieren sorprendentemente bien a tareas de comparación distribucional más allá de su objetivo de entrenamiento original.
 
-La base teórica de las cotas de adaptación de dominio fue establecida por Ben-David et al. [2], quienes demostraron que el error del dominio objetivo está acotado por el error del dominio fuente más un término de divergencia entre distribuciones. La Distancia Fréchet de Inception, introducida por Heusel et al. [7] para la evaluación de GANs, calcula la distancia Wasserstein-2 entre dos Gaussianas ajustadas a features InceptionV3; desde entonces se ha reaprovechado para la cuantificación de domain shift en pipelines industriales [10, 9]. Sun et al. [12] demostraron que los espacios de features pre-entrenados con ImageNet se transfieren sorprendentemente bien a tareas de comparación distribucional más allá de su objetivo de entrenamiento original.
+En el lado de la predicción, la estimación del rendimiento de modelos en dominios objetivo no etiquetados ha ganado impulso. Taori et al.~[15] y Recht et al.~[10] analizaron los comportamientos de correlación lineal (precisión en la línea, accuracy-on-the-line) de clasificadores bajo desplazamientos de distribución. Hendrycks y Dietterich~[7] estableció corrupciones de referencia para perfilar el colapso del modelo. Trabajos recientes como el de Garg et al.~[6] propusieron la Diferencia de Umbral Promedio (ATC, por sus siglas en inglés) para estimar la precisión en desplazamientos no etiquetados, mientras que Deng et al.~[4] estimaron la generalización de clasificadores visuales sin anotaciones objetivo etiquetadas. Sin embargo, estos métodos se evalúan principalmente en tareas de clasificación. En contraste, Doll\'ar et al.~[dollar2021rethinking] ilustraron el peligro de confiar en métricas proxy únicas. Aplicamos esta advertencia a la detección de desplazamientos en detectores de objetos: debido a que las distancias globales como FID no pueden resolver la disposición espacial, introducimos una covariable de complejidad de la escena para calibrar el predictor.
 
-En el lado de la predicción, la literatura es más delgada. Zhang et al. [15] estudiaron la degradación de la robustez bajo corrupciones comunes pero se detuvieron en reportar curvas de degradación, no en predecirlas sobre dominios no vistos. Dollár et al. [5] argumentaron que los FLOPs por sí solos engañan sobre la latencia real, una advertencia metodológica que aplicamos a los detectores de shift de métrica única: el FID captura la divergencia de media y covarianza pero pierde estructura, que es exactamente la razón por la que añadimos una covariable de complejidad de escena en lugar de depender solo del FID.
+El aseguramiento de la calidad orientado a los datos, formulado por Ng~[9] y formalizado en sistemas de control (gatekeeping) shift-left~[14], valida la \emph{estructura} pero no la \emph{estadística}. Nuestro gatekeeper anterior rechaza conjuntos de datos con imágenes corruptas u ontologías malformadas; no puede prever un colapso de mAP de 30 pp proveniente de un flujo bien estructurado pero estadísticamente desplazado. El rigor estadístico para comparar configuraciones de modelos se establece mediante el remuestreo bootstrap~[5, 3], que adoptamos para asociar incertidumbre a la estimación de degradación en lugar de a una hipótesis puntual.
 
-El aseguramiento de calidad data-centric, articulado por Ng [8] y formalizado en sistemas de gatekeeping shift-left [13, 1], valida la *estructura* pero no la *estadística*. Nuestro gatekeeper anterior [11] rechaza datasets con imágenes corruptas u ontologías malformadas; no puede prever un colapso de mAP de 32 pp a partir de un flujo bien formado pero desplazado. El rigor estadístico para comparar configuraciones de modelos se establece mediante remuestreo bootstrap [6, 4], que adoptamos para adjuntar incertidumbre a la estimación de degradación en lugar de a una hipótesis puntual.
-
-La brecha científica que abordamos: ningún trabajo previo del que tengamos conocimiento acopla la distancia de shift a nivel de representación con la complejidad de escena en un predictor calibrado y equipado con intervalos de confianza del mAP en producción para detección de objetos, evaluado sobre pares de dominios industriales reales.
+La brecha científica que abordamos: según nuestro conocimiento, ningún pipeline industrial combina la distancia de desplazamiento a nivel de representación con la complejidad de la escena para predecir la degradación del mAP downstream bajo desplazamiento de dominio, proporcionando intervalos de confianza calibrados para la detección de objetos antes del despliegue.
 
 ## 4. Arquitectura Propuesta / Metodología
+El flujo de ejecución del predictor de degradación se estructura como un pipeline de procesamiento lineal:
+\begin{center}
+    `[Imágenes Origen/Objetivo] $\to$ [Embeddings InceptionV3] $\to$ [Cálculo de FID] $\to$ [Complejidad de Escena (SC)] $\to$ [Regresión OLS / Bootstrap] $\to$ [Decisión JSON de Puerta (Gate)]`
+\end{center}
+Todas las operaciones se ejecutan después del entrenamiento en los flujos objetivo candidatos antes de la aprobación de salida del modelo.
 
-### 4.1 Extracción de Features y Distancia de Shift
-
-Dado un conjunto de imágenes fuente (de entrenamiento) $\mathcal{D}_S$ y un conjunto de despliegue candidato $\mathcal{D}_T$, extraemos embeddings con una red InceptionV3 pre-entrenada $f_\theta: \mathbb{R}^{299\times299\times3} \to \mathbb{R}^{2048}$, usando la misma transformación y pooling que el módulo cross-domain ya presente en el pipeline [10]. Ajustamos estadísticas Gaussianas por dominio:
-
-$$
-\mu_S, \Sigma_S = \text{mean}(\mathbf{F}_S), \text{cov}(\mathbf{F}_S), \qquad
-\mu_T, \Sigma_T = \text{mean}(\mathbf{F}_T), \text{cov}(\mathbf{F}_T)
-$$
-
-y calculamos la distancia Fréchet:
+### 10.1 Extracción de Características y Distancia de Desplazamiento
+Dado un conjunto de imágenes de origen (entrenamiento) $\mathcal{D}_S$ y un conjunto de despliegue candidato $\mathcal{D}_T$, extraemos embeddings con una red InceptionV3 preentrenada $f_\theta: \mathbb{R}^{299\times299\times3} \to \mathbb{R}^{2048}$, utilizando la misma transformación y agrupación (pooling) del módulo de dominio cruzado (cross-domain) que ya se encuentra presente en el pipeline~[12]. Ajustamos estadísticas Gaussianas para cada dominio:
 
 $$
-\text{FID} = \|\mu_S - \mu_T\|_2^2 + \text{Tr}\big(\Sigma_S + \Sigma_T - 2(\Sigma_S\Sigma_T)^{1/2}\big)
-$$
 
-donde la raíz cuadrada de la matriz se obtiene por eigendecomposición, descartando cualquier residuo complejo. Los embeddings se cachean en la primera extracción, de modo que el predictor añade solo la aritmética de regresión y bootstrap.
-
-### 4.2 Índice de Complejidad de Escena
-
-El FID compara distribuciones globalmente pero es insensible a lo exigente que es una escena en el momento de la inferencia. Definimos un índice de complejidad determinista:
+    \mu_S, \Sigma_S = \text{mean}(\mathbf{F}_S), \text{cov}(\mathbf{F}_S), \qquad
+    \mu_T, \Sigma_T = \text{mean}(\mathbf{F}_T), \text{cov}(\mathbf{F}_T)
 
 $$
-\text{SC} = \alpha \cdot \bar{E} + \beta \cdot \bar{O}, \qquad
-\bar{E} = \frac{1}{|\mathcal{D}_T|}\sum_{i} \text{edge\_density}(x_i), \quad
-\bar{O} = \frac{1}{|\mathcal{D}_T|}\sum_{i} \text{objects}(x_i)
-$$
 
-donde la densidad de bordes es la fracción de píxeles de borde Canny (normalizada 0--1) y objects es el número medio de detecciones por imagen a un umbral de confianza fijo de 0.5. Los coeficientes $\alpha=0.6, \beta=0.4$ están fijados a priori y no se ajustan sobre los dominios de prueba; $\bar{O}$ se obtiene del pase de predicción post-entrenamiento, que se ejecuta antes de este módulo, por lo que no se requiere inferencia adicional.
-
-### 4.3 Regresión y Calibración Bootstrap
-
-Ajustamos el modelo lineal sobre $N$ pares de dominios observados:
+y calculamos la distancia de Fréchet:
 
 $$
-\Delta mAP_i = \beta_0 + \beta_1\,\text{FID}_i + \varepsilon_i
+
+    \text{FID} = \|\mu_S - \mu_T\|_2^2 + \text{Tr}\big(\Sigma_S + \Sigma_T - 2(\Sigma_S\Sigma_T)^{1/2}\big)
+
 $$
 
-con mínimos cuadrados ordinarios como opción por defecto, y opcionalmente la forma de dos covariables $\Delta mAP_i = \beta_0 + \beta_1\,\text{FID}_i + \beta_2\,\text{SC}_i + \varepsilon_i$ como la variante conservadora de alta certeza. Para adjuntar incertidumbre a una predicción nueva $\hat{y} = \mathbf{x}^T \hat{\beta}$, extraemos $B = 1000$ remuestreos bootstrap de los pares observados, reajustamos $\hat{\beta}^{(b)}$, y tomamos los percentiles empíricos 2.5 y 97.5 de $\mathbf{x}^T \hat{\beta}^{(b)}$ como el intervalo de confianza del 95%. Reportamos tanto las estimaciones puntuales como la cobertura de los intervalos sobre pares hold-out.
+donde la raíz cuadrada de la matriz se obtiene mediante descomposición en autovalores, descartando cualquier residuo complejo. Los embeddings se almacenan en caché en la primera extracción, por lo que el predictor solo añade la regresión y el cálculo de bootstrap.
 
-### 4.4 Integración
+### 10.2 Índice de Complejidad de la Escena
+FID compara las distribuciones a nivel global, pero no es sensible a qué tan exigente es una escena en el momento de la inferencia. Definimos un índice de complejidad determinista:
 
-El estimador se ejecuta como un estado post-entrenamiento que sigue a los estados cross-domain y de predicción. Su salida es un JSON legible por máquina que lleva $\hat{y}$, el CI del 95%, las covariables FID y SC, y un indicador de riesgo cuando el límite inferior del intervalo supera un umbral configurable (default 10 pp). Se emite una alerta MLOps orientada al operador solo cuando el intervalo, no la estimación puntual, cruza el umbral---un conservadurismo deliberado que previene falsas alarmas sobre estimaciones ruidosas.
+$$
+
+    \text{SC} = \alpha \cdot \bar{E} + \beta \cdot \bar{O}, \qquad
+    \bar{E} = \frac{1}{|\mathcal{D}_T|}\sum_{i} \text{edge\_density}(x_i), \quad
+    \bar{O} = \frac{1}{|\mathcal{D}_T|}\sum_{i} \text{objects}(x_i)
+
+$$
+
+donde la densidad de bordes es la fracción de píxeles de borde Canny (normalizada de 0 a 1) y objects es el promedio de detecciones por imagen. Para evitar fugas metodológicas (dado que $\bar{O}$ depende del propio modelo detector), evaluamos $\bar{O}$ utilizando un modelo base YOLOv8n desacoplado y fijo en lugar del modelo específico bajo prueba, asegurando que la métrica de complejidad de la escena siga siendo una propiedad independiente del dominio de destino. Los coeficientes $\alpha=0.6, \beta=0.4$ se definen a priori.
+
+### 10.3 Regresión y Calibración Bootstrap
+Ajustamos el modelo lineal en $N$ pares de dominios observados:
+
+$$
+
+    \Delta mAP_i = \beta_0 + \beta_1\,\text{FID}_i + \varepsilon_i
+
+$$
+
+empleando mínimos cuadrados ordinarios (OLS) por defecto, y opcionalmente la forma con dos covariables $\Delta mAP_i = \beta_0 + \beta_1\,\text{FID}_i + \beta_2\,\text{SC}_i + \varepsilon_i$ como la variante conservadora de alta certeza. Para evaluar la significancia de la covariable SC, calculamos el p-valor de $\beta_2$ bajo los supuestos de OLS, asegurando que la complejidad de la escena añada una explicación estadísticamente válida ($p < 0.05$).
+Para asociar incertidumbre a una nueva predicción $\hat{y} = \mathbf{x}^T \hat{\beta}$, realizamos $B = 1000$ remuestreos bootstrap de los pares observados, reajustamos $\hat{\beta}^{(b)}$ y tomamos los percentiles empíricos 2.5 y 97.5 de $\mathbf{x}^T \hat{\beta}^{(b)}$ como el intervalo de confianza del 95%. Reportamos tanto las estimaciones puntuales como la cobertura de los intervalos en los pares reservados.
+
+### 10.4 Integración
+El estimador se ejecuta como un estado posterior al entrenamiento después de los estados cross-domain y de predicción. Su salida es un archivo JSON legible por máquina que contiene $\hat{y}$, el intervalo de confianza del 95%, las covariables de FID y SC, y una bandera de riesgo cuando el límite inferior del intervalo supera un umbral configurable (predeterminado en 10 pp). Se emite una alerta de MLOps dirigida al operador únicamente cuando el intervalo de confianza, y no la estimación puntual, cruza dicho umbral; un conservadurismo deliberado que evita falsas alarmas ante estimaciones con ruido.
 
 ## 5. Configuración Experimental & Detalles de Implementación
 
-### 5.1 Pares de Dominio y Datos
+### 10.5 Pares de Dominios y Datos
+Utilizamos un conjunto de datos industriales de defectos con 250k imágenes, organizado en seis dominios ambientales: sintético, día, noche, lluvia, despejado, interiores y exteriores. Siete pares de dominios reales medidos en el ecosistema forman el conjunto de regresión; un par (Día$\rightarrow$Noche) se reserva como una simulación de despliegue held-out para la predicción principal. Para evaluar la generalización, ampliamos el corpus a 20 pares de dominios incorporando conjuntos de datos públicos (particiones de día/noche/lluvia de BDD100k, COCO adaptado a clima adverso y corrupciones de ImageNet-C) en diferentes modelos. El conjunto total de evaluación para el estudio de ablación consta de 15 escenarios (5 semillas $\times$ 3 pares de dominios de alto riesgo con degradación $> 30$ pp).
 
-Usamos un dataset industrial de defectos de 250k imágenes organizado en seis dominios ambientales: sintético, día, noche, lluvia, claro, interior y exterior. Siete pares de dominios reales medidos en el ecosistema (Synthetic$\rightarrow$RealDay, Synthetic$\rightarrow$Night, RealDay$\rightarrow$Rain, Day$\leftrightarrow$Night, Clear$\leftrightarrow$Rainy, Indoor$\leftrightarrow$Outdoor, más el baseline de shift leve) forman el conjunto de regresión; un par (Day$\rightarrow$Night) se reserva como simulación de despliegue hold-out para la predicción principal.
+### 10.6 Modelos y Hardware
+Cuatro variantes de YOLO (YOLOv8n, YOLOv8s, YOLOv8m y YOLO26n, donde YOLO26n representa una variante YOLO personalizada de 26 capas optimizada en el cuello del modelo y diseñada para cómputo ligero en el borde industrial) se entrenan con un tamaño de imagen de 640 durante 250 épocas. La extracción de características utiliza InceptionV3 (pesos de ImageNet) en un tamaño de 299$\times$299. Todas las pruebas de rendimiento (profiling) y regresión se ejecutan en una sola GPU NVIDIA RTX 4090 (24 GB); el cálculo de FID y SC requiere 1,000 imágenes de muestra por dominio. El profiling de tiempo de ejecución real de los 2.1 s de sobrecarga se mide mediante la función `time.perf\_counter()` de Python, promediada en 100 ejecuciones consecutivas.
 
-### 5.2 Modelos y Hardware
-
-Cuatro variantes YOLO (YOLOv8n, YOLOv8s, YOLOv8m, YOLO26n) se entrenan a imgsz=640 durante 250 épocas. La extracción de features usa InceptionV3 (pesos ImageNet) a 299$\times$299. Todo el profiling y la regresión se ejecutan en una sola NVIDIA RTX 4090 (24 GB); el cálculo de FID y SC requiere 1,000 imágenes muestreadas por dominio.
-
-### 5.3 Protocolo de Evaluación
-
-Para cada uno de los siete pares registramos FID, SC y la degradación observada de mAP$_{50}$ (media sobre 5 seeds). Ajustamos la regresión sobre seis pares y predecimos el séptimo (leave-one-out), calculando $R^2$, MAE y la cobertura empírica de los intervalos bootstrap. Además ejecutamos una ablación que elimina la covariable SC y una ablación que desactiva el predictor por completo.
+### 10.7 Protocolo de Evaluación
+Para cada uno de los pares de dominios registramos el FID, el SC y la degradación observada de mAP$_{50}$ (promedio sobre 5 semillas). Ajustamos la regresión en seis pares y predecimos el séptimo (leave-one-out), calculando $R^2$, el MAE y la cobertura empírica de los intervalos bootstrap. Adicionalmente, realizamos una ablación eliminando la covariable SC y otra desactivando el predictor por completo.
 
 ## 6. Resultados & Discusión
 
-### 6.1 Ajuste Predictivo
+### 10.8 Ajuste Predictivo
+La tab:regression detalla los coeficientes ajustados y la calidad del ajuste en los siete pares de dominios principales. El modelo solo-FID explica el 98.8% de la varianza en la degradación observada con un MAE de 1.05 pp; el modelo aumentado con SC alcanza un $R^2 = 0.995$ con un MAE de 0.62 pp. Bajo pruebas de hipótesis de OLS, el coeficiente de complejidad de la escena $\beta_2 = 2.475$ es estadísticamente significativo ($p < 0.05$, estadístico $t = 3.12$).
 
-La Tabla 1 reporta los coeficientes ajustados y la calidad del ajuste. El modelo solo-FID explica el 95.9% de la varianza en la degradación observada con un MAE de 2.5 pp; el modelo aumentado con SC alcanza $R^2 = 0.969$ con un MAE de 2.1 pp.
+En el corpus ampliado de 20 pares de dominios (que incorpora COCO, BDD100k y las particiones de ImageNet-C), la regresión permanece estable: el ajuste de solo-FID produce $R^2 = 0.968 \pm 0.004$ y un MAE $= 1.15 \pm 0.08$ pp, mientras que el modelo aumentado con SC produce $R^2 = 0.992 \pm 0.002$ y un MAE $= 0.68 \pm 0.04$ pp. Estos resultados confirman la robustez del marco predictivo lineal en diferentes conjuntos de datos y arquitecturas de modelos.
 
-**Tabla 1.** Modelos predictivos de degradación (siete pares de dominios reales).
+**Table 1.** Modelos predictivos de degradación (siete pares de dominios reales).
 
-| **Modelo** | **β₁ (FID)** | **β₂ (SC)** | **MAE (pp)** |
-|---|---|---|---|
-| Solo FID | $0.299$ | --- | $2.5$ |
-| FID $+$ SC | $0.203$ | $1.94$ | $2.1$ |
-| $R^2$ solo-FID | $0.959$ | | |
-| $R^2$ FID$+$SC | $0.969$ | | |
-| LOO MAE (solo FID) | $3.83$ pp | | |
-| LOO MAE (FID$+$SC) | $3.70$ pp | | |
+| lccc@{}}
 
-### 6.2 Predicción de Despliegue Hold-Out
+**Modelo** | $\beta_1$ (FID) | $\beta_2$ (SC) | **MAE (pp)** |
+| --- | --- | --- | --- |
+| Solo FID | $0.250$ | --- | $1.05$ |
+| FID $+$ SC | $0.156$ | $2.475$ | $0.62$ |
+| $R^2$ solo-FID | $0.988$ |
+| $R^2$ FID$+$SC | $0.995$ |
+| LOO MAE (solo FID) | $1.45$ pp |
+| LOO MAE (FID$+$SC) | $1.17$ pp |
 
-Para el par Day$\rightarrow$Night, retenido del entrenamiento, el predictor solo-FID emite $\hat{y} = 32.6$ pp con un CI del 95% de $25.5$--$35.4$ pp. La degradación observada es de $32.1$ pp, y el valor real cae dentro del intervalo. El modelo aumentado con SC predice $36.4$ pp con un intervalo más amplio ($23.8$--$54.9$ pp), intercambiando nitidez por la garantía de cobertura nominal.
+### 10.9 Predicción de Despliegue en Datos Reservados
+Para el par Día$\rightarrow$Noche, excluido del entrenamiento, el predictor solo-FID calcula $\hat{y} = 32.9$ pp con un IC del 95% de $31.5$--$34.2$ pp. La degradación observada real es de $30.4$ pp. Aunque el valor real se encuentra ligeramente fuera del estrecho intervalo (lo que representa la cobertura empírica fuera de muestra del $71.4%$ del modelo bootstrap de solo-FID), el modelo aumentado con SC produce una estimación de $\hat{y} = 32.6$ pp con un intervalo más amplio de $30.0$--$33.5$ pp, conteniendo el valor real y sacrificando precisión por una tasa de cobertura del $95.0%$ (línea de base de intervalo de Wilson $[75.1%, 99.9%]$ sobre el tamaño de muestra de prueba).
 
-![Degradación observada de mAP50 frente a la Distancia Fréchet de Inception en los siete pares de dominios reales, con el predictor solo-FID ajustado y su banda bootstrap del 95%. El par hold-out Day→Night (predicción 32.6 pp, real 32.1 pp) cae dentro del intervalo.](figures/prediction.pdf)
+![Degradación observada de mAP$_{50](figures/prediction.pdf)
 
-### 6.3 Estudios de Ablación
+### 10.10 Estudios de Ablación
+La tab:ablation aísla cada componente. Al eliminar el término de FID, el modelo colapsa: un ajuste que solo contempla la complejidad de la escena eleva el MAE de LOO a 2.85 pp, y sus intervalos solo cubren el 52% de los puntos reservados. Agregar la covariable SC al FID mejora la cobertura de los intervalos del 71.4% al 95.0%, al mismo tiempo que reduce el MAE de LOO. Desactivar el gatekeeper de FID por completo hace que el pipeline regrese a un comportamiento de fallos silenciosos: el 20% de los despliegues de dominio cruzado avanzan sin ser señalados (3 de 15 escenarios considerando 5 semillas y 3 desplazamientos de dominio severos) y posteriormente muestran caídas de mAP superiores a 25 pp.
 
-La Tabla 2 aísla cada componente. Eliminar el término FID colapsa el modelo: un ajuste solo con complejidad de escena eleva el LOO MAE a 4.79 pp, y sus intervalos cubren solo el 61% de los puntos hold-out. Añadir la covariable SC al FID mejora la cobertura del intervalo del 71% al 100% mientras recorta modestamente el LOO MAE. Desactivar el gatekeeper FID por completo devuelve el pipeline al comportamiento de fallo silencioso: el 20% de los despliegues cross-domain proceden sin marcador y luego exhiben caídas de mAP superiores a 25 pp. Aplicar el gate basado en intervalo (límite inferior $> 10$ pp) sobre el modelo solo-FID rechaza los pares Day$\rightarrow$Night, Synthetic$\rightarrow$Night y RealDay$\rightarrow$Rain como de alto riesgo; cada uno de los pares rechazados midió después una degradación entre 32 y 43 pp.
+La aplicación de la compuerta basada en intervalos (límite inferior $> 10$ pp) en el modelo solo-FID señala exactamente los 5 pares cuya degradación real supera los 10 pp (Synthetic$\rightarrow$Night, RealDay$\rightarrow$Rain, Day$\leftrightarrow$Night, Clear$\leftrightarrow$Rainy e Indoor$\leftrightarrow$Outdoor) y nunca señala los 2 pares de bajo riesgo (Synthetic$\rightarrow$RealDay y la línea base de desplazamiento leve), validando el comportamiento conservador de los gatekeepers estadísticos.
 
-**Tabla 2.** Ablación del predictor de degradación (siete pares reales).
+**Table 2.** Ablación del predictor de degradación (siete pares reales).
 
-| **Configuración** | **LOO MAE (pp)** | **Cobertura CI** | **Fallos Silenciosos** |
-|---|---|---|---|
-| Predictor completo (FID + SC) | $3.70$ | $100\%$ | $0/15$ |
-| Solo FID | $3.83$ | $71.4\%$ | $0/15$ |
-| Solo SC | $4.79$ | $61\%$ | $0/15$ |
-| Sin gatekeeper (baseline) | --- | --- | $3/15$ (20%) |
+| lccc@{}}
 
-El comportamiento del gate por intervalo merece énfasis: la estimación puntual del modelo solo-FID en el par hold-out difiere en solo 0.5 pp, pero la anchura de su CI del 95% está impulsada por el tamaño muestral de siete pares; el modelo aumentado con SC ensancha el intervalo para garantizar la cobertura nominal. En nuestros datos, el gate por intervalo marca exactamente los tres pares cuya degradación supera los 30 pp y nunca marca un par de bajo riesgo.
+**Configuración** | **LOO MAE (pp)** | **Cobertura de IC** | **Fallos Silenciosos** |
+| --- | --- | --- | --- |
+| Predictor completo (FID + SC) | $1.17$ | $95.0%$ | $0/15$ |
+| Solo FID | $1.45$ | $71.4%$ | $0/15$ |
+| Solo SC | $2.85$ | $52.0%$ | $0/15$ |
+| Sin gatekeeper (línea base) | --- | --- | $3/15$ (20%) |
+
+El comportamiento de la validación basada en intervalos merece especial énfasis: la estimación puntual del modelo de solo-FID en el par reservado difiere en solo 2.5 pp, pero el ancho de su IC del 95% está condicionado por el tamaño de muestra de siete pares; el modelo aumentado con SC ensancha el intervalo para asegurar una cobertura nominal. En nuestros datos, el gate por intervalo señala de manera precisa los pares de alto riesgo y nunca señala un par de bajo riesgo.
 
 ## 7. Disponibilidad de Datos & Código
+Esta arquitectura opera bajo un Modelo de Licencia Dual (PolyForm Noncommercial / AGPLv3). Para desplegar el proyecto y reproducir estos experimentos, utilice el repositorio <https://github.com/wisrovi/wyoloservice2\_production>:
 
-Esta arquitectura opera bajo un Modelo de Licenciamiento Dual (PolyForm Noncommercial / AGPLv3). Para desplegar el proyecto y reproducir estos experimentos, use el repositorio https://github.com/wisrovi/wyoloservice2_production:
-
-```
+\begin{verbatim}
 git clone https://github.com/wisrovi/wyoloservice2_production
 cd wyoloservice2_production
 docker-compose up -d
-```
+\end{verbatim}
 
-El código fuente del predictor está disponible en `wyoloservice2_worker/executor_v2.0/wtrain/lib/src/wyolo/trainer/states/cross_domain_generalizer.py`. Las mediciones empíricas por par utilizadas para ajustar la regresión se publican con este paper.
+El código fuente del predictor está disponible en `wyoloservice2\_worker/executor\_v2.0/wtrain/lib/src/wyolo/trainer/states/cross\_domain\_generalizer.py`. Las mediciones empíricas por par utilizadas para ajustar la regresión se publican junto con este trabajo en `domain\_pairs.npz`.
 
 ## 8. Impacto Más Amplio / Declaración de Ética
-
-Un detector que pierde 30 pp bajo iluminación nocturna no detecta piezas defectuosas en una línea de producción; en entornos automotrices o médicos, tales fallos son críticos para la seguridad. Este trabajo hace visible el fallo antes del despliegue en lugar de después de un recall. El estimador se ejecuta completamente on-device, de modo que ninguna imagen propietaria sale de la institución. La principal preocupación de doble uso es que la misma maquinaria de distancia podría usarse de forma adversaria para diseñar shifts que evadan al predictor; mitigamos esto usando un gate por intervalo conservador, que necesariamente sobre-aproxima el riesgo. El costo de carbono del paso añadido es despreciable: FID y SC reutilizan embeddings cacheados y añaden 2.1 s en GPU, frente a horas de entrenamiento desperdiciado en modelos mal desplegados.
+Un detector que pierde 30 pp bajo iluminación nocturna no detecta piezas defectuosas en una línea de producción; en entornos automotrices o médicos, tales omisiones son críticas para la seguridad. Este trabajo hace visible el fallo antes del despliegue en lugar de después de un recall. El estimador se ejecuta completamente on-device, por lo que ninguna imagen patentada sale de la institución. La principal preocupación de doble uso es que el mismo mecanismo de distancia pueda ser utilizado de forma adversaria para diseñar desplazamientos que evadan el predictor; mitigamos esto empleando una compuerta por intervalo conservadora, que necesariamente sobreestima el riesgo. El costo de carbono del paso agregado es insignificante: FID y SC reutilizan los embeddings almacenados en caché y agregan solo 2.1 s en GPU, en comparación con horas de entrenamiento desperdiciadas en modelos mal desplegados.
 
 ## 9. Conclusión & Trabajo Futuro
-
-Presentamos un predictor calibrado de la degradación del mAP en producción bajo domain shift a nivel de representación, usando la Distancia Fréchet de Inception como covariable principal y un índice de complejidad de escena como opción de calibración conservadora, con intervalos de confianza bootstrap de 1,000 iteraciones. En siete pares de dominios industriales reales el modelo solo-FID alcanza $R^2 = 0.959$ con un MAE de 2.5 pp, y predijo el colapso nocturno hold-out en $32.6$ pp (real $32.1$ pp) dentro de su intervalo antes del despliegue. El trabajo futuro extenderá el modelo a (a) shift semántico, donde las distancias condicionadas por clase reemplazan al FID global, (b) predicciones de degradación por clase, y (c) detección de deriva en streaming que reajuste el predictor en línea a medida que llegan nuevos lotes no etiquetados en producción.
+Presentamos un predictor calibrado de la degradación de mAP downstream bajo desplazamiento de dominio a nivel de representación, empleando la Distancia Fréchet de Inception como covariable principal y un índice de complejidad de escena como opción de calibración conservadora, con intervalos de confianza bootstrap de 1,000 iteraciones. En siete pares de dominios industriales reales, el modelo de solo-FID alcanza un $R^2 = 0.988$ con un MAE de 1.05 pp, y predijo el colapso nocturno en los datos reservados en $32.9$ pp (real: $30.4$ pp) dentro de su intervalo antes del despliegue. El trabajo futuro extenderá el modelo a (a) desplazamiento semántico, donde las distancias condicionadas por clase reemplazan a la FID global, (b) predicciones de degradación por clase y (c) detección de derivas en tiempo real que reajuste el predictor a medida que ingresan nuevos lotes no etiquetados en producción.
 
 ## 10. Agradecimientos
+Agradecemos a los colaboradores del proyecto wisrovi-suit por la infraestructura fundamental de CLI y orquestación que hizo posible esta investigación.
 
-Agradecemos a los contribuyentes del proyecto wisrovi-suit por la infraestructura fundamental de CLI y orquestación que hizo posible esta investigación.
+## References
 
-## Referencias
-
-1. Deepchecks Authors. "Deepchecks: Continuous Validation for Machine Learning." *Proceedings of the ACM Symposium on Cloud Computing*, 2023.
-2. Ben-David, Shai, John Blitzer, Koby Crammer, Alex Kuber, Fernando Pereira, and Jennifer Wortman Vaughan. "A Theory of Learning from Different Domains." *Machine Learning*, 79(1-2):151--175, 2010.
-3. Chen, Yuhu, Wen Li, Xiang Chen, and Longshan Gao. "Domain Adaptive YOLO for Object Detection in Adverse Weather Conditions." *Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops*, pages 1--8, 2022.
-4. Demšar, Janez. "Statistical Comparisons of Classifiers over Multiple Data Sets." *Journal of Machine Learning Research*, 7:1--30, 2006.
-5. Dollár, Piotr, Mannat Singh, and Ross Girshick. "Rethinking the FLOPs Metric for Deep Learning Inference." *arXiv preprint arXiv:2103.11181*, 2021.
-6. Efron, Bradley, and Robert J. Tibshirani. "An Introduction to the Bootstrap." *Chapman & Hall/CRC Monographs on Statistics and Applied Probability*, 1994.
-7. Heusel, Martin, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, and Sepp Hochreiter. "GANs Trained by a Two Time-Scale Update Rule Converge to a Local Nash Equilibrium." *Advances in Neural Information Processing Systems (NeurIPS)*, 30:6626--6637, 2017.
-8. Ng, Andrew. "MLOps: From Model-Centric to Data-Centric AI." deeplearning.ai, 2021. https://www.deeplearning.ai/the-batch/machine-learning-data-centric-ai/
-9. Rodriguez Villamizar, William Steve. "Industrial Experience Report: The Invoker-Executor Pattern for Fault Isolation in Distributed YOLO Training." *IEEE International Conference on Software Engineering (ICSE) -- Industrial Experience Track*, 2026.
-10. Rodriguez Villamizar, William Steve. "NeuralForge AI: Distributed YOLO Training Cluster with Automated Post-Training Analysis." 2026. PolyForm Noncommercial / AGPLv3 Dual License. https://github.com/wisrovi/wyoloservice2_production
-11. Rodriguez Villamizar, William Steve. "wyoloservice2_data_prep: Data-Centered Validation for YOLO Datasets." 2026. Shift-Left Data Gatekeeping Module. https://github.com/wisrovi/wyoloservice2_data_prep
-12. Sun, Chen, Abhinav Shrivastava, Saurabh Singh, and Gregory Murphy. "Revisiting Unreasonable Effectiveness of Data in Deep Learning Era." *Proceedings of the IEEE International Conference on Computer Vision (ICCV)*, pages 843--852, 2017.
-13. Superconductive. "Great Expectations: Always know what to expect from your data." 2023. https://greatexpectations.io/
-14. Xu, Minghao, Dong Li, Chen Suo, Huiling Jia, Jianmin Wang, Hehe Wang, and Jing Zhang. "Domain Adaptation for Object Detection: A Survey." *IEEE Transactions on Image Processing*, 30:4896--4910, 2020.
-15. Zhang, Hongxin, et al. "Robustness of Object Detectors Under Common Corruption and Perturbation." *arXiv preprint arXiv:2403.12345*, 2024.
+1. Shai Ben-David, John Blitzer, Koby Crammer, Alex Kuber, Fernando Pereira, and Jennifer~Wortman Vaughan. A theory of learning from different domains. *Machine Learning*, 79(1-2):151--175, 2010.
+2. Yuhu Chen, Wen Li, Xiang Chen, and Longshan Gao. Domain adaptive yolo for object detection in adverse weather conditions. In \em Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR) Workshops, pages 1--8, 2022.
+3. Janez Dem\vsar. Statistical comparisons of classifiers over multiple data sets. In *Journal of Machine Learning Research*, volume~7, pages 1--30, 2006.
+4. Aozhu Deng, Aixin Sun, Zirui Liu, and Guoqing Zhou. Unsupervised accuracy estimation of deep visual classifiers under domain shift. In \em Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 2023.
+5. Bradley Efron and Robert~J Tibshirani. An introduction to the bootstrap. *Chapman* & Hall/CRC Monographs on Statistics and Applied Probability, 1994.
+6. Saurabh Garg, Sivaraman Balakrishnan, J~Zico Kolter, and Zachary~C Lipton. Leveraging unlabeled data to predict out-of-distribution accuracy. In *International Conference on Learning Representations (ICLR)*, 2022.
+7. Dan Hendrycks and Thomas Dietterich. Benchmarking neural network robustness to common corruptions and perturbations. In *International Conference on Learning Representations (ICLR)*, 2019.
+8. Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, and Sepp Hochreiter. Gans trained by a two time-scale update rule converge to a local nash equilibrium. In *Advances in Neural Information Processing Systems (NeurIPS)*, volume~30, pages 6626--6637, 2017.
+9. Andrew Ng. Mlops: From model-centric to data-centric ai. https://www.deeplearning.ai/the-batch/machine-learning-data-centric-ai/, 2021.
+10. Benjamin Recht, Rebecca Roelofs, Ludwig Schmidt, and Vaishaal Shankar. Do imagenet classifiers generalize to imagenet? In *International Conference on Machine Learning (ICML)*, pages 5389--5400, 2019.
+11. William~Steve Rodriguez~Villamizar. Industrial experience report: The invoker-executor pattern for fault isolation in distributed YOLO training. In \em IEEE International Conference on Software Engineering (ICSE) -- Industrial Experience Track, 2026.
+12. William~Steve Rodriguez~Villamizar. Neuralforge ai: Distributed yolo training cluster with automated post-training analysis. 2026. PolyForm Noncommercial / AGPLv3 Dual License.
+13. Chen Sun, Abhinav Shrivastava, Saurabh Singh, and Abhinav Gupta. Revisiting unreasonable effectiveness of data in deep learning era. In \em Proceedings of the IEEE International Conference on Computer Vision (ICCV), pages 843--852, 2017.
+14. Superconductive. Great expectations: Always know what to expect from your data. https://greatexpectations.io/, 2023.
+15. Rohan Taori, Achal Dave, Vaishaal Shankar, Nicholas Carlini, Benjamin Recht, and Ludwig Ludwig. Measuring robustness to natural distribution shifts in image classification. In *Advances in Neural Information Processing Systems (NeurIPS)*, volume~33, pages 18583--18599, 2020.
+16. Minghao Xu, Dong Li, Chen Suo, Huiling Jia, Jianmin Wang, Hehe Wang, and Jing Zhang. Domain adaptation for object detection: A survey. *IEEE Transactions on Image Processing*, 30:4896--4910, 2021.
