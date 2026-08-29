@@ -1,3 +1,3 @@
 ROUND: 1
-STATUS: APPROVED
-PAPER: paper_d_autonomous_evaluation
+STATUS: IN_REVIEW
+PAPER: paper_c_domain_shift_prediction
