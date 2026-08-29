@@ -24,7 +24,8 @@ What is missing is a \emph{predictor}: a function that takes a candidate deploym
 We build this predictor as a lightweight post-training state. Our contributions are:
 
     1. **A predictive degradation model** $\Delta mAP = \beta_0 + \beta_1 \cdot \text{FID}$ fitted on seven real domain pairs, with $R^2 = 0.988$ and MAE of 1.05 pp; a held-out nighttime pair is predicted at $32.9$ pp against an observed $30.4$ pp before deployment.
-    1. **Statistical calibration** via 1,000-iteration bootstrap, producing 95% confidence intervals on every prediction. The system emits statements of the form ``this batch carries a distribution shift that will degrade mAP by $32.9$ pp (95% CI: $31.5$--$34.2$ pp)'', with no labeled target data.
+    1. **Statistical calibration** via 1,000-iteration bootstrap, producing 95% confidence intervals on every prediction. The system emits statements of the form ``this batch carries a distribution shift that will degrade mAP by $32.9$ pp (95% CI: $31.4$--$34.2$ pp)'', with no labeled target data.
+
     1. **A conservative scene-complexity option**: augmenting the regression with an SC index (edge density, mean detections per image) raises interval coverage from 57.1% to 100% and trims leave-one-out MAE from 1.45 to 1.17 pp. We treat the FID-only model as the point-estimate default and the SC-augmented model as the high-certainty option.
     1. **Zero marginal embedding cost**: the estimator reuses the InceptionV3 feature bank already extracted by the cross-domain module, adding 2.1 s of wall-clock time to a post-training pipeline step.
 
@@ -126,7 +127,7 @@ To assess the statistical limits under larger sample sizes, we run an in-silico 
 | LOO MAE (FID$+$SC) | $1.17$ pp |
 
 ### 10.9 Held-Out Deployment Prediction
-For the Day$\rightarrow$Night pair, withheld from training, the FID-only predictor emits $\hat{y} = 32.9$ pp with a 95% CI of $31.5$--$34.2$ pp. The observed degradation is $30.4$ pp. Although the true value falls slightly outside this narrow interval (representing the $57.1%$ empirical out-of-sample coverage of the FID-only bootstrap model), the SC-augmented model yields $\hat{y} = 32.6$ pp with a wider interval of $30.0$--$33.5$ pp, successfully encapsulating the true value and trading sharpness for a $100%$ coverage rate. The confidence interval is calibrated via a pairs bootstrap resampler over the 6 active training pairs ($B = 1000$ trials, using seed $= 42$ for the held-out pairs bootstrap to maintain exact alignment), taking the empirical 2.5th and 97.5th percentiles of the bootstrap predictions.
+For the Day$\rightarrow$Night pair, withheld from training, the FID-only predictor emits $\hat{y} = 32.9$ pp with a 95% CI of $31.4$--$34.2$ pp. The observed degradation is $30.4$ pp. Although the true value falls slightly outside this narrow interval (representing the $57.1%$ empirical out-of-sample coverage of the FID-only bootstrap model), the SC-augmented model yields $\hat{y} = 32.6$ pp with a wider interval of $30.0$--$33.5$ pp, successfully encapsulating the true value and trading sharpness for a $100%$ coverage rate. The confidence interval is calibrated via a pairs bootstrap resampler over the 6 active training pairs ($B = 1000$ trials, using seed $= 42$ for the held-out pairs bootstrap to maintain exact alignment), taking the empirical 2.5th and 97.5th percentiles of the bootstrap predictions.
 
 ![Observed mAP$_{50](figures/prediction.pdf)
 
@@ -179,7 +180,7 @@ We thank the contributors of the wisrovi-suit project for the foundational CLI a
 5. Aozhu Deng and Guoqing Zheng. Are labels always necessary for classifier accuracy evaluation? In \em Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 7968--7977, 2021.
 6. Piotr Doll\'ar, Mannat Singh, and Ross Girshick. Fast and accurate model scaling. In \em Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), pages 924--932, 2021.
 7. Bradley Efron and Robert~J Tibshirani. An introduction to the bootstrap. *Chapman* & Hall/CRC Monographs on Statistics and Applied Probability, 1994.
-8. Saurabh Garg, Sivaraman Balakrishnan, J~Zico Kolter, and Zachary~C Lipton. Leveraging unlabeled data to predict out-of-distribution performance. In *International Conference on Learning Representations (ICLR)*, 2022.
+8. Saurabh Garg, Sivaraman Balakrishnan, Zachary~C Lipton, Behnam Neyshabur, and Hanie Sedghi. Leveraging unlabeled data to predict out-of-distribution performance. In *International Conference on Learning Representations (ICLR)*, 2022.
 9. Dan Hendrycks and Thomas Dietterich. Benchmarking neural network robustness to common corruptions and perturbations. In *International Conference on Learning Representations (ICLR)*, 2019.
 10. Martin Heusel, Hubert Ramsauer, Thomas Unterthiner, Bernhard Nessler, and Sepp Hochreiter. Gans trained by a two time-scale update rule converge to a local nash equilibrium. In *Advances in Neural Information Processing Systems (NeurIPS)*, volume~30, pages 6626--6637, 2017.
 11. Glenn Jocher, Ayush Chaurasia, and Jing Qiu. Yolo by ultralytics, 2023.
